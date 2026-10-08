@@ -1,65 +1,73 @@
 {
- "generated_at": "2026-10-08T14:11:05",
+ "generated_at": "2026-10-08",
  "live": true,
  "rate_usd_per_min": 0.7,
- "estimated_usd": 5.73,
+ "estimated_usd": 14.12,
  "rows": [
   {
    "model": "reactor/lingbot-world-2",
    "note": "LingBot-World V2, 4xB200 image-to-video",
-   "ok": false,
-   "error": "connect: [RATE_LIMITED] unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n",
-   "session_s": 0.9
+   "ok": true,
+   "frames": 7964,
+   "escapes": 82,
+   "session_s": 240.4,
+   "mean_escape_to_command_ms": 366.4,
+   "accepted": {},
+   "clip": true
   },
   {
-   "live": true,
    "model": "reactor/lingbot",
-   "frames": 7134,
-   "escapes": 47,
-   "mean_escape_to_command_ms": null,
    "note": "LingBot-World V1. the same model one version back",
    "ok": true,
-   "session_s": 243.4,
+   "frames": 7134,
+   "escapes": 47,
+   "session_s": 240.3,
+   "mean_escape_to_command_ms": null,
    "accepted": {
-    "set_image": true,
-    "set_prompt": true,
-    "set_seed": true,
-    "start": true,
     "set_move_longitudinal": false
    },
-   "escapes_per_min": 9.49
+   "clip": true
   },
   {
-   "live": true,
    "model": "reactor/helios",
-   "frames": 4328,
-   "escapes": 22,
-   "mean_escape_to_command_ms": null,
    "note": "Helios, single-GPU autoregressive text-to-video",
    "ok": true,
-   "session_s": 244.5,
+   "frames": 4328,
+   "escapes": 22,
+   "session_s": 243.3,
+   "mean_escape_to_command_ms": null,
    "accepted": {
-    "set_image": true,
-    "set_prompt": true,
-    "set_seed": true,
-    "start": true,
     "set_move_longitudinal": false
    },
-   "escapes_per_min": 7.32
-  },
-  {
-   "model": "reactor/longlive-v2",
-   "note": "LongLive 2.0, Wan2.2-TI2V-5B",
-   "ok": false,
-   "error": "connect: [RATE_LIMITED] unexpected HTTP status 429 from create session: {\"current\":10,\"error\":\"quota_exceeded\",\"limit\":10,\"message\":\"quota exceeded: sessions_per_minute for model \\\"reactor/longlive-v2",
-   "session_s": 1.0
+   "clip": true
   },
   {
    "model": "reactor/visko-orbis-dynamic",
    "note": "Orbis 14.3B, 1.8s chunks with prompt morphing",
-   "ok": false,
-   "error": "connect: [RATE_LIMITED] unexpected HTTP status 429 from create session: {\"current\":10,\"error\":\"quota_exceeded\",\"limit\":10,\"message\":\"quota exceeded: sessions_per_minute for model \\\"reactor/visko-orbis",
-   "session_s": 1.1
+   "ok": true,
+   "frames": 3727,
+   "escapes": 28,
+   "session_s": 240.4,
+   "mean_escape_to_command_ms": null,
+   "accepted": {
+    "set_move_longitudinal": false
+   },
+   "clip": true
+  },
+  {
+   "model": "reactor/longlive-v2",
+   "note": "LongLive 2.0, Wan2.2-TI2V-5B",
+   "ok": true,
+   "frames": 0,
+   "escapes": 0,
+   "session_s": 245.7,
+   "mean_escape_to_command_ms": null,
+   "accepted": {
+    "set_image": false,
+    "set_prompt": false,
+    "set_move_longitudinal": false
+   },
+   "clip": false
   }
  ]
 }

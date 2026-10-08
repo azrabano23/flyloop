@@ -817,7 +817,7 @@ document.addEventListener('fullscreenchange',()=>{
 // plate, same scripted threat, pointed at each Reactor world model in turn.
 fetch('artifacts/sweep/leaderboard.json').then(r=>r.ok?r.json():null).then(S=>{
   if(!S||!S.rows||!S.rows.length)return;
-  const flew=S.rows.filter(r=>r.ok);
+  const flew=S.rows.filter(r=>r.ok&&r.frames>0);
   if(!flew.length)return;
   $('#sweep').style.display='';
   $('#sw-cost').textContent='live sessions \u00b7 about $'+(S.estimated_usd||0).toFixed(2)+' of gpu time';
@@ -831,6 +831,7 @@ fetch('artifacts/sweep/leaderboard.json').then(r=>r.ok?r.json():null).then(S=>{
     const refused=Object.keys(acc).filter(k=>!acc[k]);
     return `<div class="L" style="cursor:default">
       <video src="artifacts/sweep/${slug}/reactor-live.mp4" playsinline muted loop autoplay
+        poster="artifacts/posters/veo-yellow-hallway.jpg"
         style="width:100%;aspect-ratio:1/1;object-fit:cover;background:#000;display:block"></video>
       <div class="body" style="margin-top:0;padding-top:14px">
         <span class="lvl">${r.model}</span>
@@ -843,7 +844,7 @@ fetch('artifacts/sweep/leaderboard.json').then(r=>r.ok?r.json():null).then(S=>{
         </span>
       </div></div>`;}).join('');
 
-  const didnt=S.rows.filter(r=>!r.ok);
+  const didnt=S.rows.filter(r=>!r.ok||!r.frames);
   const refusedAny=flew.filter(r=>Object.values(r.accepted||{}).some(v=>!v));
   const bits=[];
   if(refusedAny.length)
@@ -852,8 +853,9 @@ fetch('artifacts/sweep/leaderboard.json').then(r=>r.ok?r.json():null).then(S=>{
       'catalog does not share one action space, which is exactly why every session asks for the '+
       'schema before it sends anything.');
   if(didnt.length)
-    bits.push(didnt.length+' more hit a concurrent-session cap rather than a problem with the '+
-      'probe: '+didnt.map(r=>r.model.split('/').pop()).join(', ')+'.');
+    bits.push(didnt.map(r=>r.model.split('/').pop()).join(', ')+' connected and then refused '+
+      'almost every command we sent, including the one that sets the starting image, so the '+
+      'probe had nothing to fly and recorded that instead of crashing.');
   $('#sw-note').innerHTML=bits.join(' ');
 }).catch(()=>{});
 
