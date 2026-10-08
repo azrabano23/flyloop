@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flyloop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;800&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080A;--text:#F2F3F5;--muted:#9299A3;--dim:#5A616B;
+ --accent:#3B82F6;--alarm:#FF3B30;--liminal:#C8B560;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;
+ overflow:hidden;height:100vh}
+.slide{position:absolute;inset:0;padding:7vh 6vw;display:none;flex-direction:column;
+ justify-content:flex-start;opacity:0;transition:opacity .35s}
+.slide.on{display:flex;opacity:1}
+h1,h2{font-family:'Figtree',sans-serif;font-weight:800;letter-spacing:-.035em;line-height:1.02}
+h1{font-size:clamp(2.4rem,5.4vw,4.6rem);margin-bottom:2.2vh}
+h2{font-size:clamp(1.5rem,2.9vw,2.5rem);margin-bottom:2vh}
+.lab{font-family:'JetBrains Mono',monospace;font-size:clamp(9px,.82vw,13px);letter-spacing:.17em;
+ text-transform:uppercase;color:var(--dim);margin-bottom:1.6vh}
+p{color:var(--muted);font-size:clamp(.92rem,1.3vw,1.35rem);max-width:46ch;line-height:1.5}
+.lim{color:var(--liminal)}.acc{color:var(--accent)}.alm{color:var(--alarm)}
+.row{display:grid;grid-template-columns:1.05fr .95fr;gap:4vw;align-items:start;margin-top:1vh}
+.beats{display:grid;gap:1.4vh;margin-top:2.4vh}
+.beat{display:grid;grid-template-columns:auto 1fr;gap:1.1vw;align-items:baseline}
+.beat b{font-family:'JetBrains Mono',monospace;color:var(--liminal);font-size:clamp(9px,.8vw,12px)}
+.beat span{color:var(--muted);font-size:clamp(.86rem,1.15vw,1.2rem)}
+table{width:100%;border-collapse:collapse;font-size:clamp(.8rem,1.05vw,1.1rem);margin-top:1.5vh}
+th,td{text-align:left;padding:1.3vh .7vw;border-bottom:1px solid var(--line)}
+th{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,.72vw,11px);letter-spacing:.13em;
+ text-transform:uppercase;color:var(--dim);font-weight:400}
+td{color:var(--muted)} td.v{font-family:'JetBrains Mono',monospace;color:var(--text)}
+tr.best{background:rgba(59,130,246,.09)}tr.best td{color:var(--text)}tr.best td.v{color:var(--accent)}
+.warn{border:1px solid rgba(255,59,48,.3);background:rgba(255,59,48,.05);padding:1.8vh 1.4vw;margin-top:2vh}
+.warn p{color:#C3C8D0;max-width:78ch;font-size:clamp(.76rem,.98vw,1rem)}
+.q{border-left:2px solid var(--liminal);padding-left:1.2vw;margin:2.2vh 0;max-width:44ch}
+.q p{font-style:italic;color:#C8CDD4}
+.q cite{font-family:'JetBrains Mono',monospace;font-size:clamp(8px,.72vw,11px);color:var(--dim);
+ font-style:normal;display:block;margin-top:.9vh;letter-spacing:.1em;text-transform:uppercase}
+.nav{position:fixed;bottom:2.4vh;right:3vw;font-family:'JetBrains Mono',monospace;
+ font-size:11px;color:var(--dim);letter-spacing:.14em;z-index:9}
+.stack text{font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1 -->
+<section class="slide on">
+  <span class="lab">flyloop / reactor x google deepmind / 8 oct 2026</span>
+  <h1>When the walls lie,<br><span class="lim">the fly knows first.</span></h1>
+  <div class="row">
+    <div>
+      <p>Generated worlds are becoming places we test robots. A world model ships an update.
+      The video looks better. Does your agent still behave the same?</p>
+      <div class="q">
+        <p>"It's literally just look at it and human judgment. And this is including, by the
+        way, DeepMind. Nobody has solved this problem yet."</p>
+        <cite>Ahmed Ahres, Reactor</cite>
+      </div>
+      <p>So we borrowed a reflex with 400 million years of QA experience. A fly never
+      segments an object or estimates depth. It reads raw optic flow, and when something is
+      going to hit it, one neuron fires.</p>
+    </div>
+    <svg viewBox="0 0 440 300" class="stack" aria-label="pipeline">
+      <defs><marker id="a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+        <path d="M0,0 L7,3.5 L0,7 z" fill="#5A616B"/></marker></defs>
+      <g font-size="11" fill="#C8B560">
+        <text x="0" y="26">NANO BANANA 2.1</text>
+        <text x="0" y="86">LINGBOT WORLD 2</text>
+        <text x="0" y="146">FLYLOOP</text>
+        <text x="0" y="206">set_move_longitudinal</text>
+        <text x="0" y="266" fill="#3B82F6">LYRIA 3.5 / VEO 3.1</text>
+      </g>
+      <g font-size="10.5" fill="#9299A3">
+        <text x="0" y="44">Google AI Studio. Seed plate, one obstacle.</text>
+        <text x="0" y="104">Reactor. Live world, driven forward.</text>
+        <text x="0" y="164">Hex retina. Two-channel giant fibre.</text>
+        <text x="0" y="224">Reactor. The dodge, back into the session.</text>
+        <text x="0" y="284">Google DeepMind. Score and approach clips.</text>
+      </g>
+      <g stroke="#5A616B" stroke-width="1" marker-end="url(#a)">
+        <path d="M250,30 L250,52" fill="none"/><path d="M250,90 L250,112" fill="none"/>
+        <path d="M250,150 L250,172" fill="none"/>
+      </g>
+      <path d="M396,196 C424,160 424,110 398,80" stroke="#FF3B30" stroke-width="1.2"
+        fill="none" marker-end="url(#a)"/>
+      <text x="404" y="140" font-size="9.5" fill="#FF3B30">closed</text>
+    </svg>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <span class="lab">02 / what we measured, and what we did not</span>
+  <h2>Two channels buy a stable ruler.</h2>
+  <div class="row">
+    <div>
+      <table><thead><tr><th>detector</th><th>ch</th><th>threshold spread, 8× speed</th>
+        <th>lead over trig</th></tr></thead>
+      <tbody>
+        <tr><td>raw rate</td><td class="v">1</td><td class="v">5.73°</td><td class="v">12.5 f</td></tr>
+        <tr><td>normalised size</td><td class="v">1</td><td class="v">2.01°</td><td class="v">8.5 f</td></tr>
+        <tr class="best"><td>giant fibre</td><td class="v">2</td><td class="v">0.63°</td><td class="v">8.5 f</td></tr>
+      </tbody></table>
+      <div class="beats">
+        <div class="beat"><b>01</b><span>Escape commits at <b style="color:#fff">20.7 ± 0.63°</b>
+          across an 8× speed sweep. Published behavioural figure is near 20°.</span></div>
+        <div class="beat"><b>02</b><span>The trig baseline fires in frame zero on a real
+          generated hallway. It has to find an object first. The reflex does not.</span></div>
+        <div class="beat"><b>03</b><span>223 facets of numpy, CPU only. Checking a clip is a
+          rounding error against generating it, so it can run on every session.</span></div>
+      </div>
+    </div>
+    <div>
+      <span class="lab">who pays for this</span>
+      <p style="margin-bottom:1.6vh">World model labs selling into robotics need a number to
+      put on a release. Platforms hosting several models need to compare them. Teams training
+      agents in generated worlds need to know when an update changed behaviour.</p>
+      <div class="warn">
+        <p><b style="color:#FF8A82">What this is not.</b> It measures geometric consistency of
+        apparent motion, not gravity, mass, friction or collisions. The detector is a
+        biologically inspired model with three hand-calibrated parameters, not a circuit
+        compiled from a connectome. On generated footage it fires on every approach clip we
+        have, because every one really is an approach, so firing time there is descriptive,
+        not a correctness score. Telling a broken detector from a broken world is the open
+        problem, and it is what we would build next.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="nav" id="nav">1 / 2</div>
+<script>
+let i = 0;
+const s = document.querySelectorAll('.slide');
+const go = n => { i = Math.max(0, Math.min(s.length - 1, n));
+  s.forEach((el, k) => el.classList.toggle('on', k === i));
+  document.getElementById('nav').textContent = (i + 1) + ' / ' + s.length; };
+addEventListener('keydown', e => {
+  if (['ArrowRight',' ','PageDown','Enter'].includes(e.key)) go(i + 1);
+  if (['ArrowLeft','PageUp','Backspace'].includes(e.key)) go(i - 1);
+});
+addEventListener('click', e => go(i + (e.clientX > innerWidth / 2 ? 1 : -1)));
+</script>
+</body>
+</html>
