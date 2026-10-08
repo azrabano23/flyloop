@@ -168,6 +168,15 @@ class FlyLoop:
             output = reactor.tracks.with_direction("recvonly").with_kind("video").one()
             done = asyncio.Event()
 
+            # The SDK delivers frames on its own thread, not on this event loop, so
+            # asyncio.create_task() inside the callback raises "no running event loop" and
+            # the dodge is never sent. Capture the loop here and hand work back to it
+            # thread-safely instead.
+            loop = asyncio.get_running_loop()
+
+            def dispatch(coro):
+                asyncio.run_coroutine_threadsafe(coro, loop)
+
             @output.on_frame
             def on_frame(frame):  # noqa: ANN001 - SDK supplies its own frame type
                 nonlocal frame_i
@@ -179,13 +188,13 @@ class FlyLoop:
 
                 now = time.time() - self._t0
                 if now > self.cfg.max_seconds:
-                    done.set()
+                    loop.call_soon_threadsafe(done.set)
                     return
 
                 if self.state == "retreat":
                     if now >= self.retreat_until:
                         self.state = "forward"
-                        asyncio.create_task(self._cmd(reactor, "forward", frame_i))
+                        dispatch(self._cmd(reactor, "forward", frame_i))
                     return
 
                 if self.push(arr):
@@ -194,7 +203,7 @@ class FlyLoop:
                     chunk_s = 12.0 / self.fps  # ~3 latent frames, ~12 pixel frames
                     self.retreat_until = now + self.cfg.retreat_chunks * chunk_s
                     self._log("escape", frame_i, {"wall_s": round(now, 3)})
-                    asyncio.create_task(self._cmd(reactor, "back", frame_i))
+                    dispatch(self._cmd(reactor, "back", frame_i))
 
             try:
                 await asyncio.wait_for(done.wait(), timeout=self.cfg.max_seconds)
