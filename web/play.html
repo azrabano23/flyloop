@@ -338,7 +338,12 @@ function decide(){
 
 function drawTrace(f){
   const cv=$('#trace');if(!cv)return;
-  const g=cv.getContext('2d'),W=cv.width,H=cv.height,p=12,tr=f.trace,n=tr.length,yM=1.5;
+  // Only the run up to the commit. After the circuit fires the size estimate upstream is
+  // saturating on generated video and the trace reads as a square wave, which is true and
+  // also tells you nothing: the decision was already made.
+  const g=cv.getContext('2d'),W=cv.width,H=cv.height,p=12,yM=1.5;
+  const end=f.fire_frame!=null?Math.min(f.trace.length,Math.round(f.fire_frame*1.25)+4):f.trace.length;
+  const tr=f.trace.slice(0,Math.max(8,end)),n=tr.length;
   const X=i=>p+(i/(n-1))*(W-2*p),Y=val=>H-p-(Math.min(val,yM)/yM)*(H-2*p);
   g.strokeStyle='rgba(255,255,255,.16)';g.setLineDash([3,5]);
   g.beginPath();g.moveTo(p,Y(1));g.lineTo(W-p,Y(1));g.stroke();g.setLineDash([]);
