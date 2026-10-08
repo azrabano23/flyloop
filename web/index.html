@@ -137,11 +137,11 @@ footer a{color:var(--accent);text-decoration:none}
 <header class="hero">
   <div class="hero-img"></div>
   <div class="wrap">
-    <span class="label">flyloop / behavioural regression testing for generated worlds</span>
-    <h1>When the walls lie, <span class="lim">the fly knows first.</span></h1>
-    <p class="lead">Generated worlds are becoming places we test robots and train agents.
-    Nobody can tell you whether a new model version <em>behaves</em> differently, only whether
-    it looks better. We put a fly's escape reflex inside the world and measure what it does.</p>
+    <span class="label">flyloop / can you swat the fly?</span>
+    <h1>Twelve worlds. <span class="lim">Eleven failed swats.</span></h1>
+    <p class="lead">We put a real fruit fly escape reflex inside AI-generated worlds and tried
+    to hit it. It got away eleven times. The one world that killed it was the one where we
+    had deliberately broken the physics. That is not a game mechanic, that is the result.</p>
     <div class="cta">
       <a class="btn btn-p" href="#demo">[ See it run ]</a>
       <a class="btn" href="#results">[ The numbers ]</a>
@@ -151,8 +151,32 @@ footer a{color:var(--accent);text-decoration:none}
   <div class="ticker"><div id="tick"></div></div>
 </header>
 
+
+<section class="wrap reveal" id="swat">
+  <span class="label">01 / the scoreboard</span>
+  <h2>Every world we have thrown at it.</h2>
+  <p>A swat lands only if the fly fails to commit its escape before impact. The circuit is
+  the published giant fibre model running on the actual frames, not a scripted dodge, so the
+  only way to win is to build a world whose motion does not look like an approach to a
+  nervous system that has been judging approaches for 400 million years.</p>
+  <div class="grid g3" style="margin-top:30px">
+    <div class="card"><span class="n">worlds tested</span><div class="big" id="g-n">-</div></div>
+    <div class="card"><span class="n">fly escaped</span><div class="big" id="g-d">-</div>
+      <p>every world whose motion was geometrically plausible.</p></div>
+    <div class="card"><span class="n">successful swats</span>
+      <div class="big" id="g-s" style="color:var(--alarm)">-</div>
+      <p id="g-which">-</p></div>
+  </div>
+  <div class="scroll"><table id="board"><thead><tr><th>world</th><th>generator</th>
+    <th>outcome</th><th>committed at</th></tr></thead><tbody></tbody></table></div>
+  <p class="note">The only successful swat is a control we built to be impossible: an
+  approach whose apparent size grows the wrong way round, decelerating instead of
+  accelerating. It looks like something coming at you and does not move like it. The fly
+  does not fall for the ones that are real, and it dies in the one that is not.</p>
+</section>
+
 <section class="wrap reveal">
-  <span class="label">01 / the problem</span>
+  <span class="label">02 / the problem</span>
   <h2>A world model ships an update.<br>Does your agent still behave?</h2>
   <div class="grid g3" style="margin-top:38px">
     <div class="card"><span class="n">01</span><h3>The video looks better</h3>
@@ -172,7 +196,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal">
-  <span class="label">02 / the probe</span>
+  <span class="label">03 / the probe</span>
   <div class="grid g2" style="align-items:center;gap:40px">
     <div>
       <h2>Borrow a reflex with 400 million years of QA.</h2>
@@ -197,7 +221,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal" id="demo">
-  <span class="label">03 / the instrument</span>
+  <span class="label">04 / the instrument</span>
   <h2>Fly it. Watch the eye. Watch it commit.</h2>
   <p>Left is the world. Middle is what the eye receives, 223 facets with Gaussian acceptance.
   Right is the escape command charging toward threshold.</p>
@@ -206,6 +230,8 @@ footer a{color:var(--accent);text-decoration:none}
     <div class="panel">
       <div class="panel-h"><span class="label">world</span><span class="chip" id="src">-</span></div>
       <video id="vid" playsinline muted loop autoplay></video>
+      <audio id="aud" loop></audio>
+      <button class="btn" id="sound" style="margin-top:10px;width:100%">[ Sound on ]</button>
       <div class="readout">
         <div><span>generator</span><b id="m-model">-</b></div>
         <div><span>frames</span><b id="m-frames">-</b></div>
@@ -237,7 +263,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal" id="results">
-  <span class="label">04 / results</span>
+  <span class="label">05 / results</span>
   <h2>What the second channel buys.</h2>
   <p>Measured only on clips whose geometry is known in closed form, so there is a right answer
   to check against. Both detectors are held to the same settling window. The first time we
@@ -259,7 +285,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal">
-  <span class="label">05 / the stack</span>
+  <span class="label">06 / the stack</span>
   <h2>What we used, and for what.</h2>
   <div class="stack">
     <div><span>Nano Banana 2.1</span><span>Google AI Studio. Seed plate: one obstacle, dead ahead.</span></div>
@@ -274,7 +300,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal">
-  <span class="label">06 / honest limits</span>
+  <span class="label">07 / honest limits</span>
   <div class="warn">
     <h3>Read this before believing any number above</h3>
     <p>This measures geometric consistency of apparent motion. It does not measure gravity,
@@ -297,8 +323,32 @@ const $ = s => document.querySelector(s);
 let R=null, clip=null, raf=0;
 const fmt = (v,s) => (v===null||v===undefined) ? 'unknown' : v+(s||'');
 
+let soundOn=false;
+$('#sound').onclick=()=>{
+  soundOn=!soundOn;
+  const a=$('#aud');
+  $('#sound').textContent = soundOn ? '[ Sound off ]' : '[ Sound on ]';
+  soundOn ? a.play().catch(()=>{}) : a.pause();
+};
+
 fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
   R=d;
+  // The scoreboard. A swat lands when the circuit never commits.
+  const dodged=d.clips.filter(c=>c.detectors.fly.fired);
+  const swatted=d.clips.filter(c=>!c.detectors.fly.fired);
+  $('#g-n').textContent=d.clips.length;
+  $('#g-d').textContent=dodged.length;
+  $('#g-s').textContent=swatted.length;
+  $('#g-which').textContent = swatted.length
+    ? swatted.map(c=>c.note||c.id).join(', ')+'. Physics broken on purpose.'
+    : 'nobody has landed one yet.';
+  $('#board tbody').innerHTML=d.clips.map(c=>{
+    const f=c.detectors.fly;
+    return `<tr class="${f.fired?'':'best'}"><td>${c.note||c.label}</td><td>${c.model}</td>`+
+      `<td class="v" style="color:${f.fired?'var(--muted)':'var(--alarm)'}">`+
+      `${f.fired?'escaped':'SWATTED'}</td>`+
+      `<td class="v">${f.fired?('frame '+f.fire_frame):'never'}</td></tr>`;
+  }).join('');
   $('#s-th').textContent = d.summary.threshold_mean_deg+' ± '+d.summary.threshold_sd_deg+'°';
   $('#s-n').textContent = d.summary.n_clips;
   $('#m-facets').textContent = d.retina.n_facets+' facets';
@@ -339,6 +389,11 @@ function select(c){
   clip=c;
   const v=$('#vid');
   if(c.video_url){ v.src='artifacts/'+c.video_url; v.load(); v.play().catch(()=>{}); }
+  // The membrane potential, rendered as audio. Electrophysiologists listen to cells for a
+  // reason: you hear the rate climb before you would see it move on a trace.
+  const au=$('#aud');
+  au.src='artifacts/audio/'+c.id+'.wav';
+  au.volume=0.65; if(soundOn) au.play().catch(()=>{});
   $('#src').textContent=c.source;
   $('#m-model').textContent=c.model;
   $('#m-frames').textContent=c.n_frames+' @ '+Math.round(c.fps)+'fps';
