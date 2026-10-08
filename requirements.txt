@@ -1,5 +1,15 @@
+# Python 3.10+ required: reactor-sdk publishes no wheels for 3.9 and older, and a failure
+# there aborts the whole install, so numpy silently does not land either.
+#
+# On a Mac whose `python3` is Apple's 3.9, the quickest route is uv, which fetches its own
+# interpreter and leaves the system one alone:
+#     curl -LsSf https://astral.sh/uv/install.sh | sh
+#     uv venv --python 3.12 && source .venv/bin/activate
+#     uv pip install -r requirements.txt
 numpy>=2.0
 imageio>=2.34
 imageio-ffmpeg>=0.4
-# live Reactor session (scripts/fly_reactor.py). not needed for the offline pipeline.
-reactor-sdk
+
+# Live Reactor session only (scripts/fly_reactor.py). Everything offline runs without it,
+# so if this one is the only thing that fails you can still run the full synthetic pipeline.
+reactor-sdk; python_version >= "3.10"
