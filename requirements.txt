@@ -1,0 +1,5 @@
+numpy>=2.0
+imageio>=2.34
+imageio-ffmpeg>=0.4
+# live Reactor session (scripts/fly_reactor.py). not needed for the offline pipeline.
+reactor-sdk
