@@ -19,9 +19,8 @@ Azra Bano, ab2895@scarletmail.rutgers.edu
 
 Recommended:
 
-> **A game where you try to swat a fly inside an AI-generated world, except the fly's dodge
-> is a real escape circuit, so landing a hit means you found a world whose physics is
-> broken.**
+> **We put a real fruit fly's escape reflex inside AI-generated worlds. Play as the fly in
+> A24's Backrooms, and the one room you cannot survive is the one whose physics we faked.**
 
 Alternatives:
 

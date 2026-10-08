@@ -511,7 +511,6 @@ function howto(){
 
 function doors(){
   hide();$('#room').classList.remove('on');L.textContent='';
-  fade(AU.dread,0,800);
   const pool=Object.keys(ROOMS).filter(id=>id!=='broken-reversed'&&!visited.includes(id)&&CL[id]);
   const pick=[];
   for(let k=0;pick.length<Math.min(3,pool.length)&&k<300;k++){
@@ -564,7 +563,6 @@ function tick(){
     // twelve to eighteen seconds of a room doing nothing. this is the level.
     if(el>5.5+((depth*1.3)%3)){
       setPhase('approach');L.textContent='';
-      fade(AU.dread,.46,3000);
       v.currentTime=0;v.play().catch(()=>{});
       // hand the screen from the still to the clip once it is really running
       setTimeout(()=>{if(v.currentTime>0)$('#still').style.display='none';},260);
@@ -623,7 +621,7 @@ function decide(){
   let done=false;
   const t0=performance.now(),WINDOW=6000,x0=(HAND.x==null?.5:HAND.x);
   const finish=escaped=>{
-    if(done)return;done=true;clearDecision();fade(AU.dread,0,700);
+    if(done)return;done=true;clearDecision();
     aftermath(escaped);
   };
 
@@ -654,7 +652,10 @@ function decide(){
 }
 
 function aftermath(dodged){
-  survived++;$('#h-ver').textContent=survived;
+  // Only an override verifies a room. Dodging keeps you alive and teaches you nothing,
+  // which is the whole trade the game is about, so it must not score.
+  if(!dodged)survived++;
+  $('#h-ver').textContent=survived;
   const f=clip.detectors.fly,[lv,nm]=ROOMS[visited[visited.length-1]];
   setPhase('idle');
   sheet(`<h1 style="color:${dodged?'var(--text)':'var(--pass)'}">${dodged?'You dodged.':'You held.'}</h1>
@@ -734,7 +735,7 @@ function corrupted(){
 }
 
 function ending(){
-  setPhase('idle');$('#v').pause();clearDecision();fade(AU.dread,0,900);
+  setPhase('idle');$('#v').pause();clearDecision();
   sheet(`<h1 style="color:var(--fail)">The reflex never fired.</h1>
     <h2>It had nothing to fire about.</h2>
     <p>The thing that killed you was approaching, and it was <i>decelerating as it arrived</i>.
@@ -812,7 +813,6 @@ addEventListener('keydown',e=>{
     e.preventDefault();
     $('#room').classList.remove('on');
     setPhase('approach');L.textContent='';
-    fade(AU.dread,.46,1800);
     const v=$('#v');v.currentTime=0;v.play().catch(()=>{});
     setTimeout(()=>{if(v.currentTime>0)$('#still').style.display='none';},260);
   }
