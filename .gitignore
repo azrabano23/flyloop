@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.local
+
+node_modules/
+.next/
+out/
+.vercel
+
+# generated clips and figures; artifacts/results.json is committed on purpose
+artifacts/**/*.mp4
+artifacts/**/*.npy
+artifacts/**/*.png
+!artifacts/.gitkeep
+
+.DS_Store
+.ipynb_checkpoints/
