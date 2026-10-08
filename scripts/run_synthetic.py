@@ -29,6 +29,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from flyloop.baseline import AnalyticBaseline  # noqa: E402
+from flyloop.gf import GiantFiberProbe  # noqa: E402
 from flyloop.probe import EMDProbe  # noqa: E402
 from flyloop.retina import Retina  # noqa: E402
 from flyloop.score import score_clip, summarise  # noqa: E402
@@ -109,18 +110,26 @@ def main() -> int:
         gains[key] = p.calibrate(cal.frames, cal.fps, cal.theta_deg)
         probes[key] = p
         print(f"calibrated '{key}' on {CAL_SPEED_MPS} m/s approach -> gain {gains[key]:.4g}")
-    probe = probes["invariant"]
+
+    # The primary detector: two channels, as the animal has them.
+    probe = GiantFiberProbe(retina)
+    gains["giant_fibre_threshold_mv"] = probe.calibrate(cal.frames, cal.fps, cal.theta_deg)
+    print(f"calibrated 'giant fibre' -> threshold {gains['giant_fibre_threshold_mv']:.4g} mV")
     print(f"retina: {retina.n_facets} facets\n")
 
     clips_json = []
     for clip_id, label, clip in build_clips():
-        fly = probe.run(clip.frames, clip.fps, fov_deg=clip.meta["fov_deg"])
-        sens = probes["sensitive"].run(clip.frames, clip.fps, fov_deg=clip.meta["fov_deg"])
+        fov = clip.meta["fov_deg"]
+        fly = probe.run(clip.frames, clip.fps, fov_deg=fov)
         base = baseline.run(clip.frames, clip.fps)
         scores = score_clip(fly, base, clip.fps, clip.theta_deg, clip.t_contact_s)
-        scores["sensitive"] = score_clip(
-            sens, base, clip.fps, clip.theta_deg, clip.t_contact_s
-        )
+
+        # The two single-channel configurations are kept alongside, because the headline
+        # claim is that two channels beat either one and that only means something if all
+        # three are measured on the same clips.
+        for key, p in probes.items():
+            d = p.run(clip.frames, clip.fps, fov_deg=fov)
+            scores[key] = score_clip(d, base, clip.fps, clip.theta_deg, clip.t_contact_s)
 
         rel = f"clips/{clip_id}.mp4"
         has_video = (not args.no_video) and write_video(
@@ -186,7 +195,7 @@ def main() -> int:
     # trig baseline does it commit on the broken controls (higher means it is catching
     # something the baseline cannot see). The two pull against each other.
     def _tradeoff(key: str) -> dict:
-        get = (lambda c: c["scores"]) if key == "invariant" else (lambda c: c["scores"]["sensitive"])
+        get = (lambda c: c["scores"]) if key == "giant fibre" else (lambda c, k=key: c["scores"][k])
         th = [
             get(c)["theta_threshold_deg"]
             for c in clips_json
@@ -198,12 +207,13 @@ def main() -> int:
             if c["physical"] is False and get(c)["fly_lead_frames"] is not None
         ]
         return {
-            "config": PROBE_CONFIGS[key],
+            "channels": 2 if key == "giant fibre" else 1,
+            "config": PROBE_CONFIGS.get(key, {"model": "LC4 rate + LPLC2 size, published weights"}),
             "threshold_sd_deg": round(float(np.std(th, ddof=1)), 2) if len(th) > 1 else None,
             "mean_abs_lead_on_broken_frames": round(float(np.mean(leads)), 2) if leads else None,
         }
 
-    tradeoff = {k: _tradeoff(k) for k in PROBE_CONFIGS}
+    tradeoff = {k: _tradeoff(k) for k in (*PROBE_CONFIGS, "giant fibre")}
 
     results = {
         "version": "0.1",
@@ -240,7 +250,7 @@ def main() -> int:
     print(f"  {'config':<12s} {'threshold sd':>13s}  {'lead on broken clips':>21s}")
     for key, t in tradeoff.items():
         print(
-            f"  {key:<12s} {str(t['threshold_sd_deg']) + ' deg':>13s}  "
+            f"  {key:<14s} {str(t['threshold_sd_deg']) + ' deg':>13s}  "
             f"{str(t['mean_abs_lead_on_broken_frames']) + ' frames':>21s}"
         )
     print(f"\nwrote {args.out / 'results.json'}")
