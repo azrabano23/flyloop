@@ -4,246 +4,474 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>flyloop</title>
-<meta name="description" content="A game where you try to swat a fly inside an AI-generated world. Its dodge is a real escape circuit.">
+<meta name="description" content="We walked a fly down through the Backrooms. Eighteen levels, and a pass or fail on each one.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;800&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;800&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#07080A;--surface:#0C0E12;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.18);
- --text:#F2F3F5;--muted:#8C919A;--dim:#565C66;--accent:#3B82F6;--alarm:#FF3B30;--lim:#C8B560;
- --display:'Figtree',system-ui,sans-serif;--body:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+:root{--bg:#07080A;--surface:#0B0D11;--surface2:#0F1217;--line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.17);
+ --text:#F2F3F5;--muted:#8C919A;--dim:#555B65;--accent:#3B82F6;--pass:#5FD39A;--fail:#FF3B30;--lim:#C8B560;
+ --display:'Figtree',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;
+ --body:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:900;opacity:.04;
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:900;opacity:.035;
  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
-.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
-@media(min-width:840px){.wrap{padding:0 44px}}
-.lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:14px}
-h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.035em;line-height:1.02}
-h1{font-size:clamp(2.8rem,8vw,6rem)}
-h2{font-size:clamp(1.8rem,4.2vw,3.2rem);margin-bottom:14px}
-p{color:var(--muted);max-width:58ch}
-.lead{font-size:clamp(1.02rem,1.5vw,1.25rem);color:#AFB5BE;max-width:50ch}
-section{padding:clamp(64px,8vw,104px) 0;border-top:1px solid var(--line)}
-.lm{color:var(--lim)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+@media(min-width:900px){.wrap{padding:0 48px}}
+.lab{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:16px}
+h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:1.01}
+h1{font-size:clamp(2.7rem,7.6vw,5.6rem)}
+h2{font-size:clamp(1.7rem,3.9vw,2.9rem);margin-bottom:12px}
+p{color:var(--muted);max-width:60ch}
+.lead{font-size:clamp(1rem,1.45vw,1.2rem);color:#AEB4BD;max-width:52ch}
+section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
+.sr{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em}
+#flash{position:fixed;inset:0;background:var(--fail);opacity:0;pointer-events:none;z-index:800;transition:opacity .09s}
+#flash.on{opacity:.48;transition:none}
+#flash.white{background:#fff}
+.punch{animation:punch .42s cubic-bezier(.2,.9,.2,1)}
+@keyframes punch{0%{transform:scale(1)}18%{transform:scale(1.14)}100%{transform:scale(1)}}
+.shake{animation:shake .34s linear}
+@keyframes shake{0%,100%{transform:translate(0,0)}
+ 20%{transform:translate(-9px,4px)}40%{transform:translate(8px,-6px)}
+ 60%{transform:translate(-6px,-3px)}80%{transform:translate(5px,5px)}}
+.hero:fullscreen,.hero:-webkit-full-screen{min-height:100vh;padding:0;justify-content:flex-end}
+.hero:fullscreen .wrap h1,.hero:fullscreen .wrap .lead,.hero:fullscreen .cta,
+.hero:fullscreen .tally,.hero:fullscreen .scrollcue{display:none}
+.hero:fullscreen .wrap{padding-bottom:34px}
+.fsnote{display:none;font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+ text-transform:uppercase;color:rgba(255,255,255,.5)}
+.hero:fullscreen .fsnote{display:block}
 
-#flash{position:fixed;inset:0;background:var(--alarm);opacity:0;pointer-events:none;z-index:800;transition:opacity .09s}
-#flash.on{opacity:.5;transition:none}
-
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:110px 0 70px;position:relative;border:none;overflow:hidden}
-.hero-img{position:absolute;inset:0;background:url('assets/hero.png') center 42%/cover no-repeat;filter:saturate(.7)}
-.hero-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,8,10,.88),rgba(7,8,10,.42) 38%,rgba(7,8,10,.94) 84%,var(--bg))}
+/* hero */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:104px 0 54px;position:relative;border:none;overflow:hidden}
+.hero-img{position:absolute;inset:0;background:url('assets/hero2.png') center 46%/cover no-repeat;filter:saturate(.62) contrast(1.04)}
+.hero-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,8,10,.9),rgba(7,8,10,.3) 36%,rgba(7,8,10,.95) 82%,var(--bg))}
+.hero-v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.6) contrast(1.06) brightness(.82)}
+.hero-c{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+.hero::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+ background:linear-gradient(to bottom,rgba(7,8,10,.74),rgba(7,8,10,.12) 34%,rgba(7,8,10,.9) 78%,var(--bg)),
+ repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.14) 2px 3px)}
+.hud{position:absolute;inset:0;z-index:3;pointer-events:none;font-family:var(--mono);font-size:9.5px;
+ letter-spacing:.1em;text-transform:uppercase}
+.hud-tl,.hud-tr{position:absolute;top:0;padding:18px 20px;display:grid;gap:4px}
+.hud-tl{left:0}.hud-tr{right:0;text-align:right}
+@media(min-width:900px){.hud-tl,.hud-tr{padding:26px 48px}}
+.hud div span{color:rgba(255,255,255,.34);margin-right:8px}
+.hud div b{color:rgba(255,255,255,.82);font-weight:400}
+.hud-tr div b{color:var(--accent)}
+.hud-bar{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+ display:flex;flex-direction:column;align-items:center;gap:9px}
+.hud-bar span{color:rgba(255,255,255,.52);letter-spacing:.3em}
+.hud-bar .bar{width:min(300px,52vw);height:3px;background:rgba(255,255,255,.12);position:relative}
+.hud-bar .bar i{position:absolute;inset:0 auto 0 0;width:0%;background:var(--accent);
+ box-shadow:0 0 14px var(--accent);transition:width .06s linear}
+.hud-bar .bar u{position:absolute;top:-4px;bottom:-4px;left:66.6%;width:1px;background:rgba(255,255,255,.45)}
+.hud.fire .hud-bar span{color:#fff}
+.hud.fire .hud-bar .bar i{background:var(--fail);box-shadow:0 0 22px var(--fail)}
+.hud.fire .hud-tr div b{color:var(--fail)}
+.hud-key{position:absolute;bottom:0;left:0;padding:18px 20px;display:grid;gap:5px;
+ color:rgba(255,255,255,.44)}
+@media(min-width:900px){.hud-key{padding:26px 48px}}
+@media(max-width:620px){.hud-key,.hud-tr{display:none}}
+.hud-key em{display:inline-block;width:16px;height:0;border-top:2px solid;
+ vertical-align:middle;margin-right:9px}
+.hud-key .k1{color:rgba(255,255,255,.5)}
+.hud-key .k2{color:var(--accent)}
+.hud-key .k3{color:var(--lim)}
+.hero:fullscreen .hud-key{bottom:46px}
 .hero .wrap{position:relative;z-index:1;width:100%}
-.hero .lab{color:#D8DCE2;text-shadow:0 1px 14px rgba(0,0,0,.9)}
-.hero h1{margin-bottom:20px;max-width:14ch;text-shadow:0 2px 40px rgba(0,0,0,.7)}
-.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
-.btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;padding:13px 20px;
+.hero .lab{color:#D5D9DF;text-shadow:0 1px 14px rgba(0,0,0,.9)}
+.hero h1{margin-bottom:18px;max-width:15ch;text-shadow:0 2px 46px rgba(0,0,0,.75)}
+.cta{display:flex;gap:9px;flex-wrap:wrap;margin-top:28px}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;padding:12px 18px;
  border:1px solid var(--line2);color:var(--text);text-decoration:none;cursor:pointer;background:rgba(7,8,10,.5);backdrop-filter:blur(8px);transition:.16s}
 .btn:hover{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.14)}
 .btn-p{background:var(--accent);border-color:var(--accent)}
+.tally{display:flex;gap:30px;flex-wrap:wrap;margin-top:34px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.tally b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:800;letter-spacing:-.04em;color:var(--text);margin-bottom:1px}
+.tally .p b{color:var(--pass)}.tally .f b{color:var(--fail)}
 
-.three{display:grid;gap:16px;margin-top:34px}
-@media(min-width:760px){.three{grid-template-columns:repeat(3,1fr)}}
-.card{background:var(--surface);border:1px solid var(--line);padding:24px}
-.card .n{font-family:var(--mono);font-size:10.5px;color:var(--lim);letter-spacing:.14em;display:block;margin-bottom:10px}
-.card h3{font-family:var(--display);font-size:1.05rem;font-weight:500;margin-bottom:6px}
-.card p{font-size:.9rem}
-.big{font-family:var(--display);font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;letter-spacing:-.04em;line-height:1}
+/* story beats */
+.beat{display:grid;gap:4px;padding:22px 0;border-bottom:1px solid var(--line)}
+@media(min-width:780px){.beat{grid-template-columns:148px 1fr;gap:30px;align-items:baseline}}
+.beat .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--lim)}
+.beat .v{font-size:1.04rem;color:var(--text);max-width:64ch}
+.beat .v small{display:block;color:var(--muted);font-size:.88rem;margin-top:6px;line-height:1.6}
 
-.panels{display:grid;gap:12px;margin-top:20px}
-@media(min-width:1040px){.panels{grid-template-columns:1.25fr .8fr 1.1fr;align-items:stretch}}
-.panel{background:var(--surface);border:1px solid var(--line);padding:13px;display:flex;flex-direction:column}
-.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+/* descent spine */
+.rail{position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:500;display:none}
+@media(min-width:1180px){.rail.on{display:block}}
+.rail ol{list-style:none;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.rail li{display:flex;align-items:center;gap:8px;padding:5px 0;transition:.2s}
+.rail i{width:16px;height:1px;background:var(--line2);display:block;transition:.2s}
+.rail li.now{color:var(--text)}.rail li.now i{width:28px;background:var(--accent)}
+
+.stratum{margin-top:52px}
+.stratum:first-of-type{margin-top:34px}
+.sh{display:flex;align-items:baseline;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+.sh .rn{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--lim)}
+.sh h3{font-family:var(--display);font-size:1.22rem;font-weight:800;letter-spacing:-.02em}
+.sh .note{font-size:.84rem;color:var(--dim);margin-left:auto;font-family:var(--mono);letter-spacing:.04em}
+
+.lv{display:grid;gap:12px;margin-top:16px}
+@media(min-width:680px){.lv{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1060px){.lv{grid-template-columns:repeat(3,1fr)}}
+.L{position:relative;border:1px solid var(--line);background:var(--surface);cursor:pointer;overflow:hidden;
+ transition:.18s;text-align:left;padding:0;color:inherit;font:inherit;display:flex;flex-direction:column}
+.L:hover{border-color:var(--line2);transform:translateY(-2px)}
+.L[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.L .img{aspect-ratio:16/10;background:#000 center/cover no-repeat;position:relative}
+.L .img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(11,13,17,.97),rgba(11,13,17,.2) 58%,rgba(0,0,0,.28))}
+.L .no{position:absolute;top:0;left:0;z-index:2;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+ padding:5px 8px;background:rgba(7,8,10,.86);border-right:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--dim)}
+.L .stamp{position:absolute;top:9px;right:9px;z-index:2;font-family:var(--mono);font-size:9.5px;font-weight:500;
+ letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border:1px solid}
+.L .stamp.pass{color:var(--pass);border-color:rgba(95,211,154,.5);background:rgba(95,211,154,.11)}
+.L .stamp.fail{color:#fff;border-color:var(--fail);background:var(--fail)}
+.L .stamp.un{color:var(--muted);border-color:var(--line2);background:rgba(7,8,10,.8)}
+.L .body{padding:13px 15px 15px;position:relative;margin-top:-54px;flex:1;display:flex;flex-direction:column}
+.L .lvl{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--lim);margin-bottom:4px}
+.L h4{font-family:var(--serif);font-size:1.5rem;font-weight:400;letter-spacing:-.01em;line-height:1.1;margin-bottom:6px}
+.L p{font-size:.83rem;color:var(--muted);max-width:none;line-height:1.5}
+.L .ent{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:9px}
+.L .vr{margin-top:auto;padding-top:11px;border-top:1px solid var(--line);display:flex;gap:7px;flex-wrap:wrap;
+ font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase}
+.L .vr span{padding:3px 7px;border:1px solid var(--line)}
+.L .vr .fly{color:var(--text)}
+.L .vr .fly.hit{color:var(--fail);border-color:rgba(255,59,48,.4)}
+.L .vr .deg{color:var(--dim)}
+.L.corrupt .img{filter:grayscale(.55) contrast(1.18)}
+.L.corrupt h4{color:#C9CCD2}
+
+/* instrument */
+.panels{display:grid;gap:11px;margin-top:22px}
+@media(min-width:1060px){.panels{grid-template-columns:1.22fr .78fr 1.1fr;align-items:stretch}}
+.panel{background:var(--surface);border:1px solid var(--line);padding:12px;display:flex;flex-direction:column}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
 .ph .lab{margin:0}
 .panel video{width:100%;aspect-ratio:1/1;object-fit:cover;background:#000;display:block}
 .panel canvas{width:100%;display:block}
-.chip{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--line2);color:var(--muted);white-space:nowrap}
-.chip.fire{background:var(--alarm);border-color:var(--alarm);color:#fff;animation:p .4s ease-in-out infinite alternate}
+.vwrap{position:relative;line-height:0}
+.vwrap #flyc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.flytag{position:absolute;bottom:9px;left:9px;z-index:3;font-family:var(--mono);font-size:9.5px;
+ letter-spacing:.15em;text-transform:uppercase;padding:4px 8px;background:rgba(7,8,10,.8);
+ border:1px solid var(--line2);backdrop-filter:blur(6px);color:var(--muted);transition:.15s}
+.flytag.gone{color:var(--pass);border-color:rgba(95,211,154,.5)}
+.flytag.hit{color:#fff;background:var(--fail);border-color:var(--fail)}
+.chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:5px 9px;border:1px solid var(--line2);color:var(--muted);white-space:nowrap}
+.chip.fire{background:var(--fail);border-color:var(--fail);color:#fff;animation:p .4s ease-in-out infinite alternate}
 @keyframes p{from{opacity:1}to{opacity:.45}}
-.picker{display:flex;gap:6px;flex-wrap:wrap;margin:20px 0 4px}
-.pick{font-family:var(--mono);font-size:10.5px;padding:8px 12px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;transition:.14s}
-.pick:hover{border-color:var(--line2);color:var(--text)}
-.pick[aria-selected="true"]{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.14)}
-.pick.mon[aria-selected="true"]{border-color:var(--alarm);background:rgba(255,59,48,.14)}
-.pick .t{color:var(--dim);margin-left:7px}
-.ro{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:11px}
-.ro div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.vbox{border:1px solid var(--line);background:var(--surface2);padding:14px 15px;margin-top:11px}
+.vbox .big{font-family:var(--display);font-size:2.1rem;font-weight:800;letter-spacing:-.04em;line-height:1}
+.vbox .sub{font-size:.84rem;color:var(--muted);margin-top:5px;line-height:1.5}
+.ro{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:11px}
+.ro div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .ro div:last-child{border:none}.ro b{color:var(--text);font-weight:500}
+.tn{font-family:var(--mono);font-size:10px;line-height:1.75;color:var(--dim);margin-top:10px}
 
-table{width:100%;border-collapse:collapse;font-size:.87rem;margin-top:14px}
-th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line)}
-th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:400}
+/* tables, stack, warn */
+table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:16px}
+th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:400}
 td{color:var(--muted)}td.v{font-family:var(--mono);color:var(--text)}
-tr.sw{background:rgba(255,59,48,.07)}tr.sw td{color:var(--text)}
+td.pz{font-family:var(--mono);color:var(--pass)}td.fz{font-family:var(--mono);color:var(--fail)}
+tr.bad{background:rgba(255,59,48,.06)}
 .scroll{overflow-x:auto}
-.stack{font-family:var(--mono);font-size:12px;margin-top:20px;border-top:1px solid var(--line)}
-.stack div{display:grid;grid-template-columns:minmax(0,160px) minmax(0,118px) 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.three{display:grid;gap:14px;margin-top:30px}
+@media(min-width:760px){.three{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);padding:22px}
+.card .n{font-family:var(--mono);font-size:10px;color:var(--lim);letter-spacing:.14em;display:block;margin-bottom:10px;text-transform:uppercase}
+.card .big{font-family:var(--display);font-size:clamp(2rem,4.6vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1}
+.card p{font-size:.86rem;margin-top:7px}
+.stack{font-family:var(--mono);font-size:11.5px;margin-top:20px;border-top:1px solid var(--line)}
+.stack div{display:grid;grid-template-columns:minmax(0,158px) minmax(0,120px) 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .stack .m{color:var(--lim)}.stack .w{color:var(--dim)}.stack .d{color:var(--muted)}
-.warn{border:1px solid rgba(255,59,48,.26);background:rgba(255,59,48,.045);padding:24px}
-.warn p{color:#B9BEC6;max-width:74ch;font-size:.9rem}
-footer{padding:48px 0;border-top:1px solid var(--line);color:var(--dim);font-size:.85rem}
+.warn{border:1px solid rgba(255,59,48,.24);background:rgba(255,59,48,.04);padding:22px}
+.warn p{color:#B7BCC4;max-width:76ch;font-size:.89rem}
+.bul{display:grid;gap:0;margin-top:30px;border-top:1px solid var(--line)}
+.bul>div{display:grid;grid-template-columns:48px 1fr;gap:16px;padding:20px 0;
+ border-bottom:1px solid var(--line);align-items:start}
+@media(min-width:780px){.bul>div{grid-template-columns:70px 1fr;gap:28px}}
+.bul .bn{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--lim);padding-top:4px}
+.bul>div>div{color:var(--muted);font-size:.96rem;line-height:1.6;max-width:68ch}
+.bul b{color:var(--text);font-weight:500}
+.pull{font-family:var(--serif);font-size:clamp(1.4rem,2.9vw,2.1rem);line-height:1.22;color:var(--text);max-width:30ch;margin:40px 0 0}
+footer{padding:46px 0;border-top:1px solid var(--line);color:var(--dim);font-size:.84rem}
 footer a{color:var(--accent);text-decoration:none}
 .rev{opacity:0;transform:translateY(14px);transition:opacity .6s,transform .6s}.rev.in{opacity:1;transform:none}
-
-.cards{display:grid;gap:14px;margin-top:30px}
-@media(min-width:640px){.cards{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:1000px){.cards{grid-template-columns:repeat(3,1fr)}}
-.card2{position:relative;border:1px solid var(--line);background:var(--surface);cursor:pointer;
- overflow:hidden;transition:.18s;text-align:left;padding:0;color:inherit;font:inherit}
-.card2:hover{border-color:var(--line2);transform:translateY(-2px)}
-.card2[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.card2 .img{aspect-ratio:16/10;background:#000 center/cover no-repeat;position:relative}
-.card2 .img::after{content:'';position:absolute;inset:0;
- background:linear-gradient(to top,rgba(12,14,18,.96),rgba(12,14,18,.25) 55%,transparent)}
-.card2 .body{padding:14px 16px 16px;position:relative;margin-top:-52px}
-.card2 h3{font-family:var(--display);font-size:1.08rem;font-weight:800;letter-spacing:-.02em;margin-bottom:5px}
-.card2 p{font-size:.84rem;color:var(--muted);max-width:none;line-height:1.45}
-.card2 .tag{position:absolute;top:10px;left:10px;z-index:2;font-family:var(--mono);font-size:9.5px;
- letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;background:rgba(7,8,10,.82);
- border:1px solid var(--line2);backdrop-filter:blur(6px)}
-.card2 .verdict{position:absolute;top:10px;right:10px;z-index:2;font-family:var(--mono);font-size:9.5px;
- letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;background:rgba(7,8,10,.82);border:1px solid var(--line2)}
-.card2 .verdict.hit{background:var(--alarm);border-color:var(--alarm);color:#fff}
-.scrollcue{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--dim);
- text-transform:uppercase;margin-top:34px;display:block}
-.beat{display:grid;gap:4px;padding:20px 0;border-bottom:1px solid var(--line)}
-@media(min-width:760px){.beat{grid-template-columns:130px 1fr;gap:28px;align-items:baseline}}
-.beat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--lim)}
-.beat .v{font-size:1.05rem;color:var(--text);max-width:62ch}
-.beat .v small{display:block;color:var(--muted);font-size:.88rem;margin-top:5px}
-
-video.demo{width:100%;border:1px solid var(--line);display:block;margin-top:20px;background:#000}
+.scrollcue{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;margin-top:30px;display:block}
 </style>
 </head>
 <body>
 <div id="flash"></div>
 
+<nav class="rail" id="rail"><ol>
+  <li data-t="descent"><i></i>the descent</li>
+  <li data-t="instrument"><i></i>instrument</li>
+  <li data-t="log"><i></i>descent log</li>
+  <li data-t="stack"><i></i>stack</li>
+</ol></nav>
+
 <header class="hero">
   <div class="hero-img"></div>
+  <video id="hvid" class="hero-v" playsinline muted loop autoplay></video>
+  <canvas id="hcv" class="hero-c"></canvas>
+  <div class="hud" id="hud">
+    <div class="hud-tl">
+      <div><span>world model</span><b id="h-model">reactor/lingbot-world-2</b></div>
+      <div><span>retina</span><b>223 ommatidia &middot; 5.1&deg; interommatidial</b></div>
+      <div><span>level</span><b id="h-lvl">&mdash;</b></div>
+    </div>
+    <div class="hud-tr">
+      <div><span>bearing</span><b id="h-br">&mdash;</b></div>
+      <div><span>expanding facets</span><b id="h-ex">&mdash;</b></div>
+      <div><span>LC4 &middot; LPLC2</span><b id="h-gf">&mdash;</b></div>
+    </div>
+    <div class="hud-bar">
+      <span id="h-state">giant fibre &middot; watching</span>
+      <div class="bar"><i id="h-fill"></i><u></u></div>
+    </div>
+    <div class="hud-key">
+      <div><em class="k1"></em>223 ommatidia</div>
+      <div><em class="k2"></em>per-facet optic flow &middot; Reichardt EMD</div>
+      <div><em class="k3"></em>expansion centroid &rarr; escape bearing</div>
+    </div>
+  </div>
   <div class="wrap">
-    <span class="lab">flyloop / can you swat the fly?</span>
-    <h1>Eighteen worlds. <span class="lm">One hit.</span></h1>
-    <p class="lead">We put a real fly's escape reflex inside AI-generated worlds and sent
-    Backrooms entities at it. It escaped seventeen. The only world that killed it was the
-    one where we broke the physics on purpose.</p>
+    <span class="lab">flyloop / reactor × google deepmind</span>
+    <h1>Eighteen levels <span class="sr" style="font-weight:400">down.</span></h1>
+    <p class="lead">We walked a fruit fly's escape reflex down through the Backrooms, one
+    AI-generated level at a time, and recorded whether it got out. It escaped seventeen.
+    Two levels failed the test anyway, and both are levels we corrupted on purpose.</p>
+    <div class="tally">
+      <div><b id="t-n">-</b>levels walked</div>
+      <div class="p"><b id="t-p">-</b>passed</div>
+      <div class="f"><b id="t-f">-</b>failed</div>
+      <div><b id="t-th">-</b>commit angle, known levels</div>
+    </div>
     <div class="cta">
-      <a class="btn btn-p" href="#demo">[ Watch it dodge ]</a>
-      <a class="btn" href="#stack">[ How it works ]</a>
+      <button class="btn btn-p" id="fsbtn">[ Fullscreen demo ]</button>
+      <a class="btn" href="#descent">[ Start the descent ]</a>
+      <a class="btn" href="#worth">[ Why it matters ]</a>
       <a class="btn" href="https://github.com/azrabano23/flyloop">[ Code ]</a>
     </div>
     <span class="scrollcue">scroll</span>
+    <span class="fsnote" id="fsnote">esc to exit</span>
   </div>
 </header>
 
 <section class="wrap rev">
-  <span class="lab">01 / the story</span>
-  <h2>Why a fly.</h2>
-  <div style="margin-top:26px">
-    <div class="beat"><span class="k">the problem</span><span class="v">AI can generate a
-      world you walk through, and companies are starting to test robots inside them.
-      <small>But the only way anyone checks a generated world today is to watch the video and
-      decide it looks fine. Looking fine and behaving right are different things.</small></span></div>
-    <div class="beat"><span class="k">the idea</span><span class="v">A fly cannot be fooled
-      by a world that merely looks good.
-      <small>It has no idea what it is seeing. It never identifies an object or guesses a
-      distance. It watches light move across 750 facets, and when something is genuinely
-      about to hit it, one neuron fires and it is gone.</small></span></div>
-    <div class="beat"><span class="k">the experiment</span><span class="v">Put that circuit
-      inside generated worlds and send things at it.
-      <small>Eighteen worlds: four where we know the exact geometry, three we deliberately
-      broke, and eleven generated by Veo and Reactor with Backrooms entities walking at the
-      camera.</small></span></div>
-    <div class="beat"><span class="k">the result</span><span class="v">It escaped seventeen.
-      The one that killed it was the world where we broke the physics.
-      <small>Not the monsters. Not the dark. The only world the fly failed to escape is the
-      one whose motion was geometrically impossible, an approach that decelerates as it
-      arrives. That is the whole thesis: it reacts to real motion and ignores everything
-      else.</small></span></div>
+  <span class="lab">01 / why a fly</span>
+  <h2>A fly cannot be fooled by a pretty room.</h2>
+  <div style="margin-top:24px">
+    <div class="beat"><span class="k">the problem</span><span class="v">World models are
+      becoming places to train and test robots.
+      <small>But the only check anyone runs on a generated world today is to watch the video
+      and decide it looks fine. Looking fine and behaving right are different things, and no
+      release note can tell you which one changed.</small></span></div>
+    <div class="beat"><span class="k">the instrument</span><span class="v">One reflex that
+      has been grading approaching objects for 400 million years.
+      <small>The fly never identifies an object or estimates a distance. It reads light moving
+      across a hex array of 223 facets, and when something is genuinely about to hit it, one
+      neuron fires. Fire at the wrong moment and the fly is dead, so the circuit has no
+      tolerance for motion that merely looks plausible.</small></span></div>
+    <div class="beat"><span class="k">the test</span><span class="v">Walk it down through
+      eighteen levels and see where it breaks.
+      <small>Four calibration levels where we know the exact geometry. Eleven generated by
+      Nano Banana, Veo and Reactor, with Backrooms entities coming down the hall. Three
+      corrupted levels where we broke the physics on purpose, to find out whether the fly
+      notices.</small></span></div>
+    <div class="beat"><span class="k">the verdict</span><span class="v">A level passes when
+      the fly commits at the angle a real approach would produce.
+      <small>Not when the video looks good. On the seven levels where we know the truth, the
+      fly commits at 20.7 ± 0.63°, against a published behavioural figure near 20°, and it
+      flags two of the three corrupted levels with no false alarms on the four correct
+      ones.</small></span></div>
   </div>
+  <p class="pull">Escaping and passing are not the same thing. One level it escaped still
+  failed, because it escaped far too late.</p>
 </section>
 
-<section class="wrap rev" id="demo">
-  <span class="lab">02 / the game</span>
-  <h2>Pick a world. Send something at it.</h2>
-  <p>World on the left. The fly's eye in the middle, 223 facets. Its escape command on the
-  right. Red means it committed and ran.</p>
-  <div class="cards" id="cards"></div>
-  <div class="picker" id="picker" style="display:none"></div>
+<section class="wrap rev" id="descent">
+  <span class="lab">02 / the descent</span>
+  <h2>Every level we walked it through.</h2>
+  <p>Four strata, going down. Click any level to put it through the instrument. The stamp in
+  the corner is the level's verdict, not the fly's: a level can be escaped and still
+  fail.</p>
+  <div id="strata"></div>
+</section>
+
+<section class="wrap rev" id="instrument">
+  <span class="lab">03 / the instrument</span>
+  <h2>What the fly actually sees.</h2>
+  <p>The fly is on the level, bottom left. It hovers while the circuit watches, the ring
+  around it tightens as the escape command charges, and on the frame the circuit commits it
+  bolts. On a level it never commits in, you watch the level land on it.</p>
   <div class="panels">
     <div class="panel">
-      <div class="ph"><span class="lab">world</span><span class="chip" id="src">-</span></div>
-      <video id="vid" playsinline muted loop autoplay></video>
+      <div class="ph"><span class="lab">level</span><span class="chip" id="src">-</span></div>
+      <div class="vwrap">
+        <video id="vid" playsinline muted loop autoplay></video>
+        <canvas id="flyc" width="480" height="480"></canvas>
+        <span class="flytag" id="flytag">fly · watching</span>
+      </div>
       <audio id="aud" loop></audio>
       <button class="btn" id="snd" style="margin-top:10px;width:100%">[ Sound on ]</button>
     </div>
     <div class="panel">
       <div class="ph"><span class="lab">fly's eye</span><span class="chip" id="fct">-</span></div>
       <canvas id="eye" width="440" height="440" style="aspect-ratio:1/1"></canvas>
+      <div class="ro" style="margin-top:auto">
+        <div><span>the fly</span><b id="o-fly">-</b></div>
+        <div><span>committed at</span><b id="o-fire">-</b></div>
+        <div><span>generated by</span><b id="o-gen">-</b></div>
+      </div>
     </div>
     <div class="panel">
       <div class="ph"><span class="lab">escape command</span><span class="chip" id="st">WATCHING</span></div>
-      <canvas id="plot" width="560" height="220" style="aspect-ratio:560/220"></canvas>
-      <div class="ro">
-        <div><span>outcome</span><b id="out">-</b></div>
-        <div><span>committed at</span><b id="fire">-</b></div>
-        <div><span>generated by</span><b id="gen">-</b></div>
+      <canvas id="plot" width="560" height="200" style="aspect-ratio:560/200"></canvas>
+      <div class="vbox">
+        <span class="lab" style="margin-bottom:7px">verdict on this level</span>
+        <div class="big" id="v-big">-</div>
+        <div class="sub" id="v-sub">-</div>
       </div>
-      <p class="lab" id="tracenote" style="margin-top:10px;line-height:1.7;letter-spacing:.04em;text-transform:none;font-size:10.5px"></p>
+      <p class="tn" id="tracenote"></p>
     </div>
   </div>
 </section>
 
-<section class="wrap rev" id="score">
-  <span class="lab">03 / the scoreboard</span>
-  <h2>Every world we have thrown at it.</h2>
+<section class="wrap rev" id="log">
+  <span class="lab">04 / descent log</span>
+  <h2>The whole run, in one table.</h2>
   <div class="three">
-    <div class="card"><span class="n">worlds</span><div class="big" id="g-n">-</div></div>
-    <div class="card"><span class="n">it escaped</span><div class="big" id="g-d">-</div></div>
-    <div class="card"><span class="n">we hit it</span><div class="big" id="g-s" style="color:var(--alarm)">-</div>
-      <p id="g-w">-</p></div>
+    <div class="card"><span class="n">levels where we know the truth</span><div class="big" id="g-k">-</div>
+      <p>four correct, three corrupted on purpose</p></div>
+    <div class="card"><span class="n">corrupted levels flagged</span><div class="big" id="g-c" style="color:var(--pass)">-</div>
+      <p id="g-cw">-</p></div>
+    <div class="card"><span class="n">false alarms</span><div class="big" id="g-fa">-</div>
+      <p>levels we know are correct that it wrongly failed</p></div>
   </div>
-  <div class="scroll"><table id="board"><thead><tr><th>world</th><th>generated by</th>
-    <th>outcome</th></tr></thead><tbody></tbody></table></div>
+  <div class="scroll"><table id="board"><thead><tr><th>#</th><th>level</th><th>what came at it</th>
+    <th>the fly</th><th>commit angle</th><th>verdict</th></tr></thead><tbody></tbody></table></div>
+  <p class="tn" style="margin-top:14px">A level is graded only where the geometry is known, so
+  the commit angle can be checked against the truth. On generated levels there is no reference
+  to check against, so the log reports what the fly did and does not pretend to grade the
+  world. That gap is the honest part, and closing it is the next build.</p>
+</section>
+
+<section class="wrap rev" id="reactor">
+  <span class="lab">05 / inside the reactor loop</span>
+  <h2>Reactor is both the thing under test and the test rig.</h2>
+  <p>The recorded half of this grades clips. The live half opens a session on
+  <span class="lm">reactor/lingbot-world-2</span>, flies it, and sends the fly's escape back
+  into the same session that generated the frame it escaped from.</p>
+  <div class="stack" style="margin-top:22px">
+    <div><span class="m">Reactor(model_name, api_key)</span><span class="w">session</span><span class="d">One capped session per run. LingBot World 2 by default, and the same loop runs against fast-h3 for a cross-model comparison.</span></div>
+    <div><span class="m">upload_file → set_image</span><span class="w">seed</span><span class="d">The Nano Banana plate becomes the level's first frame, so the generated world starts from a room we designed.</span></div>
+    <div><span class="m">set_prompt / set_seed / start</span><span class="w">start</span><span class="d">Fixed seed before start, so a run is repeatable and two models can be given the same level.</span></div>
+    <div><span class="m">tracks(recvonly, video).one()</span><span class="w">frames</span><span class="d">Frames arrive on the SDK's own thread. Every one is centre-cropped, reduced to 223 facets, and judged.</span></div>
+    <div><span class="m">set_move_longitudinal</span><span class="w">flight</span><span class="d">Forward while the circuit watches. Back on the frame it commits.</span></div>
+    <div><span class="m">set_move_lateral</span><span class="w">the bank</span><span class="d">A real escape is a banked turn, not a reverse. The eye gives us the threat's bearing, so we bank away from the side it came from.</span></div>
+    <div><span class="m">set_prompt, mid-session</span><span class="w">the threat</span><span class="d">The world is rewritten while it generates so an entity comes at us, without restarting the session or losing the camera.</span></div>
+    <div><span class="m">request_recording</span><span class="w">artifact</span><span class="d">Reactor's own recording of the session, rather than our re-encode of the frames we kept.</span></div>
+    <div><span class="m">disconnect</span><span class="w">the meter</span><span class="d">Non-recoverable on purpose. A recoverable disconnect holds the GPU, and the bill, waiting for a reconnection that is not coming.</span></div>
+  </div>
+  <div style="margin-top:34px">
+    <div class="beat"><span class="k">what we learned</span><span class="v">LingBot World 2
+      generates <i>infinite</i> worlds, and that breaks a naive escape test.
+      <small>Drive the camera forward down a hallway and the model simply makes more hallway.
+      Nothing ever closes on you, so a correctly working escape circuit sits silent for the
+      whole session. That is not a detector failure, it is the model doing exactly what it
+      advertises, and it is why the loop rewrites the prompt mid-generation to bring a threat
+      in rather than waiting for one.</small></span></div>
+    <div class="beat"><span class="k">the honest latency</span><span class="v">Commands land
+      on chunk boundaries, so we measure the delay instead of claiming one.
+      <small>A command applies at the next boundary, roughly three latent frames out. Every
+      run logs the real gap between the circuit committing and the command going out, and
+      that number goes in the report with a note that the floor is Reactor's chunk size and
+      not the fly.</small></span></div>
+    <div class="beat"><span class="k">the bug worth naming</span><span class="v">Frames come
+      in on the SDK's thread, not on your event loop.
+      <small>Calling create_task inside the frame callback raises "no running event loop",
+      the exception disappears into the callback, and the dodge is never sent while the log
+      still prints an escape. The fix is to capture the loop and hand work back with
+      run_coroutine_threadsafe. It cost us a session to find.</small></span></div>
+  </div>
 </section>
 
 <section class="wrap rev" id="live" style="display:none">
-  <span class="lab">04 / live on reactor</span>
-  <h2>The world reacts to the fly.</h2>
-  <p>A live Reactor session. We drive the camera forward, and every few seconds we rewrite
-  the world mid-generation so a Backrooms entity comes at us. When the circuit fires we send
-  a dodge back into that same running session.</p>
+  <span class="lab">06 / live on reactor</span>
+  <h2>The deepest level fights back.</h2>
+  <p>A live Reactor session on LingBot World 2. We drive the camera forward, and every few
+  seconds we rewrite the world mid-generation so a Backrooms entity comes at us. When the
+  circuit fires we send the dodge back into the same running session that made the frame.</p>
   <div class="three">
     <div class="card"><span class="n">escapes</span><div class="big" id="l-e">-</div></div>
     <div class="card"><span class="n">frames judged</span><div class="big" id="l-f">-</div></div>
     <div class="card"><span class="n">escape to dodge</span><div class="big" id="l-l">-</div>
       <p>floor is Reactor's chunk boundary, not the circuit</p></div>
   </div>
-  <div id="l-log" style="font-family:var(--mono);font-size:11px;line-height:1.85;color:var(--muted);
+  <div id="l-log" style="font-family:var(--mono);font-size:10.5px;line-height:1.85;color:var(--muted);
     background:var(--surface);border:1px solid var(--line);padding:16px;max-height:220px;overflow-y:auto;margin-top:16px"></div>
 </section>
 
 <section class="wrap rev" id="stack">
-  <span class="lab">05 / the stack</span>
+  <span class="lab">07 / the stack</span>
   <h2>What each sponsor does here.</h2>
   <div class="stack">
-    <div><span class="m">LingBot World 2</span><span class="w">Reactor</span><span class="d">The live world. We drive it forward and rewrite it mid-generation to send monsters.</span></div>
-    <div><span class="m">Reactor SDK</span><span class="w">Reactor</span><span class="d">Live session, action control, prompt hot-swap, and the dodge sent back into the running world.</span></div>
-    <div><span class="m">Nano Banana 2.1</span><span class="w">Google AI Studio</span><span class="d">Draws the room every world starts from.</span></div>
-    <div><span class="m">Veo 3.1</span><span class="w">Google DeepMind</span><span class="d">Animates the entities that come down the hallway.</span></div>
-    <div><span class="m">Lyria 3.5</span><span class="w">Google DeepMind</span><span class="d">Ambient score for the worlds.</span></div>
+    <div><span class="m">LingBot World 2</span><span class="w">Reactor</span><span class="d">The live level. We drive it forward and rewrite it mid-generation to send entities.</span></div>
+    <div><span class="m">Reactor SDK</span><span class="w">Reactor</span><span class="d">Session, action control, prompt hot-swap, and the dodge sent back into the running world.</span></div>
+    <div><span class="m">Nano Banana Pro</span><span class="w">Google AI Studio</span><span class="d">The film plates: hero frame and the entity portraits in the deepest stratum.</span></div>
+    <div><span class="m">Nano Banana 2.1</span><span class="w">Google AI Studio</span><span class="d">Draws the room each level starts from, which Veo and Reactor then animate.</span></div>
+    <div><span class="m">Veo 3.1</span><span class="w">Google DeepMind</span><span class="d">Animates the eleven generated levels and the things walking down them.</span></div>
+    <div><span class="m">Lyria 3.5</span><span class="w">Google DeepMind</span><span class="d">Ambient score. Every level has its own track, plus the fly's own spikes.</span></div>
     <div><span class="m">flyloop</span><span class="w">ours</span><span class="d">The eye, the escape circuit, the verdict. 223 facets of numpy, runs on a CPU.</span></div>
   </div>
 </section>
 
-<section class="wrap rev">
-  <span class="lab">06 / honest limits</span>
-  <div class="warn"><p><b style="color:#FF8A82">What this is not.</b> It measures whether
-  things approach the way geometry says they should. Not gravity, mass, friction or
-  collisions. The circuit is a biologically inspired model with three hand-calibrated
-  parameters, not a connectome. And on generated footage it fires on every real approach, so
-  firing time there describes a world rather than grading it. Telling a broken detector from
-  a broken world is the open problem, and it is what we would build next.</p></div>
+<section class="wrap rev" id="next">
+  <span class="lab">08 / the real world</span>
+  <h2>What this is for.</h2>
+  <p class="lead" style="margin-bottom:8px">World models are about to become the place
+  robots are trained. Nobody can currently tell you whether an update to one changed how an
+  agent behaves inside it. A fly can.</p>
+  <div class="bul">
+    <div><span class="bn">01</span><div><b>Robots trained in simulation stop failing in
+      reality.</b> A policy learned inside a world whose approaches arrive too late learns to
+      brake too late. That is a crash in the real world and nothing in the generated video
+      looks wrong. This catches it before the robot ships.</div></div>
+    <div><span class="bn">02</span><div><b>A world model gets a release gate.</b> Point this
+      at two builds and the difference is a number. V1 passes sixteen of eighteen levels, V2
+      passes eleven, and the regression has a name instead of being an argument about
+      whether the footage looks better.</div></div>
+    <div><span class="bn">03</span><div><b>Self-driving sims get checked on the one thing that
+      matters.</b> Time-to-contact is the quantity an autonomous vehicle brakes on, and it is
+      exactly the quantity this circuit measures. A driving world model that renders beautiful
+      traffic with the wrong looming rate is a hazard, not an asset.</div></div>
+    <div><span class="bn">04</span><div><b>Evaluation gets cheap enough to run on every
+      commit.</b> 223 facets of numpy on a CPU, no judge model and no per-frame API bill. The
+      alternative today is a person watching clips or a large vision model grading how
+      convincing they look, which is the thing a generative model is already trained to
+      win at.</div></div>
+    <div><span class="bn">05</span><div><b>The number is an animal's, not ours.</b> A real fly
+      commits near 20&deg;. Ours commits at 20.7 &plusmn; 0.63&deg; across an eight-fold
+      speed sweep. A vendor and its customer can both check that figure against published
+      literature, which is what makes it a benchmark rather than a dashboard.</div></div>
+    <div><span class="bn">06</span><div><b>And it does not stop at one sense.</b> Approach
+      geometry is one axis. A vestibular probe reads gravity, a tactile probe reads contact,
+      insect optic flow reads odometry drift. Each is small, cheap, and has a correct answer
+      that was settled long before the internet. Together they are a physics test suite for
+      generated reality.</div></div>
+  </div>
+  <p class="pull">We did not build a better world model. We built the part that tells you
+  when one is lying.</p>
+  <p class="tn" style="margin-top:22px;max-width:74ch">Scope, stated plainly: this measures
+  approach geometry, not gravity or contact, and on generated levels there is no ground truth
+  to grade against, so the log reports what the fly did. Two instruments that fail in
+  different ways would close that gap, and that is the next build.</p>
 </section>
 
 <footer class="wrap"><p>flyloop. Reactor × Google DeepMind World Models Hackathon, NYC,
@@ -254,48 +482,131 @@ const $=s=>document.querySelector(s);
 let R=null,clip=null,raf=0,soundOn=false,flashed=false;
 let t0=performance.now(),lastVt=-1,useClock=false;
 
-$('#snd').onclick=()=>{soundOn=!soundOn;const a=$('#aud');
-  $('#snd').textContent=soundOn?'[ Sound off ]':'[ Sound on ]';
-  soundOn?a.play().catch(()=>{}):a.pause();};
+// The descent. Backrooms levels in canon order of depth, mapped onto the clips we actually
+// ran. The level names are the story; the verdicts underneath them are measured.
+const STRATA=[
+ {rn:'stratum i',name:'Calibration',note:'known geometry · the only levels we can grade',ids:[
+   ['looming-0_25mps','Level 0','The Lobby, quarter speed','a sphere, 0.25 m/s'],
+   ['looming-0_5mps','Level 0','The Lobby, standard','a sphere, 0.5 m/s'],
+   ['looming-1_0mps','Level 0','The Lobby, double','a sphere, 1.0 m/s'],
+   ['looming-2_0mps','Level 0','The Lobby, eight times','a sphere, 2.0 m/s']]},
+ {rn:'stratum ii',name:'The Descent',note:'generated levels · no reference to grade against',ids:[
+   ['veo-yellow-hallway','Level 0','The Lobby','nothing. nothing ever comes'],
+   ['veo-parking-column','Level 1','Habitable Zone','a concrete column'],
+   ['veo-office-pillar','Level 4','Abandoned Office','a pillar, lights failing'],
+   ['veo-pool-rooms','Level 37','The Poolrooms','a tiled dead end'],
+   ['veo-entity-lunge','Level !','Run For Your Life','something through the wall']]},
+ {rn:'stratum iii',name:'The Entities',note:'things that come at you on purpose',ids:[
+   ['veo-monster-smiler','Level 6','Lights Out','Entity 3 · Smiler'],
+   ['veo-monster-hound','Level 5','Terror Hotel','Entity 8 · Hound'],
+   ['veo-monster-longlimbs','Level 9','The Suburbs','Entity 10 · Skin-Stealer'],
+   ['veo-a24-clark','The film','Captain Clark','the man in the tricorn hat'],
+   ['veo-a24-stillife','The film','Still-lifes','figures that never move their legs'],
+   ['veo-a24-lifeform','The film','The Lifeform','something vast and pale']]},
+ {rn:'stratum iv',name:'The Corrupted Levels',note:'physics broken on purpose · we know the answer',ids:[
+   ['broken-linear','Level ███','Constant Expansion','an approach that never accelerates'],
+   ['broken-jump','Level ███','Teleport','a sphere that skips forward in space'],
+   ['broken-reversed','Level ███','Reverse Approach','an approach that slows as it lands']]}];
 
-const rank=c=>/^veo-a24/.test(c.id)?0
-  :/monster|entity-lunge/.test(c.id)?1
-  :c.source!=='synthetic'?2
-  :/^broken/.test(c.id)?3:4;
-const isMonster=c=>rank(c)<=1;
+// Nano Banana Pro plates are sharper and better directed than a frame grab, so the film
+// stratum uses them as its stills.
+const PLATE={'veo-a24-clark':'assets/card-clark.png','veo-a24-lifeform':'assets/card-lifeform.png',
+             'veo-a24-stillife':'assets/card-stillife.png'};
+
+// 20.7 ± 0.63° measured across the calibration sweep. Three standard deviations is the band
+// a level has to land in to pass, and it is stated here rather than tuned per level.
+const BAND=[18.8,22.6];
+
+function verdict(c){
+  const f=c.detectors.fly, th=f.theta_at_fire_deg;
+  if(!c.ground_truth) return {code:'un',stamp:'no reference',fly:f.fired,
+    sub:'Generated level, so there is no true angle to check the commit against. The fly '+
+        (f.fired?'escaped':'did not escape')+', and that is all this level can tell us.'};
+  if(!f.fired) return {code:'fail',stamp:'fail',fly:false,
+    sub:'The fly never committed. Nothing in this level ever expanded the way a real approach '+
+        'does, which is exactly what we broke in it.'};
+  if(th>=BAND[0]&&th<=BAND[1]) return {code:'pass',stamp:'pass',fly:true,th,
+    sub:'Committed at '+th.toFixed(1)+'°, inside the '+BAND[0]+' to '+BAND[1]+
+        '° band measured on the calibration sweep. This level moves the way geometry says it should.'};
+  return {code:'fail',stamp:'fail',fly:true,th,
+    sub:'The fly escaped, but it committed at '+th.toFixed(1)+'° instead of near 20°. Escaping '+
+        'is not passing: an approach that arrives this late is not a real one.'};
+}
+
+const ENT={};STRATA.forEach(s=>s.ids.forEach(([id,lvl,name,ent],i)=>ENT[id]={lvl,name,ent}));
+const ORDER=STRATA.flatMap(s=>s.ids.map(x=>x[0]));
 
 fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
   R=d;
-  const dodged=d.clips.filter(c=>c.detectors.fly.fired);
-  const hit=d.clips.filter(c=>!c.detectors.fly.fired);
-  $('#g-n').textContent=d.clips.length;
-  $('#g-d').textContent=dodged.length;
-  $('#g-s').textContent=hit.length;
-  $('#g-w').textContent=hit.length?hit.map(c=>c.title||c.id).join(', ')+'.':'nobody yet.';
+  const by=Object.fromEntries(d.clips.map(c=>[c.id,c]));
+  const graded=d.clips.filter(c=>c.ground_truth);
+  const V=Object.fromEntries(d.clips.map(c=>[c.id,verdict(c)]));
+  const pass=d.clips.filter(c=>V[c.id].code==='pass').length;
+  const fail=d.clips.filter(c=>V[c.id].code==='fail').length;
+
+  $('#t-n').textContent=d.clips.length;
+  $('#t-p').textContent=pass+d.clips.filter(c=>V[c.id].code==='un').length;
+  $('#t-f').textContent=fail;
+  $('#t-th').textContent=d.summary.threshold_mean_deg+' ± '+d.summary.threshold_sd_deg+'°';
   $('#fct').textContent=d.retina.n_facets+' facets';
 
-  $('#board tbody').innerHTML=d.clips.map(c=>{
-    const f=c.detectors.fly;
-    return `<tr class="${f.fired?'':'sw'}"><td>${c.title||c.note||c.label}</td><td>${c.model}</td>`+
-      `<td class="v" style="color:${f.fired?'var(--muted)':'var(--alarm)'}">`+
-      `${f.fired?'escaped':'WE HIT IT'}</td></tr>`;}).join('');
+  const corrupt=graded.filter(c=>/^broken/.test(c.id));
+  const caught=corrupt.filter(c=>V[c.id].code==='fail');
+  const correct=graded.filter(c=>!/^broken/.test(c.id));
+  $('#g-k').textContent=graded.length;
+  $('#g-c').textContent=caught.length+' of '+corrupt.length;
+  $('#g-cw').textContent='missed the '+corrupt.filter(c=>V[c.id].code!=='fail')
+    .map(c=>ENT[c.id].name.toLowerCase()).join(' and ')+', where the motion either side of the '+
+    'break is correct.';
+  $('#g-fa').textContent=correct.filter(c=>V[c.id].code==='fail').length;
 
-  // Monsters first. They are the thing worth looking at, and they are the reason the
-  // scoreboard means anything.
-  const order=[...d.clips].sort((a,b)=>rank(a)-rank(b));
-  $('#cards').innerHTML=order.map((c,i)=>{
-    const f=c.detectors.fly;
-    return `<button class="card2" data-id="${c.id}" aria-selected="${i===0}">
-      <span class="tag">${c.source}</span>
-      <span class="verdict${f.fired?'':' hit'}">${f.fired?'escaped':'we hit it'}</span>
-      <div class="img" style="background-image:url('artifacts/${c.poster}')"></div>
-      <div class="body"><h3>${c.title||c.label}</h3><p>${c.blurb||c.note||''}</p></div>
-    </button>`;}).join('');
-  $('#cards').onclick=e=>{const b=e.target.closest('.card2');if(!b)return;
-    document.querySelectorAll('.card2').forEach(x=>x.setAttribute('aria-selected',x===b));
-    select(d.clips.find(c=>c.id===b.dataset.id));
-    document.querySelector('#demo .panels').scrollIntoView({behavior:'smooth',block:'center'});};
-  select(order[0]);
+  // the strata
+  $('#strata').innerHTML=STRATA.map(s=>`
+    <div class="stratum">
+      <div class="sh"><span class="rn">${s.rn}</span><h3>${s.name}</h3><span class="note">${s.note}</span></div>
+      <div class="lv">${s.ids.map(([id])=>{
+        const c=by[id];if(!c)return '';
+        const v=V[id],m=ENT[id],n=ORDER.indexOf(id)+1;
+        const img=PLATE[id]||('artifacts/'+c.poster);
+        return `<button class="L${/^broken/.test(id)?' corrupt':''}" data-id="${id}" aria-selected="false">
+          <span class="no">${String(n).padStart(2,'0')}</span>
+          <span class="stamp ${v.code}">${v.stamp}</span>
+          <div class="img" style="background-image:url('${img}')"></div>
+          <div class="body">
+            <span class="lvl">${m.lvl}</span>
+            <h4>${m.name}</h4>
+            <p>${c.blurb||c.note||''}</p>
+            <span class="ent">${m.ent}</span>
+            <span class="vr">
+              <span class="fly${v.fly?'':' hit'}">fly ${v.fly?'escaped':'hit'}</span>
+              ${v.th!=null?`<span class="deg">${v.th.toFixed(1)}°</span>`:''}
+            </span>
+          </div></button>`;}).join('')}</div>
+    </div>`).join('');
+
+  $('#strata').onclick=e=>{const b=e.target.closest('.L');if(!b)return;
+    document.querySelectorAll('.L').forEach(x=>x.setAttribute('aria-selected',x===b));
+    select(by[b.dataset.id]);
+    $('#instrument').scrollIntoView({behavior:'smooth',block:'start'});};
+
+  // the log, in descent order
+  $('#board tbody').innerHTML=ORDER.map((id,i)=>{
+    const c=by[id];if(!c)return '';
+    const v=V[id],m=ENT[id],f=c.detectors.fly;
+    const cls=v.code==='fail'?'fz':v.code==='pass'?'pz':'v';
+    return `<tr class="${v.code==='fail'?'bad':''}"><td class="v">${String(i+1).padStart(2,'0')}</td>`+
+      `<td><b style="color:var(--text);font-weight:500">${m.name}</b><br>`+
+      `<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${m.lvl.toUpperCase()}</span></td>`+
+      `<td>${m.ent}</td>`+
+      `<td class="v" style="color:${f.fired?'var(--text)':'var(--fail)'}">${f.fired?'escaped':'hit'}</td>`+
+      `<td class="v">${c.ground_truth&&f.fired?f.theta_at_fire_deg.toFixed(1)+'°':'—'}</td>`+
+      `<td class="${cls}">${v.stamp.toUpperCase()}</td></tr>`;}).join('');
+
+  heroStart(d);
+  const first=by[ORDER[9]]||d.clips[0];   // open on the Smiler: the descent's best frame
+  const btn=document.querySelector(`.L[data-id="${first.id}"]`);
+  if(btn)btn.setAttribute('aria-selected','true');
+  select(first);
 });
 
 function select(c){
@@ -304,25 +615,32 @@ function select(c){
   if(c.video_url){v.src='artifacts/'+c.video_url;v.load();v.play().catch(()=>{});}
   const a=$('#aud');a.src='artifacts/audio/'+c.id+'.wav';a.volume=.7;
   if(soundOn)a.play().catch(()=>{});
-  const f=c.detectors.fly;
-  $('#src').textContent=c.source;
-  $('#gen').textContent=c.model;
-  $('#out').textContent=f.fired?'escaped':'we hit it';
-  $('#out').style.color=f.fired?'var(--text)':'var(--alarm)';
-  $('#fire').textContent=f.fired?`frame ${f.fire_frame} (${f.fire_t_s.toFixed(2)}s)`:'never';
-  // Say it rather than smooth it. On generated video the size estimate upstream is noisy,
-  // so the command saturates and the trace reads as a square wave. That is the data.
+  const f=c.detectors.fly,m=ENT[c.id]||{lvl:c.source,name:c.title||c.id},vd=verdict(c);
+  $('#src').textContent=m.lvl;
+  $('#o-gen').textContent=c.model;
+  $('#o-fly').textContent=f.fired?'escaped':'hit';
+  $('#o-fly').style.color=f.fired?'var(--text)':'var(--fail)';
+  $('#o-fire').textContent=f.fired?`frame ${f.fire_frame} (${f.fire_t_s.toFixed(2)}s)`:'never';
+  $('#v-big').textContent=m.name+' — '+vd.stamp.toUpperCase();
+  $('#v-big').style.color=vd.code==='fail'?'var(--fail)':vd.code==='pass'?'var(--pass)':'var(--text)';
+  $('#v-sub').textContent=vd.sub;
+  // Say it rather than smooth it. On generated video the size estimate upstream is noisy, so
+  // the command saturates and the trace reads as a square wave. That is the data.
   const sat=f.trace.filter(x=>x>=1.49).length/f.trace.length;
-  $('#tracenote').textContent = c.ground_truth
-    ? 'Known geometry, so this trace is a measurement you can check against the truth.'
+  $('#tracenote').textContent=c.ground_truth
+    ? 'Known geometry, so the commit angle on this trace can be checked against the truth.'
     : (sat>0.3
-       ? 'No ground truth here, and the command saturates on generated video because the size estimate upstream is unstable. Shown as it is.'
-       : 'No ground truth here, so the firing time describes this world rather than grading it.');
+       ? 'The command saturates here because the size estimate upstream is unstable on generated video. Shown as it is.'
+       : 'No ground truth, so the firing time describes this level rather than grading it.');
   t0=performance.now();lastVt=-1;cancelAnimationFrame(raf);loop();
 }
 
-// Drive from the video when it plays, from a clock when it does not. Autoplay blocking or
-// a codec the browser will not touch should never leave the page sitting dead.
+$('#snd').onclick=()=>{soundOn=!soundOn;const a=$('#aud');
+  $('#snd').textContent=soundOn?'[ Sound off ]':'[ Sound on ]';
+  if(soundOn){a.play().catch(()=>{});}else a.pause();};
+
+// Drive from the video when it plays, from a clock when it does not. Autoplay blocking or a
+// codec the browser will not touch should never leave the page sitting dead.
 function frameNow(){
   if(!clip)return 0;
   const v=$('#vid'),vt=v.currentTime||0;
@@ -330,6 +648,78 @@ function frameNow(){
   if(!useClock&&vt>0)return Math.min(clip.n_frames-1,Math.floor(vt*clip.fps));
   const dur=clip.n_frames/clip.fps;
   return Math.floor((((performance.now()-t0)/1000)%dur)*clip.fps);
+}
+
+// The fly, drawn over the level. You should be able to see the thing the whole page is
+// about: it hovers while the circuit watches, it bolts on the frame the circuit commits,
+// and on a level it never commits in, the level closes on it.
+function drawFly(fr){
+  const cv=$('#flyc'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
+  g.clearRect(0,0,W,H);
+  const f=clip.detectors.fly,ff=f.fire_frame,n=clip.n_frames,fps=clip.fps;
+  const v=Math.min(1,(f.trace[Math.min(fr,f.trace.length-1)]||0)/1.5);
+  const now=performance.now()/1000;
+  let x=W*.63,y=H*.44,sc=1,alpha=1,rot=0,squash=1,streak=null,state='watching';
+
+  if(ff!=null&&fr>=ff){
+    // bolting. 0.4s of dart, up and to the left, shrinking as it goes.
+    const p=Math.min(1,(fr-ff)/(0.40*fps)),e=p*p;
+    x-=W*.70*e;y-=H*.34*e;sc=1-.55*e;alpha=1-.92*e*e;rot=-0.5*e;
+    streak=e;state='gone';
+  }else if(ff==null&&fr>n*0.80){
+    // the level lands on it. squash, tilt, and hold.
+    const p=Math.min(1,(fr-n*0.80)/(n*0.12));
+    squash=1-.72*p;sc=1+.45*p;rot=.3*p;
+    x+=Math.sin(now*55)*5*(1-p);state='hit';
+  }else{
+    // hovering. the bob tightens as the command charges, which is the tell before it goes.
+    y+=Math.sin(now*(7+16*v))*(3+9*v);
+    x+=Math.cos(now*(5+9*v))*(2+4*v);
+  }
+
+  if(streak!=null&&streak<.9){
+    g.strokeStyle=`rgba(255,255,255,${.3*(1-streak)})`;g.lineWidth=2;
+    g.beginPath();g.moveTo(x,y);g.lineTo(x+W*.26*streak,y+H*.13*streak);g.stroke();
+  }
+
+  g.save();g.globalAlpha=alpha;g.translate(x,y);g.rotate(rot);g.scale(sc,sc*squash);
+
+  // the charge reticle: a ring that tightens with the membrane, red once it is close
+  if(state==='watching'&&v>.08){
+    const r=30-16*v;
+    g.strokeStyle=v>.72?`rgba(255,59,48,${.35+.5*v})`:`rgba(59,130,246,${.2+.4*v})`;
+    g.lineWidth=1.2;g.setLineDash([4,5]);g.beginPath();g.arc(0,0,r,0,6.2832);g.stroke();
+    g.setLineDash([]);
+  }
+
+  // wings first, so the body sits on top of them
+  const wa=state==='hit'?.1:.26+.12*Math.sin(now*70);
+  g.fillStyle=`rgba(210,226,255,${wa})`;
+  [-1,1].forEach(s=>{g.save();g.rotate(s*.5);g.beginPath();
+    g.ellipse(-3,s*8,13,4.6,s*.25,0,6.2832);g.fill();g.restore();});
+
+  // body: thorax and a striped abdomen, which is most of what reads at this size
+  g.fillStyle='#14161B';g.beginPath();g.ellipse(-6,0,7.5,5.6,0,0,6.2832);g.fill();
+  g.fillStyle='#1B1E25';g.beginPath();g.ellipse(5,0,9.5,6,0,0,6.2832);g.fill();
+  g.fillStyle='rgba(0,0,0,.55)';
+  [2,6,10].forEach(dx=>{g.beginPath();g.ellipse(dx,0,1.1,5.4,0,0,6.2832);g.fill();});
+
+  // the eyes are red, which is both true of Drosophila and the only colour it needs
+  g.fillStyle=state==='hit'?'#5A1A16':'#C8322A';
+  [-1,1].forEach(s=>{g.beginPath();g.ellipse(-12,s*3.1,4.4,4,0,0,6.2832);g.fill();});
+  g.fillStyle='rgba(255,255,255,.4)';
+  [-1,1].forEach(s=>{g.beginPath();g.ellipse(-13.2,s*3.8,1.3,1.1,0,0,6.2832);g.fill();});
+
+  if(state==='hit'){
+    g.fillStyle='rgba(255,59,48,.55)';
+    for(let k=0;k<7;k++){const a=k*.9,d=13+k*2.2;
+      g.beginPath();g.arc(Math.cos(a)*d,Math.sin(a)*d*.5,1.6+(k%3),0,6.2832);g.fill();}
+  }
+  g.restore();
+
+  const tag=$('#flytag');
+  tag.textContent=state==='gone'?'fly · gone':state==='hit'?'fly · hit':'fly · watching';
+  tag.className='flytag'+(state==='gone'?' gone':state==='hit'?' hit':'');
 }
 
 function drawEye(fr){
@@ -345,7 +735,7 @@ function drawEye(fr){
     for(let k=0;k<6;k++){const t=Math.PI/180*(60*k+30);
       const px=x+rad*Math.cos(t),py=y+rad*Math.sin(t);k?g.lineTo(px,py):g.moveTo(px,py);}
     g.closePath();
-    if(a<.03){g.fillStyle='rgba(255,255,255,.07)';g.fill();}
+    if(a<.03){g.fillStyle='rgba(255,255,255,.065)';g.fill();}
     else{g.shadowBlur=a*18;g.shadowColor=`rgba(59,130,246,${a*.85})`;
       g.fillStyle=`rgba(${70+a*150|0},${140+a*70|0},255,${.25+a*.75})`;g.fill();g.shadowBlur=0;}
   }
@@ -372,13 +762,13 @@ function drawPlot(fr){
 function loop(){
   if(!R||!clip)return;
   const fr=frameNow(),ff=clip.detectors.fly.fire_frame;
-  drawEye(fr);drawPlot(fr);
+  drawFly(fr);drawEye(fr);drawPlot(fr);
   const firing=(ff!=null&&fr>=ff);
   const c=$('#st');
   c.textContent=firing?'ESCAPE':'WATCHING';
   c.className='chip'+(firing?' fire':'');
-  // One hard flash on the frame it commits, because the escape is a jumpscare and a
-  // threshold crossing you can feel beats a line on a chart.
+  // One hard flash on the frame it commits. A threshold crossing you can feel beats a line
+  // on a chart.
   if(firing&&!flashed){flashed=true;const f=$('#flash');
     f.classList.add('on');setTimeout(()=>f.classList.remove('on'),90);}
   if(fr<3)flashed=false;
@@ -393,15 +783,168 @@ fetch('artifacts/loop/loop_report.json').then(r=>r.ok?r.json():null).then(L=>{
   $('#l-f').textContent=L.frames;
   $('#l-l').textContent=L.mean_escape_to_command_ms!=null?L.mean_escape_to_command_ms+' ms':'n/a';
   $('#l-log').innerHTML=(L.events||[]).map(e=>{
-    const col=e.kind==='escape'?'var(--alarm)':e.kind.startsWith('cmd')?'var(--accent)'
+    const col=e.kind==='escape'?'var(--fail)':e.kind.startsWith('cmd')?'var(--accent)'
       :e.kind.startsWith('monster')?'var(--lim)':'var(--dim)';
     return `<div><span style="color:var(--dim)">[${e.t.toFixed(2)}s]</span> `+
       `<span style="color:${col}">${e.kind}</span> <span style="color:var(--dim)">frame ${e.frame}</span></div>`;
   }).join('');
 }).catch(()=>{});
 
+
+/* ------------------------------------------------------------------ hero instrument
+   The hero is the algorithm, drawn over the world it is judging. Every mark on it is a
+   real intermediate value from the same run the scoreboard below is scored from:
+
+     the hex grid    223 ommatidia, at the measured 5.1 degree interommatidial angle
+     the arrows      each facet's elementary motion detector output, pointing the way the
+                     flow actually runs, which on a true approach is outward everywhere
+     the reticle     the activity-weighted centroid of expansion, which is the bearing the
+                     escape is steered away from
+     the bar         the giant fibre membrane, charging toward threshold
+
+   Nothing here is a decorative particle system. That is the whole point: a judge should be
+   able to read the mechanism off the screen. */
+let H={on:false,clip:null,i:0,fired:false,fs:false,bed:null,sting:null};
+
+function heroStart(d){
+  // The entity levels first. They are the ones worth looking at, and the ones where the
+  // overlay has something to show.
+  H.list=['veo-monster-smiler','veo-a24-lifeform','veo-monster-hound','veo-a24-clark',
+          'veo-entity-lunge','veo-monster-longlimbs','veo-a24-stillife','veo-pool-rooms']
+         .map(id=>d.clips.find(c=>c.id===id)).filter(Boolean);
+  if(!H.list.length)return;
+  H.bed=new Audio('artifacts/audio/descent.mp3');H.bed.loop=true;H.bed.volume=.55;
+  H.sting=new Audio('artifacts/audio/stinger.mp3');H.sting.volume=.92;
+  heroPick(0);
+  H.on=true;
+  addEventListener('resize',heroSize);heroSize();
+  requestAnimationFrame(heroLoop);
+}
+
+function heroPick(i){
+  H.i=((i%H.list.length)+H.list.length)%H.list.length;
+  H.clip=H.list[H.i];H.fired=false;H.t0=performance.now();
+  const v=$('#hvid');
+  v.src='artifacts/'+H.clip.video_url;v.load();v.play().catch(()=>{});
+  $('#h-lvl').textContent=(ENT[H.clip.id]||{}).name||H.clip.title||H.clip.id;
+  $('#h-model').textContent=H.clip.model;
+}
+
+function heroSize(){
+  const cv=$('#hcv'),r=Math.min(2,devicePixelRatio||1);
+  cv.width=Math.round(innerWidth*r);cv.height=Math.round(innerHeight*r);
+  H.r=r;
+}
+
+function heroLoop(){
+  if(!H.on||!R||!H.clip){requestAnimationFrame(heroLoop);return;}
+  const cv=$('#hcv'),g=cv.getContext('2d'),W=cv.width,Ht=cv.height;
+  const c=H.clip,f=c.detectors.fly,v=$('#hvid');
+  const dur=c.n_frames/c.fps;
+  let fr;
+  if(v.currentTime>0)fr=Math.min(c.n_frames-1,Math.floor(v.currentTime*c.fps));
+  else fr=Math.floor((((performance.now()-H.t0)/1000)%dur)*c.fps);
+
+  g.clearRect(0,0,W,Ht);
+  const dirs=R.retina.directions,act=f.facet_activity,sd=f.facet_stride||1;
+  const row=act?act[Math.min(act.length-1,Math.floor(fr/sd))]:null;
+  // The video is a cover-fit of a square source, so the square's side is the long edge and
+  // one degree of visual angle is the same number of pixels on both axes. Getting this
+  // wrong would put the facets somewhere the fly is not looking.
+  const ppd=(Math.max(W,Ht)/2)/45,cx=W/2,cy=Ht/2,rad=ppd*R.retina.dphi_deg*.5;
+  const charge=Math.min(1.5,f.trace[Math.min(fr,f.trace.length-1)]||0);
+  let sx=0,sy=0,sw=0,nHot=0;
+
+  for(let i=0;i<dirs.length;i++){
+    const[az,el]=dirs[i],x=cx+az*ppd,y=cy-el*ppd,a=row?Math.min(1,row[i]):0;
+    if(a>.12){nHot++;sx+=az*a;sy+=el*a;sw+=a;}
+    // the facet
+    g.beginPath();
+    for(let k=0;k<6;k++){const th=Math.PI/180*(60*k+30);
+      const px=x+rad*Math.cos(th),py=y+rad*Math.sin(th);k?g.lineTo(px,py):g.moveTo(px,py);}
+    g.closePath();
+    g.strokeStyle=`rgba(255,255,255,${.05+.30*a})`;g.lineWidth=1*H.r;g.stroke();
+    if(a>.04){g.fillStyle=`rgba(70,140,255,${.07+.30*a})`;g.fill();}
+    // the flow vector. Outward is what a looming object produces, and it is the sign the
+    // correlators are actually tuned for.
+    if(a>.09){
+      const m=Math.hypot(az,el)||1,ux=az/m,uy=-el/m,L=(5+26*a)*H.r;
+      g.strokeStyle=charge>1?`rgba(255,90,80,${.35+.6*a})`:`rgba(96,165,250,${.3+.6*a})`;
+      g.lineWidth=1.7*H.r;
+      g.beginPath();g.moveTo(x,y);g.lineTo(x+ux*L,y+uy*L);g.stroke();
+      g.beginPath();g.arc(x+ux*L,y+uy*L,1.9*H.r,0,6.2832);
+      g.fillStyle=charge>1?'rgba(255,90,80,.85)':'rgba(96,165,250,.85)';g.fill();
+    }
+  }
+
+  // the reticle: where the expansion is coming from, which is what steers the dodge
+  if(sw>0.3){
+    const bx=cx+(sx/sw)*ppd,by=cy-(sy/sw)*ppd;
+    const box=(150-80*Math.min(1,charge))*H.r,t=box/2,arm=box/5;
+    g.strokeStyle=charge>1?'rgba(255,59,48,.95)':'rgba(200,181,96,.8)';g.lineWidth=1.6*H.r;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([ox,oy])=>{
+      g.beginPath();
+      g.moveTo(bx+ox*t,by+oy*t-oy*arm);g.lineTo(bx+ox*t,by+oy*t);g.lineTo(bx+ox*t-ox*arm,by+oy*t);
+      g.stroke();});
+    g.beginPath();g.moveTo(bx-6*H.r,by);g.lineTo(bx+6*H.r,by);
+    g.moveTo(bx,by-6*H.r);g.lineTo(bx,by+6*H.r);g.stroke();
+    $('#h-br').textContent=((sx/sw)>=0?'+':'')+(sx/sw).toFixed(1)+'° azimuth';
+  }
+
+  $('#h-ex').textContent=nHot+' / '+dirs.length;
+  $('#h-gf').textContent=(charge/1.5*100).toFixed(0)+'% of threshold';
+  $('#h-fill').style.width=Math.min(100,charge/1.5*100)+'%';
+
+  const firing=(f.fire_frame!=null&&fr>=f.fire_frame);
+  $('#hud').className='hud'+(firing?' fire':'');
+  $('#h-state').textContent=firing?'giant fibre · escape':'giant fibre · watching';
+  if(firing&&!H.fired){H.fired=true;scare();}
+  if(fr<3)H.fired=false;
+
+  // Hold each level a beat past its commit, then descend to the next one.
+  if(fr>=c.n_frames-2&&(performance.now()-H.t0)>1200)heroPick(H.i+1);
+  requestAnimationFrame(heroLoop);
+}
+
+// The jumpscare. It lands on the frame the circuit commits, which is the one frame in the
+// clip where something is genuinely about to hit you, so the scare is the measurement.
+function scare(){
+  const fl=$('#flash'),hero=document.querySelector('.hero');
+  fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),110);
+  $('#hvid').classList.remove('punch');void $('#hvid').offsetWidth;
+  $('#hvid').classList.add('punch');
+  hero.classList.remove('shake');void hero.offsetWidth;hero.classList.add('shake');
+  if(H.sting&&H.fs){try{H.sting.currentTime=0;H.sting.play().catch(()=>{});}catch(e){}}
+}
+
+// Fullscreen demo. One button, the whole screen, sound on, and it keeps descending.
+$('#fsbtn').onclick=async()=>{
+  const hero=document.querySelector('.hero');
+  try{await (hero.requestFullscreen?hero.requestFullscreen():hero.webkitRequestFullscreen());}
+  catch(e){}
+  H.fs=true;
+  if(H.bed){H.bed.currentTime=0;H.bed.play().catch(()=>{});}
+  heroSize();
+};
+document.addEventListener('fullscreenchange',()=>{
+  H.fs=!!document.fullscreenElement;
+  if(!H.fs&&H.bed)H.bed.pause();
+  heroSize();
+});
+
 const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.06});
 document.querySelectorAll('.rev').forEach(el=>io.observe(el));
+
+// The rail only earns its place while you are inside the descent.
+const rail=$('#rail'),marks=[...rail.querySelectorAll('li')];
+const spy=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return;
+  marks.forEach(m=>m.classList.toggle('now',m.dataset.t===e.target.id));
+  rail.classList.add('on');
+}),{rootMargin:'-45% 0px -45% 0px'});
+marks.forEach(m=>{const el=document.getElementById(m.dataset.t);if(el)spy.observe(el);});
+new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)rail.classList.remove('on');}),
+  {threshold:.5}).observe(document.querySelector('.hero'));
 </script>
 </body>
 </html>

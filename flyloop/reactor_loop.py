@@ -128,7 +128,38 @@ class FlyLoop:
         self.fps = 24.0
         self._t0 = time.time()
         self._fired_at: float | None = None
+        self._threat_az = 0.0
         self.kept: list[np.ndarray] = []
+        # Filled in once a session opens. `accepted` is a per-command record of what this
+        # model would take, which is how one probe runs across a catalog of models that do
+        # not share an action space.
+        self.schema: dict | None = None
+        self.accepted: dict[str, bool] = {}
+
+    @staticmethod
+    def _schema_commands(schema: dict | None) -> set[str]:
+        """Pull command names out of a schema without assuming its exact shape.
+
+        Reactor returns a JSON schema per model and the nesting differs between them, so we
+        walk it for anything that looks like a command vocabulary rather than indexing into
+        a shape that holds for one model and not the next.
+        """
+        found: set[str] = set()
+
+        def walk(node, key=None):
+            if isinstance(node, dict):
+                if key in ("commands", "properties", "oneOf", "anyOf"):
+                    found.update(k for k in node if isinstance(k, str))
+                for k, v in node.items():
+                    if k == "enum" and isinstance(v, list):
+                        found.update(str(x) for x in v if isinstance(x, str))
+                    walk(v, k)
+            elif isinstance(node, list):
+                for v in node:
+                    walk(v, key)
+
+        walk(schema or {})
+        return {f for f in found if f.startswith(("set_", "start", "stop", "create_", "say"))}
 
     # ------------------------------------------------------------------ perception
 
@@ -168,8 +199,32 @@ class FlyLoop:
             return False
 
         det = self.probe.run(np.stack(self.frames), self.fps, fov_deg=self.cfg.fov_deg)
-        return bool(det.fired and det.fire_frame is not None
-                    and det.fire_frame >= len(self.frames) - 3)
+        fired = bool(det.fired and det.fire_frame is not None
+                     and det.fire_frame >= len(self.frames) - 3)
+        if fired:
+            self._threat_az = self.threat_azimuth(det)
+        return fired
+
+    def threat_azimuth(self, det) -> float:  # noqa: ANN001 - Detection, avoiding a cycle
+        """Which side the expanding thing is on, in degrees. Negative is to the left.
+
+        A fly does not escape by reversing. It performs a banked turn away from the side the
+        threat is on, and the side is available to us for free: the facets carrying the
+        outward motion are the ones pointing at the object, so their activity-weighted mean
+        azimuth is the bearing. Averaging the three frames up to the commit rather than the
+        commit frame alone keeps one noisy frame from steering the dodge.
+        """
+        act = det.extra.get("facet_activity")
+        if act is None or det.fire_frame is None:
+            return 0.0
+        act = np.asarray(act)
+        lo = max(0, min(det.fire_frame, len(act) - 1) - 2)
+        w = act[lo:min(det.fire_frame, len(act) - 1) + 1].mean(axis=0)
+        w = np.clip(w, 0, None)
+        if w.sum() <= 1e-9:
+            return 0.0
+        az = np.asarray(self.retina.directions)[:, 0]
+        return float((w * az).sum() / w.sum())
 
     # ------------------------------------------------------------------- the session
 
@@ -190,16 +245,49 @@ class FlyLoop:
             await reactor.connect()
             self._log("connected", 0, {"model": model_name})
 
-            if self.cfg.seed_image is not None:
-                ref = await reactor.upload_file(str(self.cfg.seed_image))
-                await reactor.send_command("set_image", {"image": ref})
-                self._log("set_image", 0, {"file": self.cfg.seed_image.name})
+            # Ask the model what it can actually be told to do, before telling it anything.
+            # Reactor's catalog is not one action space: an image-to-video world model, a
+            # driving model and a text world engine accept different commands, and a probe
+            # that assumes LingBot's vocabulary silently does nothing on the others. The
+            # schema is also a result in its own right, because "can this model represent a
+            # banked turn" is a fact about the model worth writing down.
+            try:
+                self.schema = await reactor.request_schema()
+                cmds = sorted(self._schema_commands(self.schema))
+                self._log("schema", 0, {"commands": len(cmds), "has_lateral":
+                                        any("lateral" in c for c in cmds)})
+            except Exception as exc:  # noqa: BLE001 - a model without a schema still flies
+                self.schema = None
+                self._log("schema unavailable", 0, {"error": str(exc)[:90]})
 
-            await reactor.send_command("set_prompt", {"prompt": self.cfg.prompt})
-            await reactor.send_command("set_seed", {"seed": self.cfg.seed})
-            await reactor.send_command("start", {})
-            await reactor.send_command("set_move_longitudinal", {"move_longitudinal": "forward"})
-            self._log("flying", 0, {})
+            async def tell(cmd: str, data: dict, *, required: bool = False) -> bool:
+                """Send one command, and record whether this model accepted it."""
+                try:
+                    await reactor.send_command(cmd, data)
+                    self.accepted[cmd] = True
+                    return True
+                except Exception as exc:  # noqa: BLE001
+                    self.accepted[cmd] = False
+                    self._log(f"rejected:{cmd}", 0, {"error": str(exc)[:90]})
+                    if required:
+                        raise
+                    return False
+
+
+            if self.cfg.seed_image is not None:
+                try:
+                    ref = await reactor.upload_file(str(self.cfg.seed_image))
+                    if await tell("set_image", {"image": ref}):
+                        self._log("set_image", 0, {"file": self.cfg.seed_image.name})
+                except Exception as exc:  # noqa: BLE001 - a text-only model has no set_image
+                    self._log("set_image unavailable", 0, {"error": str(exc)[:90]})
+
+            await tell("set_prompt", {"prompt": self.cfg.prompt})
+            await tell("set_seed", {"seed": self.cfg.seed})
+            await tell("start", {})
+            await tell("set_move_longitudinal", {"move_longitudinal": "forward"})
+            self._log("flying", 0, {"accepted": sum(self.accepted.values()),
+                                    "offered": len(self.accepted)})
 
             async def provoke():
                 """Bring a threat to the fly on a schedule, by rewriting the world."""
@@ -258,8 +346,9 @@ class FlyLoop:
                     self._fired_at = now
                     chunk_s = 12.0 / self.fps  # ~3 latent frames, ~12 pixel frames
                     self.retreat_until = now + self.cfg.retreat_chunks * chunk_s
-                    self._log("escape", frame_i, {"wall_s": round(now, 3)})
-                    dispatch(self._cmd(reactor, "back", frame_i))
+                    self._log("escape", frame_i, {"wall_s": round(now, 3),
+                                                  "bearing_deg": round(self._threat_az, 1)})
+                    dispatch(self._cmd(reactor, "back", frame_i, bank=True))
 
             provoker = asyncio.create_task(provoke())
             try:
@@ -268,6 +357,14 @@ class FlyLoop:
                 pass
             finally:
                 provoker.cancel()
+                # Reactor can hand back its own server-side recording of the session, which
+                # is the honest artifact: the world as Reactor generated it, not our
+                # re-encode of the frames we happened to keep.
+                try:
+                    rec = await reactor.request_recording()
+                    self._log("recording", frame_i, {"ref": str(rec)[:120]})
+                except Exception as exc:  # noqa: BLE001 - a run is still a run without it
+                    self._log("recording unavailable", frame_i, {"error": str(exc)[:90]})
                 # Non-recoverable on purpose: a recoverable disconnect keeps the GPU, and
                 # the meter, reserved for a reconnection that is not coming.
                 await reactor.disconnect()
@@ -295,21 +392,47 @@ class FlyLoop:
         print(f"  saved {len(self.kept)} frames -> {path}")
         return path
 
-    async def _cmd(self, reactor, direction: str, frame: int) -> None:
-        """Send a movement command and record when the world acknowledged it.
+    async def _cmd(self, reactor, direction: str, frame: int, bank: bool = False) -> None:
+        """Send the escape and record when the world acknowledged it.
 
         The gap between this and the escape event is the real closed-loop latency, which is
         bounded below by Reactor's chunk boundary. We measure it rather than claim it.
+
+        `bank` adds the lateral half of the manoeuvre. A real escape is a banked turn away
+        from the threat, not a reverse, so we send both axes and let the log say whether the
+        model's action space could represent it. A model that cannot steer laterally is a
+        finding about the model, which is the kind of thing this project exists to record,
+        so an unsupported command is logged and never allowed to end the run.
         """
         sent = time.time() - self._t0
         await reactor.send_command("set_move_longitudinal", {"move_longitudinal": direction})
         acked = time.time() - self._t0
-        self._log(f"cmd:{direction}", frame, {
+        detail = {
             "sent_s": round(sent, 3), "acked_s": round(acked, 3),
             "latency_ms": round((acked - sent) * 1000, 1),
             "since_escape_ms": (None if self._fired_at is None
                                 else round((sent - self._fired_at) * 1000, 1)),
-        })
+        }
+        if bank:
+            # Away from the threat. A bearing of zero means it is dead ahead, and a fly
+            # still has to pick a side, so the tie goes left.
+            side = "right" if self._threat_az < 0 else "left"
+            detail["threat_bearing_deg"] = round(self._threat_az, 1)
+            detail["bank"] = side
+            try:
+                await reactor.send_command("set_move_lateral", {"move_lateral": side})
+                detail["bank_accepted"] = True
+            except Exception as exc:  # noqa: BLE001 - the longitudinal escape already went
+                detail["bank_accepted"] = False
+                detail["bank_error"] = str(exc)[:90]
+        elif direction == "forward":
+            # Level the wings again, or the next leg of the flight is a slow drift into a
+            # wall and every later escape is measured against a camera already turning.
+            try:
+                await reactor.send_command("set_move_lateral", {"move_lateral": "none"})
+            except Exception:  # noqa: BLE001 - same reasoning as the bank
+                pass
+        self._log(f"cmd:{direction}", frame, detail)
 
     def _log(self, kind: str, frame: int, detail: dict) -> None:
         self.events.append(Event(round(time.time() - self._t0, 3), kind, frame, detail))

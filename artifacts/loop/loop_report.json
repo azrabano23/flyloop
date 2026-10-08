@@ -6,70 +6,70 @@
  "mean_escape_to_command_ms": 0.0,
  "events": [
   {
-   "t": 3.571,
+   "t": 3.444,
    "kind": "escape",
    "frame": 87,
    "wall_s": 1.45
   },
   {
-   "t": 3.571,
+   "t": 3.444,
    "kind": "cmd:back",
    "frame": 87,
    "sent_s": 1.45,
    "since_escape_ms": 0.0
   },
   {
-   "t": 3.571,
+   "t": 3.444,
    "kind": "cmd:forward",
    "frame": 123,
    "since_escape_ms": null
   },
   {
-   "t": 3.659,
+   "t": 3.548,
    "kind": "escape",
    "frame": 124,
    "wall_s": 2.067
   },
   {
-   "t": 3.659,
+   "t": 3.548,
    "kind": "cmd:back",
    "frame": 124,
    "sent_s": 2.067,
    "since_escape_ms": 0.0
   },
   {
-   "t": 3.659,
+   "t": 3.548,
    "kind": "cmd:forward",
    "frame": 161,
    "since_escape_ms": null
   },
   {
-   "t": 3.76,
+   "t": 3.629,
    "kind": "escape",
    "frame": 162,
    "wall_s": 2.7
   },
   {
-   "t": 3.76,
+   "t": 3.63,
    "kind": "cmd:back",
    "frame": 162,
    "sent_s": 2.7,
    "since_escape_ms": 0.0
   },
   {
-   "t": 3.76,
+   "t": 3.63,
    "kind": "cmd:forward",
    "frame": 199,
    "since_escape_ms": null
   },
   {
-   "t": 8.272,
+   "t": 7.67,
    "kind": "escape",
    "frame": 245,
    "wall_s": 4.083
   },
   {
-   "t": 8.272,
+   "t": 7.67,
    "kind": "cmd:back",
    "frame": 245,
    "sent_s": 4.083,
