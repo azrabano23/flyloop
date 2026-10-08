@@ -25,13 +25,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:900;op
  :root{--col:calc(max(0px, (100vw - 1180px) / 2) + 48px)}}
 .lab{font-family:var(--body);font-size:10.5px;font-weight:500;letter-spacing:.2em;
  text-transform:uppercase;color:var(--dim);display:block;margin-bottom:22px}
-h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:1.01}
+h1,h2{font-family:var(--display);font-weight:400;letter-spacing:-.035em;line-height:1.02}
 h1{font-size:clamp(2.7rem,7.6vw,5.6rem)}
 h2{font-size:clamp(1.4rem,2.3vw,1.95rem);margin-bottom:16px;letter-spacing:-.03em}
 p{color:var(--muted);max-width:68ch}
 .lead{font-size:clamp(1.02rem,1.4vw,1.18rem);color:#AEB4BD;max-width:62ch;line-height:1.6}
 section.wrap{padding-top:clamp(74px,7.5vw,118px);padding-bottom:clamp(74px,7.5vw,118px)}
-.sr{font-weight:400;letter-spacing:-.02em;color:var(--muted)}
+.sr{font-weight:400;letter-spacing:-.035em;color:var(--muted)}
 #flash{position:fixed;inset:0;background:var(--fail);opacity:0;pointer-events:none;z-index:800;transition:opacity .09s}
 #flash.on{opacity:.48;transition:none}
 #flash.white{background:#fff}
@@ -76,18 +76,28 @@ section.wrap{padding-top:clamp(74px,7.5vw,118px);padding-bottom:clamp(74px,7.5vw
 .hud.fire .hud-bar span{color:#fff}
 .hud.fire .hud-bar .bar i{background:var(--fail);box-shadow:0 0 22px var(--fail)}
 .hud.fire .hud-tr div b{color:var(--fail)}
-.hud-key{position:absolute;bottom:0;left:var(--col);padding:20px 0;display:grid;gap:6px;
- color:rgba(255,255,255,.44)}
-@media(min-width:900px){.hud-key{padding:26px 0}}
-@media(max-width:620px){.hud-key,.hud-tr{display:none}}
-.hud-key em{display:inline-block;width:16px;height:0;border-top:2px solid;
- vertical-align:middle;margin-right:9px}
-.hud-key .k1{color:rgba(255,255,255,.5)}
-.hud-key .k2{color:var(--accent)}
-.hud-key .k3{color:var(--lim)}
-.hero:fullscreen .hud-key{bottom:46px}
-.hero .wrap{position:relative;z-index:4;width:100%}
+@media(max-width:620px){.hud-tr{display:none}}
+.hero:fullscreen .hero .wrap{position:relative;z-index:4;width:100%}
 .hero .lab{color:#D5D9DF;text-shadow:0 1px 14px rgba(0,0,0,.9)}
+/* the wordmark, bleeding. the drips are four thin bars that grow from the baseline on
+   staggered loops, each with a bead on the end that swells before it falls. */
+.brand{position:relative;display:inline-block;font-family:var(--display);font-weight:800;
+ font-size:clamp(1.15rem,1.9vw,1.6rem);letter-spacing:-.02em;color:#C9150D;margin-bottom:26px;
+ text-shadow:0 0 18px rgba(201,21,13,.55),0 2px 10px rgba(0,0,0,.9)}
+.brand i{position:absolute;top:calc(100% - 4px);width:2.5px;height:0;background:#C9150D;
+ border-radius:0 0 3px 3px;box-shadow:0 0 10px rgba(201,21,13,.65);
+ animation:drip var(--d,6s) cubic-bezier(.4,0,.75,.2) infinite}
+.brand i::after{content:'';position:absolute;left:50%;top:100%;width:6px;height:6px;
+ margin-left:-3px;background:#C9150D;border-radius:50%;
+ box-shadow:0 0 10px rgba(201,21,13,.65);opacity:0;animation:bead var(--d,6s) linear infinite}
+@keyframes drip{0%{height:0}55%{height:var(--h,22px)}80%{height:var(--h,22px)}100%{height:0}}
+@keyframes bead{0%,8%{opacity:0;transform:scale(.3)}
+ 60%{opacity:1;transform:scale(1)}
+ 86%{opacity:1;transform:scale(1.15) translateY(0)}
+ 97%{opacity:0;transform:scale(.7) translateY(16px)}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.brand i,.brand i::after{animation:none}
+ .brand i{height:var(--h,22px)}}
+
 .hero h1{margin-bottom:22px;max-width:15ch;text-shadow:0 2px 46px rgba(0,0,0,.75)}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}
 .btn{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;padding:12px 18px;
@@ -97,7 +107,7 @@ section.wrap{padding-top:clamp(74px,7.5vw,118px);padding-bottom:clamp(74px,7.5vw
 .btn-p{background:var(--accent);border-color:var(--accent)}
 .tally{display:flex;gap:38px;flex-wrap:wrap;margin-top:40px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
 .tally{color:rgba(255,255,255,.62);text-shadow:0 1px 16px rgba(0,0,0,.9)}
-.tally b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:800;letter-spacing:-.04em;color:#fff;margin-bottom:1px;text-shadow:0 2px 24px rgba(0,0,0,.8)}
+.tally b{display:block;font-family:var(--display);font-size:2rem;font-weight:400;letter-spacing:-.04em;color:#fff;margin-bottom:1px;text-shadow:0 2px 24px rgba(0,0,0,.8)}
 .tally .p b{color:var(--pass)}.tally .f b{color:var(--fail)}
 
 /* story beats */
@@ -120,7 +130,7 @@ section.wrap{padding-top:clamp(74px,7.5vw,118px);padding-bottom:clamp(74px,7.5vw
 .stratum:first-of-type{margin-top:34px}
 .sh{display:flex;align-items:baseline;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
 .sh .rn{font-family:var(--body);font-weight:500;font-size:10px;letter-spacing:.2em;color:var(--lim)}
-.sh h3{font-family:var(--display);font-size:1.08rem;font-weight:800;letter-spacing:-.02em}
+.sh h3{font-family:var(--display);font-size:1.12rem;font-weight:400;letter-spacing:-.025em}
 .sh .note{font-size:.84rem;color:var(--dim);margin-left:auto;font-family:var(--mono);letter-spacing:.04em}
 
 .lv{display:grid;gap:12px;margin-top:16px}
@@ -146,7 +156,7 @@ section.wrap{padding-top:clamp(74px,7.5vw,118px);padding-bottom:clamp(74px,7.5vw
 .L .stamp.un{color:var(--muted);border-color:var(--line2);background:rgba(7,8,10,.8)}
 .L .body{padding:0 17px 17px;position:relative;margin-top:-132px;flex:1;display:flex;flex-direction:column}
 .L .lvl{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--lim);margin-bottom:4px}
-.L h4{font-family:var(--serif);font-size:1.9rem;font-weight:400;letter-spacing:-.01em;line-height:1.05;margin-bottom:7px}
+.L h4{font-family:var(--display);font-size:1.75rem;font-weight:400;letter-spacing:-.03em;line-height:1.06;margin-bottom:7px}
 .L p{font-size:.83rem;color:var(--muted);max-width:none;line-height:1.5}
 .L .ent{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:9px}
 .L .vr{margin-top:auto;padding-top:11px;border-top:1px solid var(--line);display:flex;gap:7px;flex-wrap:wrap;
@@ -170,7 +180,7 @@ section.wrap{padding-top:clamp(74px,7.5vw,118px);padding-bottom:clamp(74px,7.5vw
 .chip.fire{background:var(--fail);border-color:var(--fail);color:#fff;animation:p .4s ease-in-out infinite alternate}
 @keyframes p{from{opacity:1}to{opacity:.45}}
 .vbox{border:1px solid var(--line);background:var(--surface2);padding:14px 15px;margin-top:11px}
-.vbox .big{font-family:var(--display);font-size:2.1rem;font-weight:800;letter-spacing:-.04em;line-height:1}
+.vbox .big{font-family:var(--display);font-size:2.1rem;font-weight:400;letter-spacing:-.04em;line-height:1}
 .vbox .sub{font-size:.84rem;color:var(--muted);margin-top:5px;line-height:1.5}
 .ro{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:11px}
 .ro div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -189,7 +199,7 @@ tr.bad{background:rgba(255,59,48,.06)}
 @media(min-width:760px){.three{grid-template-columns:repeat(3,1fr)}}
 .card{background:var(--surface);border:1px solid var(--line);padding:26px}
 .card .n{font-family:var(--body);font-weight:500;font-size:10px;color:var(--lim);letter-spacing:.14em;display:block;margin-bottom:10px;text-transform:uppercase}
-.card .big{font-family:var(--display);font-size:clamp(2rem,4.6vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1}
+.card .big{font-family:var(--display);font-size:clamp(2rem,4.6vw,3rem);font-weight:400;letter-spacing:-.04em;line-height:1}
 .card p{font-size:.86rem;margin-top:7px}
 .stack{font-size:.95rem;margin-top:26px}
 .stack div{display:grid;gap:6px;padding:18px 22px;border:1px solid var(--line);
@@ -201,7 +211,7 @@ tr.bad{background:rgba(255,59,48,.06)}
 .warn{border:1px solid rgba(255,59,48,.24);background:rgba(255,59,48,.04);padding:22px}
 .warn p{color:#B7BCC4;max-width:76ch;font-size:.89rem}
 .ctrl{margin-top:44px;padding-top:22px;border-top:1px solid var(--line2)}
-.ctrl h3{font-family:var(--display);font-size:1.08rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.ctrl h3{font-family:var(--display);font-size:1.12rem;font-weight:400;letter-spacing:-.025em;margin-bottom:8px}
 .ctrl p{font-size:.9rem;max-width:72ch}
 .ctrl .g{display:grid;gap:9px;margin-top:18px;font-family:var(--mono);font-size:11px}
 @media(min-width:760px){.ctrl .g{grid-template-columns:repeat(2,1fr) }}
@@ -253,19 +263,13 @@ footer a{color:var(--accent);text-decoration:none}
       <span id="h-state">giant fibre &middot; watching</span>
       <div class="bar"><i id="h-fill"></i><u></u></div>
     </div>
-    <div class="hud-key">
-      <div><em class="k1"></em>223 ommatidia</div>
-      <div><em class="k2"></em>per-facet optic flow &middot; Reichardt EMD</div>
-      <div><em class="k3"></em>expansion centroid &rarr; escape bearing</div>
     </div>
   </div>
   <div class="wrap">
-    <span class="lab">fright or fly</span>
+    <span class="brand">Fright or Fly<i style="left:11%;--d:5.5s;--h:26px"></i><i style="left:38%;--d:7.5s;--h:17px;animation-delay:1.6s"></i><i style="left:63%;--d:6.4s;--h:31px;animation-delay:3.1s"></i><i style="left:86%;--d:8.2s;--h:21px;animation-delay:.7s"></i></span>
     <h1>You are the <span class="sr" style="font-weight:400">fly.</span></h1>
     <p class="lead">A real fruit fly's escape reflex, dropped into AI-generated Backrooms.
-    You see 223 facets and nothing finer, you cannot tell what is in the room with you, and
-    one neuron fires when something is genuinely about to hit you. The only room you cannot
-    survive is the one whose physics we faked.</p>
+    The only room you cannot survive is the one whose physics we faked.</p>
     <div class="tally">
       <div><b id="t-n">-</b>worlds tested</div>
       <div><b id="t-g">-</b>we could grade</div>
@@ -273,9 +277,7 @@ footer a{color:var(--accent);text-decoration:none}
     </div>
     <div class="cta">
       <a class="btn btn-p" href="play.html">[ Play: you are the fly ]</a>
-      <button class="btn" id="fsbtn">[ Fullscreen demo ]</button>
       <a class="btn" href="#descent">[ The rooms ]</a>
-      <a class="btn" href="#next">[ The real world ]</a>
       <a class="btn" href="https://github.com/azrabano23/flyloop">[ Code ]</a>
     </div>
     <span class="fsnote" id="fsnote">esc to exit</span>
@@ -801,7 +803,7 @@ function scare(){
 }
 
 // Fullscreen demo. One button, the whole screen, sound on, and it keeps descending.
-$('#fsbtn').onclick=async()=>{
+const _fsb=$('#fsbtn');if(_fsb)_fsb.onclick=async()=>{
   const hero=document.querySelector('.hero');
   try{await (hero.requestFullscreen?hero.requestFullscreen():hero.webkitRequestFullscreen());}
   catch(e){}
