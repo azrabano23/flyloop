@@ -19,8 +19,9 @@ Azra Bano, ab2895@scarletmail.rutgers.edu
 
 Recommended:
 
-> **A fruit fly's escape reflex, wired into a Reactor world model, that measures whether a
-> generated world still behaves the same after you update it.**
+> **A game where you try to swat a fly inside an AI-generated world, except the fly's dodge
+> is a real escape circuit, so landing a hit means you found a world whose physics is
+> broken.**
 
 Alternatives:
 
