@@ -87,16 +87,24 @@ class LoopConfig:
     # fact about the circuit, and if it fires on all of them that is a fact about the world
     # model. Written from Backrooms entity canon so the worlds stay in one aesthetic.
     lunge_prompts: tuple[str, ...] = (
-        "A tall thin pale figure with impossibly long limbs unfolds out of the wall ahead "
-        "and sprints at the camera on all fours, filling the frame. Drywall explodes "
-        "outward. Shot on a 1990s camcorder, harsh fluorescent light.",
-        "An enormous grinning face with glowing white eyes emerges from the darkness at "
-        "the end of the hallway and rushes the camera at speed, growing enormous. "
-        "Found footage, blown out highlights.",
-        "A mass of wet dark fur and too many limbs pours around the corner ahead and "
-        "charges straight down the hallway at the camera. Motion blur, camcorder grain.",
-        "A hunched eyeless hound bursts out of the yellow wallpaper directly ahead and "
-        "lunges at the camera, jaws open, filling the view. Harsh flat fluorescent light.",
+        # Entity 3, Smiler. Canon says they exist only in darkness: a pair of glowing eyes
+        # and a luminous grin, nothing else. That makes this the hardest case we can give
+        # the circuit, because it needs contrast structure and a Smiler is almost all
+        # black field. If the fly misses one monster, this is the one.
+        "The fluorescent lights fail and the hallway goes almost black. A pair of glowing "
+        "white eyes and an enormous luminous grin appear in the darkness ahead and rush "
+        "straight at the camera, growing until they fill the frame.",
+        # Entity 8, Hounds. Fast, quadrupedal, emaciated and hairless, hunt in packs.
+        "An emaciated hairless quadrupedal creature sprints around the corner of the yellow "
+        "hallway and charges straight down it at the camera, jaws open, filling the view.",
+        # Entity 10, Skin-Stealer. Tall, gaunt, pale, wearing a human shape badly.
+        "A tall gaunt pale humanoid with wrong proportions unfolds from the wall ahead and "
+        "lurches rapidly at the camera on long limbs, filling the frame.",
+        # Entity 4, Deathmoths. Swarming, textured, high spatial frequency: the opposite
+        # failure mode to the Smiler, and a good check that we are not simply firing on
+        # any large brightness change.
+        "A dense swarm of enormous dark moths pours down the yellow hallway toward the "
+        "camera, wings beating, until they fill the entire view.",
     )
 
 
