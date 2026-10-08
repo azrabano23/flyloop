@@ -80,6 +80,36 @@ async def sweep(args, key: str) -> int:
     print(f"sweeping {len(want)} models, budget ${args.budget_usd:.2f} "
           f"(~{budget_s / 60:.0f} session-minutes at a pessimistic ${RATE_USD_PER_MIN}/min)\n")
 
+    if args.parallel:
+        # Every model at once. Five GPUs metering together finishes in the time one session
+        # takes instead of five, which matters when the credit sits unspent and the clock
+        # does not. Reactor caps concurrent sessions per key, so a refusal here is a real
+        # answer and gets recorded as one rather than killing the sweep.
+        n = min(len(want), args.parallel)
+        print(f"running {n} at a time\n")
+        for k in range(0, len(want), n):
+            batch = want[k:k + n]
+            if spent + args.seconds * len(batch) > budget_s:
+                print("budget spent, stopping")
+                break
+            got = await asyncio.gather(
+                *(one(slug, note, args, key, out) for slug, note in batch),
+                return_exceptions=True)
+            for (slug, note), row in zip(batch, got):
+                if isinstance(row, BaseException):
+                    row = {"model": slug, "note": note, "ok": False,
+                           "error": str(row)[:200], "session_s": 0}
+                spent += row.get("session_s", 0)
+                rows.append(row)
+                print(f"  {slug}: " + (f"{row['escapes']} escape(s), {row['frames']} frames"
+                                       if row["ok"] else f"did not fly, {row['error'][:90]}"))
+            board.write_text(json.dumps({
+                "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "live": True,
+                "rate_usd_per_min": RATE_USD_PER_MIN,
+                "estimated_usd": round(spent / 60 * RATE_USD_PER_MIN, 2),
+                "rows": rows}, indent=1))
+        want = []
+
     for slug, note in want:
         if spent + args.seconds > budget_s:
             print(f"budget spent, stopping before {slug}")
@@ -121,6 +151,9 @@ def main() -> int:
     ap.add_argument("--seed-image", type=Path,
                     default=Path("artifacts/seeds/yellow-hallway.png"))
     ap.add_argument("--lunge-at", type=float, default=10.0)
+    ap.add_argument("--parallel", type=int, default=0,
+                    help="run this many sessions at once. the meter runs on wall clock, so "
+                         "concurrency is the only way to spend a credit in an afternoon")
     ap.add_argument("--models", nargs="*", default=None,
                     help="short names, e.g. lingbot-world-2 helios")
     ap.add_argument("--out", type=Path, default=Path("web/artifacts/sweep"))
