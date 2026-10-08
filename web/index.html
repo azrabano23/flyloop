@@ -304,6 +304,12 @@ footer a{color:var(--accent);text-decoration:none}
   <p>Four strata, going down. Click any level to put it through the instrument. The stamp in
   the corner is the level's verdict, not the fly's: a level can be escaped and still
   fail.</p>
+  <div id="sweep" style="display:none;margin-top:30px">
+    <div class="sh"><span class="rn">live</span><h3>Reactor models, same fly</h3>
+      <span class="note" id="sw-cost">&mdash;</span></div>
+    <div class="scroll"><table id="sw-t"><thead><tr><th>model</th><th>escapes</th>
+      <th>frames judged</th><th>session</th></tr></thead><tbody></tbody></table></div>
+  </div>
   <div id="strata"></div>
 </section>
 
@@ -747,6 +753,22 @@ document.addEventListener('fullscreenchange',()=>{
   if(!H.fs&&H.bed)H.bed.pause();
   heroSize();
 });
+
+
+// A cross-model sweep only appears when one has actually been run. Same probe, same seed
+// plate, same scripted threat, pointed at each Reactor world model in turn.
+fetch('artifacts/sweep/leaderboard.json').then(r=>r.ok?r.json():null).then(S=>{
+  if(!S||!S.rows||!S.rows.length)return;
+  const flew=S.rows.filter(r=>r.ok);
+  if(!flew.length)return;
+  $('#sweep').style.display='';
+  $('#sw-cost').textContent='live sessions \u00b7 about $'+(S.estimated_usd||0).toFixed(2)+' of gpu time';
+  $('#sw-t tbody').innerHTML=flew.sort((a,b)=>b.escapes-a.escapes).map(r=>
+    `<tr><td><b style="color:var(--text);font-weight:500">${r.model}</b><br>
+     <span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${r.note||''}</span></td>
+     <td class="v">${r.escapes}</td><td class="v">${r.frames}</td>
+     <td class="v">${r.session_s}s</td></tr>`).join('');
+}).catch(()=>{});
 
 const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.06});
 document.querySelectorAll('.rev').forEach(el=>io.observe(el));
