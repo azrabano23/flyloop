@@ -32,10 +32,18 @@ __all__ = ["EMDProbe", "ConnectomeProbe"]
 class EMDProbe:
     """Elementary motion detectors feeding a leaky integrator.
 
-    One gain parameter is fitted, once, against a clip whose physics is known exactly
-    (see `calibrate`). Everything after that is held fixed. Calibrating an instrument on
-    a known standard and then not touching it again is the difference between measuring
-    and curve-fitting.
+    CALIBRATION, STATED PLAINLY. Three numbers in here were fitted by us: the output
+    `gain` (see `calibrate`), the adaptation time constant `tau_adapt_s`, and the
+    normalisation constant `sigma`. All three were set against *analytic* looming, whose
+    geometry is known in closed form, by sweeping them to minimise the drift of the firing
+    threshold across an 8x approach-speed range. They were never tuned against anything a
+    world model produced, and they are frozen before any generated clip is scored.
+
+    That sweep took the threshold from 19.0 +/- 4.95 deg to 20.97 +/- 1.24 deg. Worth
+    being blunt about what that means: a real fly needs none of this. fly-C gets
+    19.9 +/- 2.7 deg straight out of unfitted connectome wiring. Having to hand-tune three
+    knobs to approximate for free what the measured circuit simply does is the strongest
+    argument we have for replacing this model with `ConnectomeProbe`.
     """
 
     name = "emd + lplc2 (fallback)"
@@ -43,16 +51,20 @@ class EMDProbe:
     def __init__(
         self,
         retina: Retina,
-        tau_adapt_s: float = 0.080,
+        tau_adapt_s: float = 0.200,
         tau_emd_s: float = 0.035,
         tau_membrane_s: float = 0.050,
         gain: float = 1.0,
+        normalize: bool = True,
+        sigma: float = 0.003,
     ):
         self.retina = retina
         self.tau_adapt_s = tau_adapt_s
         self.tau_emd_s = tau_emd_s
         self.tau_membrane_s = tau_membrane_s
         self.gain = gain
+        self.normalize = normalize
+        self.sigma = sigma
         self._edges, self._radial_w = self._build_edges(retina)
 
     # ------------------------------------------------------------------ topology
@@ -103,6 +115,31 @@ class EMDProbe:
 
         # Only outward motion excites the escape pathway; contraction is not a threat.
         per_facet = np.maximum(per_facet, 0.0)
+
+        if not self.normalize:
+            return per_facet, per_facet.mean(axis=1)
+
+        # Per-facet divisive normalisation.
+        #
+        # Raw, this probe is not speed invariant, and it is not a small effect: across an
+        # 8x approach-speed sweep the threshold slides from 25.5 deg down to 14.3 deg. A
+        # bare Reichardt correlator is tuned to temporal frequency, not velocity, so a
+        # faster approach trips the integrator at a smaller angular size. A real fly does
+        # not do that; it commits at a roughly fixed angular size however fast the object
+        # is coming, which is the property that makes it useful as a ruler.
+        #
+        # Dividing each facet's outward motion by the total motion magnitude at that same
+        # facet replaces "how fast is this patch moving" with "is this patch moving
+        # outward", which carries no speed term. Pooling those gives the *fraction of the
+        # visual field that is expanding* -- and that fraction is set by the object's
+        # angular size, which is exactly the quantity we want the circuit keyed to.
+        #
+        # Normalisation pools of this shape are ubiquitous in the fly visual system, so
+        # this moves the model toward the biology rather than toward a nicer number.
+        mag = np.zeros_like(per_facet)
+        np.add.at(mag, (slice(None), i), np.abs(contrib))
+
+        per_facet = per_facet / (self.sigma + mag)
         return per_facet, per_facet.mean(axis=1)
 
     def membrane(self, pooled: np.ndarray, fps: float) -> np.ndarray:
