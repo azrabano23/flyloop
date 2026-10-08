@@ -59,6 +59,7 @@ class EMDProbe:
         sigma: float = 0.003,
         contrast_norm: bool = True,
         sigma_c: float = 0.02,
+        wide_field_suppress: bool = True,
     ):
         self.retina = retina
         self.tau_adapt_s = tau_adapt_s
@@ -69,6 +70,7 @@ class EMDProbe:
         self.sigma = sigma
         self.contrast_norm = contrast_norm
         self.sigma_c = sigma_c
+        self.wide_field_suppress = wide_field_suppress
         self._edges, self._radial_w = self._build_edges(retina)
 
     # ------------------------------------------------------------------ topology
@@ -138,6 +140,23 @@ class EMDProbe:
         contrib = corr * self._radial_w[None, :]
         per_facet = np.zeros((len(facets), self.retina.n_facets), dtype=np.float64)
         np.add.at(per_facet, (slice(None), i), contrib)
+
+        # Wide-field suppression, and this is the one that makes the detector mean anything
+        # on real video.
+        #
+        # Flying forward down a corridor expands the *entire* visual field: every surface
+        # is approaching, so "how much of the field is expanding" pins at one and stays
+        # there. Pointed at generated hallways the circuit fired in the first tenth of a
+        # second of every clip and never came back down. It was not detecting a threat, it
+        # was detecting that the camera was moving.
+        #
+        # A fly has the same problem and solves it upstream: wide-field cells in the lobula
+        # plate estimate the global flow from self-motion, and that estimate is subtracted,
+        # so what survives is motion that differs from the background. An object coming
+        # out of a wall at you expands faster than the wall does. That difference is the
+        # threat, and the raw expansion is not.
+        if self.wide_field_suppress:
+            per_facet = per_facet - np.median(per_facet, axis=1, keepdims=True)
 
         # Only outward motion excites the escape pathway; contraction is not a threat.
         per_facet = np.maximum(per_facet, 0.0)
