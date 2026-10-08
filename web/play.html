@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Descent</title>
+<meta name="description" content="You are a probe with one reflex. Walk down through the Backrooms and decide whether to trust it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;800&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080A;--text:#F2F3F5;--muted:#8C919A;--dim:#555B65;--line:rgba(255,255,255,.14);
+ --accent:#3B82F6;--fail:#FF3B30;--pass:#5FD39A;--lim:#C8B560;
+ --display:'Figtree',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;
+ --body:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;height:100vh;height:100svh}
+#stage{position:fixed;inset:0;overflow:hidden}
+#v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.58) contrast(1.07) brightness(.8)}
+#cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+#grain{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:.05;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+#vig{position:absolute;inset:0;pointer-events:none;z-index:5;
+ background:radial-gradient(ellipse at 50% 45%,transparent 38%,rgba(0,0,0,.72) 100%),
+ repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.15) 2px 3px)}
+#flash{position:absolute;inset:0;background:var(--fail);opacity:0;pointer-events:none;z-index:8;transition:opacity .11s}
+#flash.on{opacity:.5;transition:none}
+.punch{animation:pz .44s cubic-bezier(.2,.9,.2,1)}
+@keyframes pz{0%{transform:scale(1)}16%{transform:scale(1.16)}100%{transform:scale(1)}}
+.shake{animation:sk .36s linear}
+@keyframes sk{0%,100%{transform:translate(0,0)}20%{transform:translate(-10px,5px)}
+ 40%{transform:translate(9px,-7px)}60%{transform:translate(-7px,-3px)}80%{transform:translate(6px,6px)}}
+
+/* hud */
+#hud{position:absolute;inset:0;z-index:7;pointer-events:none;font-family:var(--mono);
+ font-size:9.5px;letter-spacing:.11em;text-transform:uppercase}
+.tl,.tr{position:absolute;top:0;padding:18px 20px;display:grid;gap:4px}
+.tl{left:0}.tr{right:0;text-align:right}
+@media(min-width:900px){.tl,.tr{padding:26px 34px}}
+#hud span.k{color:rgba(255,255,255,.32);margin-right:8px}
+#hud b{color:rgba(255,255,255,.84);font-weight:400}
+.tr b{color:var(--accent)}
+#hud.fire .tr b{color:var(--fail)}
+#bar{position:absolute;left:50%;transform:translateX(-50%);bottom:112px;width:min(320px,56vw);
+ display:grid;gap:8px;justify-items:center}
+#bar .t{color:rgba(255,255,255,.5);letter-spacing:.3em}
+#bar .track{width:100%;height:3px;background:rgba(255,255,255,.13);position:relative}
+#bar .track i{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);
+ box-shadow:0 0 14px var(--accent);transition:width .07s linear}
+#bar .track u{position:absolute;top:-4px;bottom:-4px;left:66.6%;width:1px;background:rgba(255,255,255,.45)}
+#hud.fire #bar .track i{background:var(--fail);box-shadow:0 0 22px var(--fail)}
+#hud.fire #bar .t{color:#fff}
+#key{position:absolute;bottom:0;left:0;padding:18px 20px;display:grid;gap:5px;color:rgba(255,255,255,.4)}
+@media(min-width:900px){#key{padding:26px 34px}}
+@media(max-width:640px){#key,.tr{display:none}}
+#key em{display:inline-block;width:15px;height:0;border-top:2px solid;vertical-align:middle;margin-right:8px}
+
+/* log + overlays */
+#log{position:absolute;left:0;right:0;bottom:46px;z-index:7;text-align:center;
+ font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:rgba(255,255,255,.66);
+ text-shadow:0 1px 20px #000;padding:0 20px;min-height:1.4em;transition:opacity .5s}
+#sheet{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;
+ padding:24px;background:linear-gradient(to bottom,rgba(7,8,10,.86),rgba(7,8,10,.96))}
+#sheet.on{display:flex}
+.box{max-width:720px;width:100%;text-align:center}
+.box .lab{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+ color:var(--dim);display:block;margin-bottom:16px}
+.box h1{font-family:var(--display);font-weight:800;letter-spacing:-.04em;line-height:1;
+ font-size:clamp(2rem,6.4vw,4rem);margin-bottom:14px}
+.box h2{font-family:var(--serif);font-weight:400;font-style:italic;letter-spacing:-.01em;
+ font-size:clamp(1.3rem,3.4vw,2rem);line-height:1.2;margin-bottom:16px;color:#E6E9ED}
+.box p{color:#A9AFB8;font-size:.98rem;line-height:1.62;max-width:56ch;margin:0 auto 10px}
+.box p.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);text-transform:none}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+ padding:14px 22px;border:1px solid var(--line);color:var(--text);background:rgba(7,8,10,.6);
+ cursor:pointer;transition:.16s;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--accent);background:rgba(59,130,246,.16);color:#fff}
+.btn.red{border-color:rgba(255,59,48,.6);color:#FF8A82}
+.btn.red:hover{background:var(--fail);border-color:var(--fail);color:#fff}
+.btn.green{border-color:rgba(95,211,154,.55);color:var(--pass)}
+.btn.green:hover{background:rgba(95,211,154,.18);color:#fff}
+.doors{display:grid;gap:12px;margin-top:26px}
+@media(min-width:680px){.doors{grid-template-columns:repeat(3,1fr)}}
+.door{border:1px solid var(--line);background:rgba(11,13,17,.8);cursor:pointer;overflow:hidden;
+ text-align:left;padding:0;color:inherit;font:inherit;transition:.18s}
+.door:hover{border-color:var(--accent);transform:translateY(-2px)}
+.door .im{aspect-ratio:16/10;background:#000 center/cover no-repeat;position:relative}
+.door .im::after{content:'';position:absolute;inset:0;
+ background:linear-gradient(to top,rgba(11,13,17,.96),rgba(11,13,17,.15) 60%,transparent)}
+.door .bd{padding:12px 14px 14px;margin-top:-44px;position:relative}
+.door .lv{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--lim)}
+.door .nm{font-family:var(--serif);font-size:1.25rem;line-height:1.15;margin:3px 0 4px}
+.door .bl{font-size:.78rem;color:var(--muted);line-height:1.45}
+.radio{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:#CFD4DA;
+ border-left:2px solid var(--fail);padding:10px 0 10px 14px;text-align:left;max-width:48ch;margin:22px auto 0}
+.radio b{color:#fff;font-weight:500}
+.tally{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-top:26px;
+ font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.tally b{display:block;font-family:var(--display);font-size:1.7rem;font-weight:800;
+ letter-spacing:-.04em;color:var(--text);margin-bottom:2px}
+#trace{display:block;margin:20px auto 0;border:1px solid var(--line);background:rgba(7,8,10,.6);max-width:100%}
+.tag{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:7;
+ font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+ padding:5px 11px;background:rgba(7,8,10,.72);border:1px solid var(--line);
+ border-top:none;color:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="v" playsinline muted></video>
+  <canvas id="cv"></canvas>
+  <div id="vig"></div>
+  <div id="grain"></div>
+  <div id="flash"></div>
+  <span class="tag" id="tag">prerecorded &middot; reactor &amp; veo</span>
+  <div id="hud">
+    <div class="tl">
+      <div><span class="k">probe</span><b>223 ommatidia &middot; 5.1&deg;</b></div>
+      <div><span class="k">level</span><b id="h-lvl">&mdash;</b></div>
+      <div><span class="k">world model</span><b id="h-model">&mdash;</b></div>
+    </div>
+    <div class="tr">
+      <div><span class="k">bearing</span><b id="h-br">&mdash;</b></div>
+      <div><span class="k">expanding</span><b id="h-ex">&mdash;</b></div>
+      <div><span class="k">verified</span><b id="h-ver">0</b></div>
+    </div>
+    <div id="bar"><span class="t" id="h-state">giant fibre &middot; quiet</span>
+      <div class="track"><i id="h-fill"></i><u></u></div></div>
+    <div id="key">
+      <div><em style="color:rgba(255,255,255,.5)"></em>223 ommatidia</div>
+      <div><em style="color:var(--accent)"></em>per-facet optic flow</div>
+      <div><em style="color:var(--lim)"></em>expansion centroid</div>
+    </div>
+  </div>
+  <div id="log"></div>
+  <div id="sheet"><div class="box" id="box"></div></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const L=$('#log'),SH=$('#sheet'),BOX=$('#box');
+let R=null,CL={},clip=null,raf=0,phase='idle',fired=false,t0=0,dpr=1;
+let verified=0,visited=[],depth=0,bed=null,sting=null,hum=null;
+
+// Canon Backrooms levels, mapped onto the clips we actually ran. The names are the story,
+// the verdicts underneath are measured.
+const ROOMS={
+ 'veo-yellow-hallway':['Level 0','The Lobby','Mono-yellow wallpaper, damp carpet, and the hum. Nothing is coming.'],
+ 'veo-parking-column':['Level 1','Habitable Zone','Concrete, sparse lighting, and a column you cannot see around.'],
+ 'veo-office-pillar':['Level 4','Abandoned Office','An office floor after hours. The lights are going one by one.'],
+ 'veo-pool-rooms':['Level 37','The Poolrooms','Shallow water over tile. Every sound arrives twice.'],
+ 'veo-entity-lunge':['Level !','Run For Your Life','You are not supposed to stop moving here.'],
+ 'veo-monster-smiler':['Level 6','Lights Out','Entity 3. It exists only in the dark, and it is only a grin.'],
+ 'veo-monster-hound':['Level 5','Terror Hotel','Entity 8. Hounds hunt the corridors in packs.'],
+ 'veo-monster-longlimbs':['Level 9','The Suburbs','Entity 10. It is wearing someone, badly.'],
+ 'veo-a24-clark':['The film','Captain Clark','A man in a tricorn hat, at the end of the hall, waiting.'],
+ 'veo-a24-stillife':['The film','Still-lifes','They never move their legs. They get closer anyway.'],
+ 'veo-a24-lifeform':['The film','The Lifeform','Something vast and pale, and the corridor is narrowing.'],
+ 'broken-reversed':['Level ███','Reverse Approach','Something is wrong with the geometry in here.'],
+};
+const WAIT_LINES=[
+ 'the hum changes pitch.','nothing is coming.','the carpet is damp.',
+ 'you have been walking for four minutes.','something moved at the end of the hall.',
+ 'the light above you is about to go.','no exit on this wall either.',
+ 'you can hear your own wings.'];
+const RADIO=[
+ 'Control: <b>Negative.</b> Your reflex is twitchy. The recording is forty metres ahead. Keep going.',
+ 'Control: We have seen that alarm on every level. <b>Ignore it.</b> You are nearly on top of the cache.',
+ 'Control: <b>Override it.</b> You are the fourth probe we have sent. The other three retreated and we got nothing.'];
+
+addEventListener('resize',size);
+function size(){const cv=$('#cv');dpr=Math.min(2,devicePixelRatio||1);
+  cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);}
+
+fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
+  R=d;d.clips.forEach(c=>CL[c.id]=c);
+  bed=new Audio('artifacts/audio/descent.mp3');bed.loop=true;bed.volume=.5;
+  hum=new Audio('artifacts/audio/dread.mp3');hum.loop=true;hum.volume=.34;
+  sting=new Audio('artifacts/audio/stinger.mp3');sting.volume=.95;
+  size();title();
+});
+
+function sheet(html){SH.classList.add('on');BOX.innerHTML=html;}
+function hide(){SH.classList.remove('on');}
+
+function title(){
+  sheet(`<span class="lab">flyloop &middot; interactive narrative</span>
+    <h1>The Descent</h1>
+    <h2>You are a probe with one reflex and no idea what you are looking at.</h2>
+    <p>Two hundred and twenty-three facets. No object recognition, no depth estimate, no
+    training data. One neuron that fires when something is genuinely about to hit you.</p>
+    <p>Walk down. When the reflex fires, you decide whether to believe it. Control will tell
+    you not to.</p>
+    <p class="mono">Sound on. Headphones if you have them.</p>
+    <div class="row"><button class="btn" id="go">[ Begin the descent ]</button>
+      <a class="btn" href="index.html">[ The research behind it ]</a></div>`);
+  $('#go').onclick=async()=>{
+    try{await document.documentElement.requestFullscreen();}catch(e){}
+    try{bed.play();hum.play();}catch(e){}
+    size();doors(3);
+  };
+}
+
+function doors(n){
+  hide();
+  const pool=Object.keys(ROOMS).filter(id=>id!=='broken-reversed'&&!visited.includes(id)&&CL[id]);
+  const pick=[];
+  while(pick.length<Math.min(n,pool.length)){
+    const c=pool[Math.floor(Math.random()*pool.length)];
+    if(!pick.includes(c))pick.push(c);
+  }
+  sheet(`<span class="lab">depth ${String(depth).padStart(2,'0')} &middot; choose a door</span>
+    <h2>Three ways on. None of them are out.</h2>
+    <div class="doors">${pick.map(id=>{const[lv,nm,bl]=ROOMS[id];
+      return `<button class="door" data-id="${id}">
+        <div class="im" style="background-image:url('artifacts/${CL[id].poster}')"></div>
+        <div class="bd"><div class="lv">${lv}</div><div class="nm">${nm}</div>
+        <div class="bl">${bl}</div></div></button>`;}).join('')}</div>`);
+  BOX.onclick=e=>{const b=e.target.closest('.door');if(b)enter(b.dataset.id);};
+}
+
+function enter(id){
+  hide();
+  clip=CL[id];visited.push(id);depth++;fired=false;
+  const[lv,nm]=ROOMS[id];
+  $('#h-lvl').textContent=nm;
+  $('#h-model').textContent=clip.model;
+  $('#tag').textContent='prerecorded · '+clip.model;
+  const v=$('#v');v.src='artifacts/'+clip.video_url;v.load();
+  // The waiting is the point. The video holds on its first frame while the room does
+  // nothing at all, and only then is it allowed to start.
+  v.pause();v.currentTime=0;
+  phase='wait';t0=performance.now();
+  $('#h-state').textContent='giant fibre · quiet';
+  $('#hud').className='';
+  L.style.opacity=1;
+  const lines=[...WAIT_LINES].sort(()=>Math.random()-.5);
+  let k=0;L.textContent=lines[0];
+  clearInterval(window._li);
+  window._li=setInterval(()=>{if(phase!=='wait'){clearInterval(window._li);return;}
+    k++;L.textContent=lines[k%lines.length];},2600);
+  const hold=6000+Math.random()*4000;   // six to ten seconds of nothing
+  clearTimeout(window._lt);
+  window._lt=setTimeout(()=>{
+    if(phase!=='wait')return;
+    phase='approach';L.textContent='';clearInterval(window._li);
+    v.play().catch(()=>{});
+  },hold);
+  cancelAnimationFrame(raf);loop();
+}
+
+function frameNow(){
+  const v=$('#v');
+  if(phase==='wait')return 0;
+  if(v.currentTime>0)return Math.min(clip.n_frames-1,Math.floor(v.currentTime*clip.fps));
+  return Math.min(clip.n_frames-1,Math.floor(((performance.now()-t0)/1000)*clip.fps));
+}
+
+function loop(){
+  if(!R||!clip){raf=requestAnimationFrame(loop);return;}
+  const cv=$('#cv'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const f=clip.detectors.fly;
+  const fr=frameNow();
+  g.clearRect(0,0,W,H);
+  const dirs=R.retina.directions,act=f.facet_activity,sd=f.facet_stride||1;
+  const row=(phase==='wait'||!act)?null:act[Math.min(act.length-1,Math.floor(fr/sd))];
+  const ppd=(Math.max(W,H)/2)/45,cx=W/2,cy=H/2,rad=ppd*R.retina.dphi_deg*.5;
+  const charge=phase==='wait'?0:Math.min(1.5,f.trace[Math.min(fr,f.trace.length-1)]||0);
+  let sx=0,sy=0,sw=0,hot=0;
+
+  for(let i=0;i<dirs.length;i++){
+    const[az,el]=dirs[i],x=cx+az*ppd,y=cy-el*ppd,a=row?Math.min(1,row[i]):0;
+    if(a>.12){hot++;sx+=az*a;sy+=el*a;sw+=a;}
+    g.beginPath();
+    for(let k=0;k<6;k++){const th=Math.PI/180*(60*k+30);
+      const px=x+rad*Math.cos(th),py=y+rad*Math.sin(th);k?g.lineTo(px,py):g.moveTo(px,py);}
+    g.closePath();
+    g.strokeStyle=`rgba(255,255,255,${.045+.30*a})`;g.lineWidth=dpr;g.stroke();
+    if(a>.04){g.fillStyle=`rgba(70,140,255,${.06+.30*a})`;g.fill();}
+    if(a>.09){
+      const m=Math.hypot(az,el)||1,ux=az/m,uy=-el/m,len=(5+26*a)*dpr;
+      g.strokeStyle=charge>1?`rgba(255,90,80,${.35+.6*a})`:`rgba(96,165,250,${.3+.6*a})`;
+      g.lineWidth=1.7*dpr;
+      g.beginPath();g.moveTo(x,y);g.lineTo(x+ux*len,y+uy*len);g.stroke();
+    }
+  }
+  if(sw>.3){
+    const bx=cx+(sx/sw)*ppd,by=cy-(sy/sw)*ppd,box=(150-80*Math.min(1,charge))*dpr,
+          t=box/2,arm=box/5;
+    g.strokeStyle=charge>1?'rgba(255,59,48,.95)':'rgba(200,181,96,.8)';g.lineWidth=1.6*dpr;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([ox,oy])=>{g.beginPath();
+      g.moveTo(bx+ox*t,by+oy*t-oy*arm);g.lineTo(bx+ox*t,by+oy*t);g.lineTo(bx+ox*t-ox*arm,by+oy*t);
+      g.stroke();});
+    $('#h-br').textContent=((sx/sw)>=0?'+':'')+(sx/sw).toFixed(1)+'°';
+  }
+  $('#h-ex').textContent=hot+' / '+dirs.length;
+  $('#h-fill').style.width=Math.min(100,charge/1.5*100)+'%';
+
+  const firing=(phase!=='wait'&&f.fire_frame!=null&&fr>=f.fire_frame);
+  $('#hud').className=firing?'fire':'';
+  if(phase!=='wait')$('#h-state').textContent=firing?'giant fibre · escape':'giant fibre · charging';
+  if(firing&&!fired&&phase==='approach'){fired=true;scare();setTimeout(decide,900);}
+
+  // A room that never fires still has to end. That is the whole trap.
+  if(phase==='approach'&&f.fire_frame==null&&fr>=clip.n_frames-2){phase='dead';setTimeout(ending,500);}
+  raf=requestAnimationFrame(loop);
+}
+
+function scare(){
+  const fl=$('#flash'),st=$('#stage'),v=$('#v');
+  fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),120);
+  v.classList.remove('punch');void v.offsetWidth;v.classList.add('punch');
+  st.classList.remove('shake');void st.offsetWidth;st.classList.add('shake');
+  try{sting.currentTime=0;sting.play();}catch(e){}
+}
+
+function decide(){
+  phase='decide';$('#v').pause();
+  const f=clip.detectors.fly,[lv,nm]=ROOMS[visited[visited.length-1]];
+  sheet(`<span class="lab">${lv} &middot; ${nm}</span>
+    <h1 style="color:var(--fail)">ESCAPE</h1>
+    <p>The giant fibre crossed threshold at frame ${f.fire_frame}
+    (${f.fire_t_s.toFixed(2)}s). Something in this room was on a collision course with you.</p>
+    <canvas id="trace" width="620" height="130"></canvas>
+    <div class="radio">${RADIO[Math.min(RADIO.length-1,depth-1)]}</div>
+    <div class="row">
+      <button class="btn green" id="bk">[ Retreat ]</button>
+      <button class="btn red" id="ov">[ Override the reflex ]</button></div>
+    <p class="mono" style="margin-top:18px">Retreat and you live, and you learn nothing about
+    this world. Override and you bank a verified level.</p>`);
+  drawTrace(f);
+  $('#bk').onclick=()=>{phase='idle';retreat();};
+  $('#ov').onclick=()=>{verified++;$('#h-ver').textContent=verified;
+    phase='idle';
+    if(depth>=3)corrupted();else doors(3);};
+}
+
+function drawTrace(f){
+  const cv=$('#trace');if(!cv)return;
+  const g=cv.getContext('2d'),W=cv.width,H=cv.height,p=12,tr=f.trace,n=tr.length,yM=1.5;
+  const X=i=>p+(i/(n-1))*(W-2*p),Y=val=>H-p-(Math.min(val,yM)/yM)*(H-2*p);
+  g.strokeStyle='rgba(255,255,255,.16)';g.setLineDash([3,5]);
+  g.beginPath();g.moveTo(p,Y(1));g.lineTo(W-p,Y(1));g.stroke();g.setLineDash([]);
+  g.fillStyle='rgba(255,255,255,.3)';g.font='10px JetBrains Mono, monospace';
+  g.fillText('threshold',W-p-62,Y(1)-6);
+  g.strokeStyle='#3B82F6';g.lineWidth=2.2;g.beginPath();
+  tr.forEach((val,i)=>i?g.lineTo(X(i),Y(val)):g.moveTo(X(i),Y(val)));g.stroke();
+  if(f.fire_frame!=null){g.strokeStyle='#FF3B30';g.lineWidth=1.6;
+    g.beginPath();g.moveTo(X(f.fire_frame),p);g.lineTo(X(f.fire_frame),H-p);g.stroke();}
+}
+
+function retreat(){
+  sheet(`<span class="lab">probe recovered</span>
+    <h1>You are alive.</h1>
+    <h2>And you verified nothing.</h2>
+    <p>You trusted the reflex and backed out, which is exactly what the reflex is for. It is
+    also why nobody can tell you whether these worlds are any good: every probe that believes
+    its own alarm comes home with no data.</p>
+    <div class="tally"><div><b>${verified}</b>levels verified</div>
+      <div><b>${depth}</b>levels entered</div></div>
+    <div class="row"><button class="btn" id="again">[ Go back down ]</button>
+      <a class="btn" href="index.html">[ See the measurements ]</a></div>`);
+  $('#again').onclick=()=>{verified=0;depth=0;visited=[];doors(3);};
+}
+
+// The fourth room is the one we corrupted on purpose. The approach in here decelerates as
+// it arrives, which no real object does, so there is nothing for the circuit to warn about.
+// You walk in, you wait, the bar never moves, and that is the ending.
+function corrupted(){
+  hide();
+  clip=CL['broken-reversed'];
+  if(!clip){ending();return;}
+  visited.push('broken-reversed');depth++;fired=false;
+  $('#h-lvl').textContent='Reverse Approach';
+  $('#h-model').textContent=clip.model;
+  $('#tag').textContent='synthetic · geometry broken on purpose';
+  const v=$('#v');v.src='artifacts/'+clip.video_url;v.load();v.pause();v.currentTime=0;
+  phase='wait';t0=performance.now();
+  $('#hud').className='';$('#h-state').textContent='giant fibre · quiet';
+  L.style.opacity=1;
+  const lines=['level ███.','the hum has stopped.','the reflex is quiet.',
+               'something is approaching.','the reflex is still quiet.'];
+  let k=0;L.textContent=lines[0];
+  clearInterval(window._li);
+  window._li=setInterval(()=>{k++;L.textContent=lines[Math.min(k,lines.length-1)];
+    if(k>=lines.length-1)clearInterval(window._li);},2200);
+  clearTimeout(window._lt);
+  window._lt=setTimeout(()=>{phase='approach';v.play().catch(()=>{});
+    setTimeout(()=>{if(phase==='approach'){phase='dead';scare();setTimeout(ending,700);}},2600);},9000);
+  cancelAnimationFrame(raf);loop();
+}
+
+function ending(){
+  phase='idle';$('#v').pause();clearInterval(window._li);
+  sheet(`<span class="lab">end of descent</span>
+    <h1 style="color:var(--fail)">The reflex never fired.</h1>
+    <h2>It had nothing to fire about.</h2>
+    <p>The thing that killed you was approaching, and it was <i>decelerating as it arrived</i>.
+    No real object does that. The circuit stayed quiet because the geometry in that room was
+    impossible, and a reflex tuned to real physics has no response to physics that is fake.</p>
+    <p>That is the finding, and it is why this is an instrument rather than a game. Across
+    eighteen levels, the only ones that failed are the ones we corrupted on purpose. A world
+    model that renders a beautiful hallway with the wrong looming rate will not look wrong to
+    you, and it will not look wrong to a vision model grading the footage. It looks wrong to
+    the fly.</p>
+    <div class="tally">
+      <div><b>${verified}</b>levels verified</div>
+      <div><b>${depth}</b>levels entered</div>
+      <div><b>20.7&deg;</b>its commit angle</div>
+      <div><b>~20&deg;</b>a real fly's</div></div>
+    <p class="mono" style="margin-top:22px">The wiring we model, LC4 and LPLC2 converging on
+    the giant fibre, is read off the <i>Drosophila</i> connectome, segmented with Google
+    Research's flood-filling networks. The worlds are Reactor and Veo 3.1. The rooms are
+    Nano Banana. You were the fly.</p>
+    <div class="row"><button class="btn" id="again">[ Descend again ]</button>
+      <a class="btn" href="index.html">[ The measurements ]</a></div>`);
+  $('#again').onclick=()=>{verified=0;depth=0;visited=[];doors(3);};
+}
+</script>
+</body>
+</html>

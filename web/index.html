@@ -46,13 +46,13 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
 .hero:fullscreen .fsnote{display:block}
 
 /* hero */
-.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:104px 0 54px;position:relative;border:none;overflow:hidden}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:104px 0 86px;position:relative;border:none;overflow:hidden}
 .hero-img{position:absolute;inset:0;background:url('assets/hero2.png') center 46%/cover no-repeat;filter:saturate(.62) contrast(1.04)}
 .hero-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,8,10,.9),rgba(7,8,10,.3) 36%,rgba(7,8,10,.95) 82%,var(--bg))}
 .hero-v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.6) contrast(1.06) brightness(.82)}
 .hero-c{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
 .hero::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
- background:linear-gradient(to bottom,rgba(7,8,10,.74),rgba(7,8,10,.12) 34%,rgba(7,8,10,.9) 78%,var(--bg)),
+ background:linear-gradient(to bottom,rgba(7,8,10,.62),rgba(7,8,10,.05) 30%,rgba(7,8,10,.5) 58%,rgba(7,8,10,.93) 84%,var(--bg)),
  repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.14) 2px 3px)}
 .hud{position:absolute;inset:0;z-index:3;pointer-events:none;font-family:var(--mono);font-size:9.5px;
  letter-spacing:.1em;text-transform:uppercase}
@@ -62,8 +62,9 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
 .hud div span{color:rgba(255,255,255,.34);margin-right:8px}
 .hud div b{color:rgba(255,255,255,.82);font-weight:400}
 .hud-tr div b{color:var(--accent)}
-.hud-bar{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
- display:flex;flex-direction:column;align-items:center;gap:9px}
+.hud-bar{position:absolute;left:50%;transform:translateX(-50%);top:92px;
+ display:flex;flex-direction:column;align-items:center;gap:8px}
+@media(min-width:900px){.hud-bar{top:116px}}
 .hud-bar span{color:rgba(255,255,255,.52);letter-spacing:.3em}
 .hud-bar .bar{width:min(300px,52vw);height:3px;background:rgba(255,255,255,.12);position:relative}
 .hud-bar .bar i{position:absolute;inset:0 auto 0 0;width:0%;background:var(--accent);
@@ -82,16 +83,18 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
 .hud-key .k2{color:var(--accent)}
 .hud-key .k3{color:var(--lim)}
 .hero:fullscreen .hud-key{bottom:46px}
-.hero .wrap{position:relative;z-index:1;width:100%}
+.hero .wrap{position:relative;z-index:4;width:100%}
 .hero .lab{color:#D5D9DF;text-shadow:0 1px 14px rgba(0,0,0,.9)}
 .hero h1{margin-bottom:18px;max-width:15ch;text-shadow:0 2px 46px rgba(0,0,0,.75)}
 .cta{display:flex;gap:9px;flex-wrap:wrap;margin-top:28px}
 .btn{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;padding:12px 18px;
- border:1px solid var(--line2);color:var(--text);text-decoration:none;cursor:pointer;background:rgba(7,8,10,.5);backdrop-filter:blur(8px);transition:.16s}
+ border:1px solid rgba(255,255,255,.3);color:#fff;text-decoration:none;cursor:pointer;
+ background:rgba(7,8,10,.74);backdrop-filter:blur(10px);transition:.16s}
 .btn:hover{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.14)}
 .btn-p{background:var(--accent);border-color:var(--accent)}
 .tally{display:flex;gap:30px;flex-wrap:wrap;margin-top:34px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-.tally b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:800;letter-spacing:-.04em;color:var(--text);margin-bottom:1px}
+.tally{color:rgba(255,255,255,.62);text-shadow:0 1px 16px rgba(0,0,0,.9)}
+.tally b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:800;letter-spacing:-.04em;color:#fff;margin-bottom:1px;text-shadow:0 2px 24px rgba(0,0,0,.8)}
 .tally .p b{color:var(--pass)}.tally .f b{color:var(--fail)}
 
 /* story beats */
@@ -211,7 +214,6 @@ footer a{color:var(--accent);text-decoration:none}
 <nav class="rail" id="rail"><ol>
   <li data-t="descent"><i></i>the descent</li>
   <li data-t="instrument"><i></i>instrument</li>
-  <li data-t="log"><i></i>descent log</li>
   <li data-t="stack"><i></i>stack</li>
 </ol></nav>
 
@@ -253,9 +255,10 @@ footer a{color:var(--accent);text-decoration:none}
       <div><b id="t-th">-</b>commit angle, known levels</div>
     </div>
     <div class="cta">
-      <button class="btn btn-p" id="fsbtn">[ Fullscreen demo ]</button>
-      <a class="btn" href="#descent">[ Start the descent ]</a>
-      <a class="btn" href="#worth">[ Why it matters ]</a>
+      <a class="btn btn-p" href="play.html">[ Play: you are the fly ]</a>
+      <button class="btn" id="fsbtn">[ Fullscreen demo ]</button>
+      <a class="btn" href="#descent">[ The 18 levels ]</a>
+      <a class="btn" href="#next">[ The real world ]</a>
       <a class="btn" href="https://github.com/azrabano23/flyloop">[ Code ]</a>
     </div>
     <span class="scrollcue">scroll</span>
@@ -343,83 +346,8 @@ footer a{color:var(--accent);text-decoration:none}
   </div>
 </section>
 
-<section class="wrap rev" id="log">
-  <span class="lab">04 / descent log</span>
-  <h2>The whole run, in one table.</h2>
-  <div class="three">
-    <div class="card"><span class="n">levels where we know the truth</span><div class="big" id="g-k">-</div>
-      <p>four correct, three corrupted on purpose</p></div>
-    <div class="card"><span class="n">corrupted levels flagged</span><div class="big" id="g-c" style="color:var(--pass)">-</div>
-      <p id="g-cw">-</p></div>
-    <div class="card"><span class="n">false alarms</span><div class="big" id="g-fa">-</div>
-      <p>levels we know are correct that it wrongly failed</p></div>
-  </div>
-  <div class="scroll"><table id="board"><thead><tr><th>#</th><th>level</th><th>what came at it</th>
-    <th>the fly</th><th>commit angle</th><th>verdict</th></tr></thead><tbody></tbody></table></div>
-  <p class="tn" style="margin-top:14px">A level is graded only where the geometry is known, so
-  the commit angle can be checked against the truth. On generated levels there is no reference
-  to check against, so the log reports what the fly did and does not pretend to grade the
-  world. That gap is the honest part, and closing it is the next build.</p>
-</section>
-
-<section class="wrap rev" id="reactor">
-  <span class="lab">05 / inside the reactor loop</span>
-  <h2>Reactor is both the thing under test and the test rig.</h2>
-  <p>The recorded half of this grades clips. The live half opens a session on
-  <span class="lm">reactor/lingbot-world-2</span>, flies it, and sends the fly's escape back
-  into the same session that generated the frame it escaped from.</p>
-  <div class="stack" style="margin-top:22px">
-    <div><span class="m">Reactor(model_name, api_key)</span><span class="w">session</span><span class="d">One capped session per run. LingBot World 2 by default, and the same loop runs against fast-h3 for a cross-model comparison.</span></div>
-    <div><span class="m">upload_file → set_image</span><span class="w">seed</span><span class="d">The Nano Banana plate becomes the level's first frame, so the generated world starts from a room we designed.</span></div>
-    <div><span class="m">set_prompt / set_seed / start</span><span class="w">start</span><span class="d">Fixed seed before start, so a run is repeatable and two models can be given the same level.</span></div>
-    <div><span class="m">tracks(recvonly, video).one()</span><span class="w">frames</span><span class="d">Frames arrive on the SDK's own thread. Every one is centre-cropped, reduced to 223 facets, and judged.</span></div>
-    <div><span class="m">set_move_longitudinal</span><span class="w">flight</span><span class="d">Forward while the circuit watches. Back on the frame it commits.</span></div>
-    <div><span class="m">set_move_lateral</span><span class="w">the bank</span><span class="d">A real escape is a banked turn, not a reverse. The eye gives us the threat's bearing, so we bank away from the side it came from.</span></div>
-    <div><span class="m">set_prompt, mid-session</span><span class="w">the threat</span><span class="d">The world is rewritten while it generates so an entity comes at us, without restarting the session or losing the camera.</span></div>
-    <div><span class="m">request_recording</span><span class="w">artifact</span><span class="d">Reactor's own recording of the session, rather than our re-encode of the frames we kept.</span></div>
-    <div><span class="m">disconnect</span><span class="w">the meter</span><span class="d">Non-recoverable on purpose. A recoverable disconnect holds the GPU, and the bill, waiting for a reconnection that is not coming.</span></div>
-  </div>
-  <div style="margin-top:34px">
-    <div class="beat"><span class="k">what we learned</span><span class="v">LingBot World 2
-      generates <i>infinite</i> worlds, and that breaks a naive escape test.
-      <small>Drive the camera forward down a hallway and the model simply makes more hallway.
-      Nothing ever closes on you, so a correctly working escape circuit sits silent for the
-      whole session. That is not a detector failure, it is the model doing exactly what it
-      advertises, and it is why the loop rewrites the prompt mid-generation to bring a threat
-      in rather than waiting for one.</small></span></div>
-    <div class="beat"><span class="k">the honest latency</span><span class="v">Commands land
-      on chunk boundaries, so we measure the delay instead of claiming one.
-      <small>A command applies at the next boundary, roughly three latent frames out. Every
-      run logs the real gap between the circuit committing and the command going out, and
-      that number goes in the report with a note that the floor is Reactor's chunk size and
-      not the fly.</small></span></div>
-    <div class="beat"><span class="k">the bug worth naming</span><span class="v">Frames come
-      in on the SDK's thread, not on your event loop.
-      <small>Calling create_task inside the frame callback raises "no running event loop",
-      the exception disappears into the callback, and the dodge is never sent while the log
-      still prints an escape. The fix is to capture the loop and hand work back with
-      run_coroutine_threadsafe. It cost us a session to find.</small></span></div>
-  </div>
-</section>
-
-<section class="wrap rev" id="live" style="display:none">
-  <span class="lab">06 / live on reactor</span>
-  <h2>The deepest level fights back.</h2>
-  <p>A live Reactor session on LingBot World 2. We drive the camera forward, and every few
-  seconds we rewrite the world mid-generation so a Backrooms entity comes at us. When the
-  circuit fires we send the dodge back into the same running session that made the frame.</p>
-  <div class="three">
-    <div class="card"><span class="n">escapes</span><div class="big" id="l-e">-</div></div>
-    <div class="card"><span class="n">frames judged</span><div class="big" id="l-f">-</div></div>
-    <div class="card"><span class="n">escape to dodge</span><div class="big" id="l-l">-</div>
-      <p>floor is Reactor's chunk boundary, not the circuit</p></div>
-  </div>
-  <div id="l-log" style="font-family:var(--mono);font-size:10.5px;line-height:1.85;color:var(--muted);
-    background:var(--surface);border:1px solid var(--line);padding:16px;max-height:220px;overflow-y:auto;margin-top:16px"></div>
-</section>
-
 <section class="wrap rev" id="stack">
-  <span class="lab">07 / the stack</span>
+  <span class="lab">04 / the stack</span>
   <h2>What each sponsor does here.</h2>
   <div class="stack">
     <div><span class="m">LingBot World 2</span><span class="w">Reactor</span><span class="d">The live level. We drive it forward and rewrite it mid-generation to send entities.</span></div>
@@ -433,7 +361,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap rev" id="next">
-  <span class="lab">08 / the real world</span>
+  <span class="lab">05 / the real world</span>
   <h2>What this is for.</h2>
   <p class="lead" style="margin-bottom:8px">World models are about to become the place
   robots are trained. Nobody can currently tell you whether an update to one changed how an
@@ -468,10 +396,6 @@ footer a{color:var(--accent);text-decoration:none}
   </div>
   <p class="pull">We did not build a better world model. We built the part that tells you
   when one is lying.</p>
-  <p class="tn" style="margin-top:22px;max-width:74ch">Scope, stated plainly: this measures
-  approach geometry, not gravity or contact, and on generated levels there is no ground truth
-  to grade against, so the log reports what the fly did. Two instruments that fail in
-  different ways would close that gap, and that is the next build.</p>
 </section>
 
 <footer class="wrap"><p>flyloop. Reactor × Google DeepMind World Models Hackathon, NYC,
@@ -550,23 +474,13 @@ fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
   $('#t-th').textContent=d.summary.threshold_mean_deg+' ± '+d.summary.threshold_sd_deg+'°';
   $('#fct').textContent=d.retina.n_facets+' facets';
 
-  const corrupt=graded.filter(c=>/^broken/.test(c.id));
-  const caught=corrupt.filter(c=>V[c.id].code==='fail');
-  const correct=graded.filter(c=>!/^broken/.test(c.id));
-  $('#g-k').textContent=graded.length;
-  $('#g-c').textContent=caught.length+' of '+corrupt.length;
-  $('#g-cw').textContent='missed the '+corrupt.filter(c=>V[c.id].code!=='fail')
-    .map(c=>ENT[c.id].name.toLowerCase()).join(' and ')+', where the motion either side of the '+
-    'break is correct.';
-  $('#g-fa').textContent=correct.filter(c=>V[c.id].code==='fail').length;
-
   // the strata
   $('#strata').innerHTML=STRATA.map(s=>`
     <div class="stratum">
       <div class="sh"><span class="rn">${s.rn}</span><h3>${s.name}</h3><span class="note">${s.note}</span></div>
       <div class="lv">${s.ids.map(([id])=>{
         const c=by[id];if(!c)return '';
-        const v=V[id],m=ENT[id],n=ORDER.indexOf(id)+1;
+        const v=V[id],m=ENT[id],n=ORDER.indexOf(id)+1,f=c.detectors.fly;
         const img=PLATE[id]||('artifacts/'+c.poster);
         return `<button class="L${/^broken/.test(id)?' corrupt':''}" data-id="${id}" aria-selected="false">
           <span class="no">${String(n).padStart(2,'0')}</span>
@@ -580,6 +494,8 @@ fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
             <span class="vr">
               <span class="fly${v.fly?'':' hit'}">fly ${v.fly?'escaped':'hit'}</span>
               ${v.th!=null?`<span class="deg">${v.th.toFixed(1)}°</span>`:''}
+              ${f.warning_s!=null?`<span class="deg">${f.warning_s.toFixed(2)}s warning</span>`:''}
+              ${f.peak_facets!=null?`<span class="deg">${f.peak_facets} facets</span>`:''}
             </span>
           </div></button>`;}).join('')}</div>
     </div>`).join('');
@@ -588,19 +504,6 @@ fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
     document.querySelectorAll('.L').forEach(x=>x.setAttribute('aria-selected',x===b));
     select(by[b.dataset.id]);
     $('#instrument').scrollIntoView({behavior:'smooth',block:'start'});};
-
-  // the log, in descent order
-  $('#board tbody').innerHTML=ORDER.map((id,i)=>{
-    const c=by[id];if(!c)return '';
-    const v=V[id],m=ENT[id],f=c.detectors.fly;
-    const cls=v.code==='fail'?'fz':v.code==='pass'?'pz':'v';
-    return `<tr class="${v.code==='fail'?'bad':''}"><td class="v">${String(i+1).padStart(2,'0')}</td>`+
-      `<td><b style="color:var(--text);font-weight:500">${m.name}</b><br>`+
-      `<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${m.lvl.toUpperCase()}</span></td>`+
-      `<td>${m.ent}</td>`+
-      `<td class="v" style="color:${f.fired?'var(--text)':'var(--fail)'}">${f.fired?'escaped':'hit'}</td>`+
-      `<td class="v">${c.ground_truth&&f.fired?f.theta_at_fire_deg.toFixed(1)+'°':'—'}</td>`+
-      `<td class="${cls}">${v.stamp.toUpperCase()}</td></tr>`;}).join('');
 
   heroStart(d);
   const first=by[ORDER[9]]||d.clips[0];   // open on the Smiler: the descent's best frame
@@ -650,78 +553,6 @@ function frameNow(){
   return Math.floor((((performance.now()-t0)/1000)%dur)*clip.fps);
 }
 
-// The fly, drawn over the level. You should be able to see the thing the whole page is
-// about: it hovers while the circuit watches, it bolts on the frame the circuit commits,
-// and on a level it never commits in, the level closes on it.
-function drawFly(fr){
-  const cv=$('#flyc'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
-  g.clearRect(0,0,W,H);
-  const f=clip.detectors.fly,ff=f.fire_frame,n=clip.n_frames,fps=clip.fps;
-  const v=Math.min(1,(f.trace[Math.min(fr,f.trace.length-1)]||0)/1.5);
-  const now=performance.now()/1000;
-  let x=W*.63,y=H*.44,sc=1,alpha=1,rot=0,squash=1,streak=null,state='watching';
-
-  if(ff!=null&&fr>=ff){
-    // bolting. 0.4s of dart, up and to the left, shrinking as it goes.
-    const p=Math.min(1,(fr-ff)/(0.40*fps)),e=p*p;
-    x-=W*.70*e;y-=H*.34*e;sc=1-.55*e;alpha=1-.92*e*e;rot=-0.5*e;
-    streak=e;state='gone';
-  }else if(ff==null&&fr>n*0.80){
-    // the level lands on it. squash, tilt, and hold.
-    const p=Math.min(1,(fr-n*0.80)/(n*0.12));
-    squash=1-.72*p;sc=1+.45*p;rot=.3*p;
-    x+=Math.sin(now*55)*5*(1-p);state='hit';
-  }else{
-    // hovering. the bob tightens as the command charges, which is the tell before it goes.
-    y+=Math.sin(now*(7+16*v))*(3+9*v);
-    x+=Math.cos(now*(5+9*v))*(2+4*v);
-  }
-
-  if(streak!=null&&streak<.9){
-    g.strokeStyle=`rgba(255,255,255,${.3*(1-streak)})`;g.lineWidth=2;
-    g.beginPath();g.moveTo(x,y);g.lineTo(x+W*.26*streak,y+H*.13*streak);g.stroke();
-  }
-
-  g.save();g.globalAlpha=alpha;g.translate(x,y);g.rotate(rot);g.scale(sc,sc*squash);
-
-  // the charge reticle: a ring that tightens with the membrane, red once it is close
-  if(state==='watching'&&v>.08){
-    const r=30-16*v;
-    g.strokeStyle=v>.72?`rgba(255,59,48,${.35+.5*v})`:`rgba(59,130,246,${.2+.4*v})`;
-    g.lineWidth=1.2;g.setLineDash([4,5]);g.beginPath();g.arc(0,0,r,0,6.2832);g.stroke();
-    g.setLineDash([]);
-  }
-
-  // wings first, so the body sits on top of them
-  const wa=state==='hit'?.1:.26+.12*Math.sin(now*70);
-  g.fillStyle=`rgba(210,226,255,${wa})`;
-  [-1,1].forEach(s=>{g.save();g.rotate(s*.5);g.beginPath();
-    g.ellipse(-3,s*8,13,4.6,s*.25,0,6.2832);g.fill();g.restore();});
-
-  // body: thorax and a striped abdomen, which is most of what reads at this size
-  g.fillStyle='#14161B';g.beginPath();g.ellipse(-6,0,7.5,5.6,0,0,6.2832);g.fill();
-  g.fillStyle='#1B1E25';g.beginPath();g.ellipse(5,0,9.5,6,0,0,6.2832);g.fill();
-  g.fillStyle='rgba(0,0,0,.55)';
-  [2,6,10].forEach(dx=>{g.beginPath();g.ellipse(dx,0,1.1,5.4,0,0,6.2832);g.fill();});
-
-  // the eyes are red, which is both true of Drosophila and the only colour it needs
-  g.fillStyle=state==='hit'?'#5A1A16':'#C8322A';
-  [-1,1].forEach(s=>{g.beginPath();g.ellipse(-12,s*3.1,4.4,4,0,0,6.2832);g.fill();});
-  g.fillStyle='rgba(255,255,255,.4)';
-  [-1,1].forEach(s=>{g.beginPath();g.ellipse(-13.2,s*3.8,1.3,1.1,0,0,6.2832);g.fill();});
-
-  if(state==='hit'){
-    g.fillStyle='rgba(255,59,48,.55)';
-    for(let k=0;k<7;k++){const a=k*.9,d=13+k*2.2;
-      g.beginPath();g.arc(Math.cos(a)*d,Math.sin(a)*d*.5,1.6+(k%3),0,6.2832);g.fill();}
-  }
-  g.restore();
-
-  const tag=$('#flytag');
-  tag.textContent=state==='gone'?'fly · gone':state==='hit'?'fly · hit':'fly · watching';
-  tag.className='flytag'+(state==='gone'?' gone':state==='hit'?' hit':'');
-}
-
 function drawEye(fr){
   const cv=$('#eye'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
   g.clearRect(0,0,W,H);
@@ -762,7 +593,7 @@ function drawPlot(fr){
 function loop(){
   if(!R||!clip)return;
   const fr=frameNow(),ff=clip.detectors.fly.fire_frame;
-  drawFly(fr);drawEye(fr);drawPlot(fr);
+  drawEye(fr);drawPlot(fr);
   const firing=(ff!=null&&fr>=ff);
   const c=$('#st');
   c.textContent=firing?'ESCAPE':'WATCHING';
@@ -774,21 +605,6 @@ function loop(){
   if(fr<3)flashed=false;
   raf=requestAnimationFrame(loop);
 }
-
-// Only a session that really reached Reactor belongs in the live panel.
-fetch('artifacts/loop/loop_report.json').then(r=>r.ok?r.json():null).then(L=>{
-  if(!L||L.live===false)return;
-  $('#live').style.display='';
-  $('#l-e').textContent=L.escapes;
-  $('#l-f').textContent=L.frames;
-  $('#l-l').textContent=L.mean_escape_to_command_ms!=null?L.mean_escape_to_command_ms+' ms':'n/a';
-  $('#l-log').innerHTML=(L.events||[]).map(e=>{
-    const col=e.kind==='escape'?'var(--fail)':e.kind.startsWith('cmd')?'var(--accent)'
-      :e.kind.startsWith('monster')?'var(--lim)':'var(--dim)';
-    return `<div><span style="color:var(--dim)">[${e.t.toFixed(2)}s]</span> `+
-      `<span style="color:${col}">${e.kind}</span> <span style="color:var(--dim)">frame ${e.frame}</span></div>`;
-  }).join('');
-}).catch(()=>{});
 
 
 /* ------------------------------------------------------------------ hero instrument
