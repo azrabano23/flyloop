@@ -60,6 +60,7 @@ class EMDProbe:
         contrast_norm: bool = True,
         sigma_c: float = 0.02,
         wide_field_suppress: bool = True,
+        background_pct: float = 20.0,  # low percentile: a large frontal threat must not become its own baseline
     ):
         self.retina = retina
         self.tau_adapt_s = tau_adapt_s
@@ -71,6 +72,7 @@ class EMDProbe:
         self.contrast_norm = contrast_norm
         self.sigma_c = sigma_c
         self.wide_field_suppress = wide_field_suppress
+        self.background_pct = background_pct
         self._edges, self._radial_w = self._build_edges(retina)
 
     # ------------------------------------------------------------------ topology
@@ -101,6 +103,17 @@ class EMDProbe:
         return np.asarray(edges, dtype=np.int64), np.asarray(weights, dtype=np.float64)
 
     # ------------------------------------------------------------------- the model
+
+    @property
+    def settle_s(self) -> float:
+        """Slowest time constant in the chain, which sets how long the circuit needs.
+
+        Adding contrast gain control put a 0.3 s normaliser upstream of a 0.2 s adaptation
+        stage, so keying the blackout off adaptation alone let through a transient that had
+        not settled. The guard has to track whichever filter is slowest, not whichever one
+        was written first.
+        """
+        return max(self.tau_adapt_s, 0.3 if self.contrast_norm else 0.0)
 
     def expansion_signal(self, facets: np.ndarray, fps: float) -> tuple[np.ndarray, np.ndarray]:
         """Run the front end. Returns (per-facet outward motion (T, F), pooled (T,))."""
@@ -155,8 +168,16 @@ class EMDProbe:
         # so what survives is motion that differs from the background. An object coming
         # out of a wall at you expands faster than the wall does. That difference is the
         # threat, and the raw expansion is not.
+        # The background estimate is a LOW percentile, not the median, and the difference
+        # matters. A fly sees about 270 degrees, so a looming object never covers most of
+        # its eye and the median facet is always background. Our frontal array spans 80
+        # degrees, where something bursting out of a wall easily fills more than half the
+        # field. Take the median there and the threat becomes its own baseline: you
+        # subtract it from itself and the circuit goes quiet exactly when it should scream.
+        # The quietest fifth of the array is a background estimate that survives that.
         if self.wide_field_suppress:
-            per_facet = per_facet - np.median(per_facet, axis=1, keepdims=True)
+            bg = np.percentile(per_facet, self.background_pct, axis=1, keepdims=True)
+            per_facet = per_facet - bg
 
         # Only outward motion excites the escape pathway; contraction is not a threat.
         per_facet = np.maximum(per_facet, 0.0)
@@ -199,7 +220,7 @@ class EMDProbe:
         # Ignore crossings before the filters have settled. The longest time constant in
         # the chain is the adaptation stage, and three of those is the usual rule of thumb
         # for an exponential filter reaching steady state.
-        warmup = min(int(3 * self.tau_adapt_s * fps), len(v) // 2)
+        warmup = min(int(3 * self.settle_s * fps), len(v) // 2)
         above = np.flatnonzero(v[warmup:] >= 1.0)
         fire_frame = int(above[0] + warmup) if above.size else None
 
