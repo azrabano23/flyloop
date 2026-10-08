@@ -335,11 +335,14 @@ footer a{color:var(--accent);text-decoration:none}
   <p>Four strata, going down. Click any level to put it through the instrument. The stamp in
   the corner is the level's verdict, not the fly's: a level can be escaped and still
   fail.</p>
-  <div id="sweep" style="display:none;margin-top:30px">
-    <div class="sh"><span class="rn">live</span><h3>Reactor models, same fly</h3>
+  <div id="sweep" style="display:none;margin-top:34px">
+    <div class="sh"><span class="rn">live</span><h3>Reactor worlds, same fly</h3>
       <span class="note" id="sw-cost">&mdash;</span></div>
-    <div class="scroll"><table id="sw-t"><thead><tr><th>model</th><th>escapes</th>
-      <th>frames judged</th><th>session</th></tr></thead><tbody></tbody></table></div>
+    <p style="margin-top:14px">One probe, one seed plate, one prompt, one fixed seed, pointed
+    at each Reactor world model in turn. The footage below is not Veo. It is the world the
+    fly was flying, recorded out of the session it was flying in.</p>
+    <div class="lv" id="sw-cards" style="margin-top:20px"></div>
+    <p class="tn" id="sw-note" style="margin-top:16px"></p>
   </div>
   <div id="strata"></div>
   <div id="ctrl" class="ctrl"></div>
@@ -801,11 +804,40 @@ fetch('artifacts/sweep/leaderboard.json').then(r=>r.ok?r.json():null).then(S=>{
   if(!flew.length)return;
   $('#sweep').style.display='';
   $('#sw-cost').textContent='live sessions \u00b7 about $'+(S.estimated_usd||0).toFixed(2)+' of gpu time';
-  $('#sw-t tbody').innerHTML=flew.sort((a,b)=>b.escapes-a.escapes).map(r=>
-    `<tr><td><b style="color:var(--text);font-weight:500">${r.model}</b><br>
-     <span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${r.note||''}</span></td>
-     <td class="v">${r.escapes}</td><td class="v">${r.frames}</td>
-     <td class="v">${r.session_s}s</td></tr>`).join('');
+
+  $('#sw-cards').innerHTML=flew.sort((a,b)=>b.escapes-a.escapes).map(r=>{
+    const slug=r.model.split('/').pop();
+    // Which commands the model took is a result, not plumbing: the catalog does not share
+    // one action space, and a probe that assumes LingBot's vocabulary silently does nothing
+    // on the others.
+    const acc=r.accepted||{};
+    const refused=Object.keys(acc).filter(k=>!acc[k]);
+    return `<div class="L" style="cursor:default">
+      <video src="artifacts/sweep/${slug}/reactor-live.mp4" playsinline muted loop autoplay
+        style="width:100%;aspect-ratio:1/1;object-fit:cover;background:#000;display:block"></video>
+      <div class="body" style="margin-top:0;padding-top:14px">
+        <span class="lvl">${r.model}</span>
+        <h4 style="font-size:1.45rem">${r.escapes} escapes</h4>
+        <p>${r.note||''}</p>
+        <span class="vr">
+          <span class="fly">${r.frames} frames judged</span>
+          <span class="deg">${r.session_s}s live</span>
+          ${refused.length?`<span class="deg">refused ${refused.join(', ')}</span>`:''}
+        </span>
+      </div></div>`;}).join('');
+
+  const didnt=S.rows.filter(r=>!r.ok);
+  const refusedAny=flew.filter(r=>Object.values(r.accepted||{}).some(v=>!v));
+  const bits=[];
+  if(refusedAny.length)
+    bits.push(refusedAny.length+' of the '+flew.length+' that flew refused a movement command '+
+      'outright, so the same probe had to work without steering the camera on them. Reactor\u2019s '+
+      'catalog does not share one action space, which is exactly why every session asks for the '+
+      'schema before it sends anything.');
+  if(didnt.length)
+    bits.push(didnt.length+' more hit a concurrent-session cap rather than a problem with the '+
+      'probe: '+didnt.map(r=>r.model.split('/').pop()).join(', ')+'.');
+  $('#sw-note').innerHTML=bits.join(' ');
 }).catch(()=>{});
 
 const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.06});
