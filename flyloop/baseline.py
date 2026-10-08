@@ -72,15 +72,23 @@ class AnalyticBaseline:
 
     name = "analytic expansion"
 
-    def __init__(self, threshold_deg: float = ESCAPE_THRESHOLD_DEG, fov_deg: float = 90.0):
+    def __init__(self, threshold_deg: float = ESCAPE_THRESHOLD_DEG, fov_deg: float = 90.0,
+                 warmup_s: float = 0.6):
         self.threshold_deg = threshold_deg
         self.fov_deg = fov_deg
+        # The fly circuit cannot fire until its filters settle, so the baseline is held to
+        # the same blackout. Without this the comparison is rigged: on a clip that is
+        # already wrong in frame one, the baseline fires immediately while the fly is still
+        # warming up, and the gap between them gets scored as the fly "discriminating"
+        # when it is really just the fly being gagged. Same window, or the number is junk.
+        self.warmup_s = warmup_s
 
     def run(self, frames: np.ndarray, fps: float) -> Detection:
         theta = angular_size_deg(frames, fov_deg=self.fov_deg)
 
-        above = np.flatnonzero(theta >= self.threshold_deg)
-        fire_frame = int(above[0]) if above.size else None
+        warmup = min(int(self.warmup_s * fps), len(theta) // 2)
+        above = np.flatnonzero(theta[warmup:] >= self.threshold_deg)
+        fire_frame = int(above[0] + warmup) if above.size else None
 
         return Detection(
             name=self.name,

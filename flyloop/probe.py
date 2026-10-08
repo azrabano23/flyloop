@@ -57,6 +57,8 @@ class EMDProbe:
         gain: float = 1.0,
         normalize: bool = True,
         sigma: float = 0.003,
+        contrast_norm: bool = True,
+        sigma_c: float = 0.02,
     ):
         self.retina = retina
         self.tau_adapt_s = tau_adapt_s
@@ -65,6 +67,8 @@ class EMDProbe:
         self.gain = gain
         self.normalize = normalize
         self.sigma = sigma
+        self.contrast_norm = contrast_norm
+        self.sigma_c = sigma_c
         self._edges, self._radial_w = self._build_edges(retina)
 
     # ------------------------------------------------------------------ topology
@@ -101,6 +105,28 @@ class EMDProbe:
         # Photoreceptor adaptation: keep what changed, discard the standing level. This is
         # why a uniformly dim scene does not look like an approaching object.
         hp = facets - lowpass(facets, self.tau_adapt_s, fps)
+
+        if self.contrast_norm:
+            # Contrast gain control, and this one was forced on us by real footage.
+            #
+            # Calibrated on a black disc against white, the circuit is tuned to enormous
+            # contrast. Pointed at a generated hallway of flat yellow wallpaper it never
+            # came close to firing (peak 0.35 of threshold) even though the wall really was
+            # closing on the camera. The expansion was there; the absolute contrast was not.
+            #
+            # Dividing by the instantaneous spread of activity across the array makes the
+            # response depend on the *structure* of the contrast rather than its depth, so
+            # a faint scene and a stark one are read on the same scale. Flies do this in
+            # the lamina for the same reason: real scenes vary in contrast by orders of
+            # magnitude and a fixed-gain detector would be useless outdoors.
+            # The normaliser has to be SLOW. Dividing by the instantaneous spread looks
+            # equivalent and is not: in the first frames the adaptation filter has not
+            # settled, the spread is near zero, and the division turns sensor noise into a
+            # spike that fires the circuit at frame 5 of every clip. Real contrast gain
+            # control adapts over hundreds of milliseconds, so a lagging estimate is both
+            # the correct model and the stable one.
+            rms = np.sqrt((hp**2).mean(axis=1, keepdims=True))
+            hp = hp / (self.sigma_c + lowpass(rms, 0.3, fps))
 
         # Reichardt correlator: facet i delayed against facet j undelayed, minus the
         # mirror image. Positive means motion ran from i to j.
@@ -151,8 +177,12 @@ class EMDProbe:
         per_facet, pooled = self.expansion_signal(facets, fps)
         v = self.membrane(pooled, fps)
 
-        above = np.flatnonzero(v >= 1.0)
-        fire_frame = int(above[0]) if above.size else None
+        # Ignore crossings before the filters have settled. The longest time constant in
+        # the chain is the adaptation stage, and three of those is the usual rule of thumb
+        # for an exponential filter reaching steady state.
+        warmup = min(int(3 * self.tau_adapt_s * fps), len(v) // 2)
+        above = np.flatnonzero(v[warmup:] >= 1.0)
+        fire_frame = int(above[0] + warmup) if above.size else None
 
         return Detection(
             name=self.name,

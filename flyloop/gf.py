@@ -159,8 +159,11 @@ class GiantFiberProbe:
         per_facet, size_raw, _ = self._channels(frames, fps, fov_deg)
         out = self._gf(self._size_deg(size_raw), fps)
 
-        above = np.flatnonzero(out["v_gf"] >= self.threshold_mv)
-        fire_frame = int(above[0]) if above.size else None
+        # Same warmup guard as the single-channel probe: the size channel inherits the
+        # adaptation filter, so an early crossing is settling, not an escape.
+        warmup = min(int(3 * self._size.tau_adapt_s * fps), len(out["v_gf"]) // 2)
+        above = np.flatnonzero(out["v_gf"][warmup:] >= self.threshold_mv)
+        fire_frame = int(above[0] + warmup) if above.size else None
 
         return Detection(
             name=self.name,

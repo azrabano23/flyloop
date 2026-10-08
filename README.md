@@ -92,34 +92,39 @@ scale, so we know true depth and can fly a camera at an exactly known speed.
 All offline, on clips whose geometry is known in closed form. `python scripts/run_synthetic.py`.
 
 **The circuit behaves like the animal.** Across an 8x approach-speed sweep (0.25 to 2.0 m/s)
-the escape commits at **20.97 +/- 1.24 deg**. The behavioural literature puts the escape
-threshold near 20 deg (Ache et al. 2019).
+the two-channel giant fibre commits at **20.7 +/- 0.63 deg**. The behavioural literature
+puts the escape threshold near 20 deg (Ache et al. 2019).
 
-**But there is a tradeoff, and it is the most interesting thing we found.** The same
-circuit cannot be both stable and sensitive:
+**What the second channel actually buys.** Three detectors, same clips, same blackout
+window:
 
 | configuration | threshold SD over 8x speed | lead over the trig baseline on broken clips |
 | --- | --- | --- |
-| invariant (normalised) | **1.24 deg** | 1.0 frames |
-| sensitive (raw) | 4.95 deg | **5.0 frames** |
+| one channel, raw (rate) | 5.73 deg | **17.3 frames** |
+| one channel, normalised (size) | 2.01 deg | 0.0 frames |
+| two channels (giant fibre) | **0.63 deg** | 0.0 frames |
 
-Normalising the circuit for speed invariance turns its pooled drive into "what fraction of
-the field is expanding", which *is* angular size — so it converges on the analytic baseline
-and stops catching clips whose expansion profile is wrong. Back the normalisation off and
-it catches them, but its threshold slides with speed.
+Read that honestly: the two-channel model gives the most stable threshold by a wide
+margin, and that is what makes it usable as a ruler. It does **not** give early warning on
+broken clips; the raw rate channel does that, and pays for it with a threshold that slides
+with approach speed.
 
-So the honest answer to "why not three lines of trigonometry" is: **at one end of this
-curve, there is no reason — they are the same detector.** The fly only earns its keep at
-the other end, where it fires 5 frames ahead of trig on an approach that is smoothly,
-plausibly wrong.
+We first measured a much larger discrimination advantage for the two-channel model and it
+was wrong. The fly circuit cannot fire until its filters settle, and the baseline had no
+such blackout, so on clips that are already broken in frame one the baseline fired
+immediately while the fly was still gagged. That gap got scored as discrimination. Holding
+both detectors to the same window removes it. The number above is the one that survived.
 
-**How the animal escapes the tradeoff.** It does not use one channel. Two visual
-projection populations converge on the giant fibre and are tuned to different things: LC4
-to angular velocity, LPLC2 to angular size (Ache et al. 2019). That asymmetry is what makes
-the pair a size-and-speed detector when neither is one alone. We built both channels and
-summed them with the published weights, and the result sits off the single-channel frontier:
-**1.41 deg** spread with a **3.33 frame** lead on broken clips, where the frontier at that
-stability allows only about 1.2.
+**Why the trig baseline is not enough anyway.** On a real generated hallway it fires in
+frame 0 and reports a 77 deg object, because it has to threshold the image to find
+something and there is no dark object to find. It is measuring carpet shadows. The fly
+circuit needs no segmentation, which is the whole reason it transfers to real footage at
+all.
+
+**Known limit, stated plainly.** On generated video the circuit saturates: calibrating its
+absolute gain on a synthetic black-disc-on-white clip does not transfer to a low-contrast
+hallway. Contrast gain control narrows the gap but does not close it. Until that is fixed,
+treat firing times on generated clips as qualitative.
 
 ## pipeline
 
