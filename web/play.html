@@ -18,26 +18,18 @@ body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;
  height:100vh;height:100svh;font-variant-numeric:tabular-nums}
 #stage{position:fixed;inset:0;overflow:hidden;background:#000}
 
-#eye{position:absolute;inset:0;width:100%;height:100%;display:block}
-#v,#pv{display:block}
-#v{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none}
+#v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+ filter:saturate(.5) contrast(1.04)}
+#eye{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+#still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+ filter:saturate(.5) contrast(1.04)}
 #src{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none}
-#pip{position:absolute;left:16px;bottom:86px;width:168px;z-index:8;border:1px solid var(--line);background:#000}
-#pip video{width:100%;display:block;opacity:.85}
-#pip .cap{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;
- padding:6px 8px;background:rgba(7,8,10,.9);color:rgba(255,255,255,.52);border-bottom:1px solid var(--line);display:block}
 /* Wide enough to sit the two views side by side: your eye in the middle, the camera's view
    parked in the dead space beside it, so the comparison is one glance and not a hunt. */
 @media(min-width:1180px){
-  #pip{left:auto;right:4.5vw;top:50%;bottom:auto;transform:translateY(-50%);width:clamp(190px,17vw,300px)}
-  #pip .cap{font-size:9px;padding:7px 10px}
-  #eyecap{display:block}
-}
-@media(max-width:760px){#pip{width:116px;bottom:96px}}
+      }
 /* and a matching label under the eye, so it is obvious which one is yours */
 /* sits just above the eye disc, whose radius is 40 per cent of the short edge */
-#eyecap{display:none;position:absolute;left:24px;top:92px;z-index:7;font-family:var(--mono);font-size:9px;
- letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);white-space:nowrap}
 
 #grain{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:.05;
  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -158,11 +150,10 @@ body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;
 </head>
 <body>
 <div id="stage">
-  <canvas id="eye"></canvas>
+  <img id="still" alt="">
   <video id="v" playsinline muted></video>
+  <canvas id="eye"></canvas>
   <canvas id="src" width="200" height="200"></canvas>
-  <div id="pip"><span class="cap">what a camera sees</span><video id="pv" playsinline muted></video></div>
-  <span id="eyecap">what you see</span>
   <div id="vig"></div>
   <div id="grain"></div>
   <div id="flash"></div>
@@ -197,6 +188,7 @@ body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;
     <span><kbd>&larr;</kbd><kbd>A</kbd> dodge left</span>
     <span><kbd>&rarr;</kbd><kbd>D</kbd> dodge right</span>
     <span><kbd>nothing</kbd> override the reflex</span>
+    <span><kbd>any key</kbd> skip the wait</span>
     <span id="k-cv" style="display:none">hand left or right &middot; dodge</span>
   </div>
   <div id="sheet"><div class="box" id="box"></div></div>
@@ -378,39 +370,29 @@ function facetLum(px,S,az,el){
 
 function drawEye(fr,live){
   const cv=$('#eye'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
-  g.fillStyle='#000';g.fillRect(0,0,W,H);
+  g.clearRect(0,0,W,H);
   if(!R)return null;
   if(!LAT||LAT.W!==W||LAT.H!==H)buildLattice();
   if(!LAT)return null;
-  const px=sampleFrame(),S=$('#src').width;
   const act=clip?clip.detectors.fly.facet_activity:null;
   const sd=(clip&&clip.detectors.fly.facet_stride)||1;
   const row=(live&&act)?act[Math.min(act.length-1,Math.floor(fr/sd))]:null;
   const r=LAT.r;
 
-  // Contrast gain control, which the circuit itself does: stretch each frame against its
-  // own range. Without it 223 facets of a dim corridor are 223 near-identical greys and
-  // the player cannot see the room at all.
-  const lum=new Float32Array(LAT.cells.length);
-  let lo=1,hi=0;
-  for(let n=0;n<LAT.cells.length;n++){
-    const c=LAT.cells[n],v=facetLum(px,S,c.az,c.el);
-    lum[n]=v;if(v<lo)lo=v;if(v>hi)hi=v;
-  }
-  const span=Math.max(0.06,hi-lo);
-
+  // The room plays underneath at full size. This draws the eye on top of it: the facet
+  // lattice at the real 5.1 degree pitch, dark between the facets so you are looking
+  // through an eye rather than at a screen, and each facet lighting up where its own
+  // elementary motion detector is seeing outward flow.
   for(let n=0;n<LAT.cells.length;n++){
     const c=LAT.cells[n];
-    const v=Math.pow(Math.min(1,Math.max(0,(lum[n]-lo)/span)),0.78);
     const a=(row&&c.ri>=0)?Math.min(1,row[c.ri]):0;
     g.beginPath();
     for(let k=0;k<6;k++){const th=Math.PI/180*(60*k+30);
       const hx=c.x+r*Math.cos(th),hy=c.y+r*Math.sin(th);k?g.lineTo(hx,hy):g.moveTo(hx,hy);}
     g.closePath();
-    g.fillStyle=`rgb(${(255*(v*.52+a*.30))|0},${(255*(v*.57+a*.44))|0},${(255*(v*.64+a*.95))|0})`;
-    g.fill();
-    g.strokeStyle=a>.10?`rgba(130,190,255,${.25+.55*a})`:'rgba(0,0,0,.42)';
-    g.lineWidth=(a>.10?1.3:1)*dpr;g.stroke();
+    if(a>.06){g.fillStyle=`rgba(90,160,255,${.08+.40*a})`;g.fill();}
+    g.strokeStyle=a>.10?`rgba(150,205,255,${.32+.55*a})`:'rgba(0,0,0,.16)';
+    g.lineWidth=(a>.10?1.4:.8)*dpr;g.stroke();
   }
   return row;
 }
@@ -488,8 +470,8 @@ function brief(){
       <div><span class="n">02</span><span class="t"><b>You can't tell what anything is.</b> You only see it getting bigger.</span></div>
       <div><span class="n">03</span><span class="t"><b>Dodge left or right.</b> That's the whole move list.</span></div>
     </div>
-    <p class="mono" style="margin-top:22px">The small window beside your eye is what a camera
-    sees in the same room. You do not get that one.</p>
+    <p class="mono" style="margin-top:22px">The facets are drawn over the room so you can see
+    which part of your eye is reacting. Only the lit ones are telling you anything.</p>
     <div class="row"><button class="btn" id="go2">[ Controls ]</button></div>`);
   $('#go2').onclick=()=>howto();
 }
@@ -556,11 +538,9 @@ function enter(id){
   $('#tag').textContent='prerecorded · '+clip.model;
   $('#room-lv').textContent=lv;$('#room-nm').textContent=nm;
   $('#room').classList.add('on');
-  STILL=new Image();STILL.src='artifacts/'+clip.poster;
-  const v=$('#v'),pv=$('#pv');
+  const st=$('#still');st.src='artifacts/'+clip.poster;st.style.display='';
+  const v=$('#v');
   v.src='artifacts/'+clip.video_url;v.load();v.pause();v.currentTime=0;v.playbackRate=SLOW;
-  pv.poster='artifacts/'+clip.poster;
-  pv.src='artifacts/'+clip.video_url;pv.load();pv.pause();pv.currentTime=0;pv.playbackRate=SLOW;
   setPhase('arrive');
   $('#h-state').textContent='giant fibre · quiet';
   $('#hud').className='';$('#bar').className='';
@@ -573,20 +553,21 @@ function enter(id){
    so the instant autoplay was blocked the fallback clock was already past the end of the
    clip and the scare fired immediately. */
 function tick(){
-  const el=(performance.now()-clock0)/1000,v=$('#v'),pv=$('#pv');
+  const el=(performance.now()-clock0)/1000,v=$('#v');
   if(phase==='arrive'){
-    if(el>3.2){$('#room').classList.remove('on');setPhase('wait');L.textContent=WAIT_LINES[0];}
+    if(el>2.2){$('#room').classList.remove('on');setPhase('wait');L.textContent=WAIT_LINES[0];}
     return 0;
   }
   if(phase==='wait'){
     const k=Math.min(WAIT_LINES.length-1,Math.floor(el/2.6));
     L.textContent=WAIT_LINES[k];
     // twelve to eighteen seconds of a room doing nothing. this is the level.
-    if(el>12+((depth*2.1)%6)){
+    if(el>5.5+((depth*1.3)%3)){
       setPhase('approach');L.textContent='';
       fade(AU.dread,.46,3000);
-      v.currentTime=0;pv.currentTime=0;
-      v.play().catch(()=>{});pv.play().catch(()=>{});
+      v.currentTime=0;v.play().catch(()=>{});
+      // hand the screen from the still to the clip once it is really running
+      setTimeout(()=>{if(v.currentTime>0)$('#still').style.display='none';},260);
     }
     return 0;
   }
@@ -630,7 +611,7 @@ function clearDecision(){
 }
 
 function decide(){
-  $('#v').pause();$('#pv').pause();
+  $('#v').pause();
   const side=lastBearing<0?'right':'left';       // away from the threat, the way a fly banks
   $('#dodge-how').textContent=HAND.on
     ? 'swing your hand '+side
@@ -717,7 +698,7 @@ function drawTrace(f){
 }
 
 function retreat(){
-  setPhase('idle');$('#v').pause();$('#pv').pause();clearDecision();
+  setPhase('idle');$('#v').pause();clearDecision();
   sheet(`<h1>You are alive.</h1>
     <h2>${survived===0?'And you learned nothing.':'You survived '+survived+', and learned that much.'}</h2>
     <p>You trusted the reflex and got out, which is exactly what the reflex is for. It is also
@@ -742,11 +723,9 @@ function corrupted(){
   $('#tag').textContent='synthetic · geometry broken on purpose';
   $('#room-lv').textContent='Level ███';$('#room-nm').textContent='Reverse Approach';
   $('#room').classList.add('on');
-  STILL=new Image();STILL.src='artifacts/'+clip.poster;
-  const v=$('#v'),pv=$('#pv');
+  const st=$('#still');st.src='artifacts/'+clip.poster;st.style.display='';
+  const v=$('#v');
   v.src='artifacts/'+clip.video_url;v.load();v.pause();v.currentTime=0;v.playbackRate=.18;
-  pv.poster='artifacts/'+clip.poster;
-  pv.src='artifacts/'+clip.video_url;pv.load();pv.pause();pv.currentTime=0;pv.playbackRate=.18;
   setPhase('arrive');
   $('#hud').className='';$('#bar').className='';
   $('#h-state').textContent='giant fibre · quiet';
@@ -755,7 +734,7 @@ function corrupted(){
 }
 
 function ending(){
-  setPhase('idle');$('#v').pause();$('#pv').pause();clearDecision();fade(AU.dread,0,900);
+  setPhase('idle');$('#v').pause();clearDecision();fade(AU.dread,0,900);
   sheet(`<h1 style="color:var(--fail)">The reflex never fired.</h1>
     <h2>It had nothing to fire about.</h2>
     <p>The thing that killed you was approaching, and it was <i>decelerating as it arrived</i>.
@@ -824,6 +803,20 @@ function handsLoop(){
   }
   requestAnimationFrame(handsLoop);
 }
+
+
+// Nothing to press during the arrival and the waiting, which reads as broken to anyone who
+// was not told the waiting is the point. Any key skips straight to the approach.
+addEventListener('keydown',e=>{
+  if(phase==='arrive'||phase==='wait'){
+    e.preventDefault();
+    $('#room').classList.remove('on');
+    setPhase('approach');L.textContent='';
+    fade(AU.dread,.46,1800);
+    const v=$('#v');v.currentTime=0;v.play().catch(()=>{});
+    setTimeout(()=>{if(v.currentTime>0)$('#still').style.display='none';},260);
+  }
+});
 
 function setMode(hands){
   HAND.on=!!hands&&HAND.ready;
