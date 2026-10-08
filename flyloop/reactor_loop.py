@@ -81,9 +81,22 @@ class LoopConfig:
     # world turns threatening without restarting the session.
     lunge_at_s: float = 12.0
     lunge_every_s: float = 18.0
-    lunge_prompt: str = (
-        "A huge dark shape bursts through the wall directly ahead and rushes straight at "
-        "the camera, filling the view. Debris in the air."
+    # Rotating, because the same monster twice tells you nothing. Different silhouettes,
+    # different speeds and different contrast against the wallpaper is what makes a run a
+    # test rather than an anecdote: if the circuit only fires on one of them, that is a
+    # fact about the circuit, and if it fires on all of them that is a fact about the world
+    # model. Written from Backrooms entity canon so the worlds stay in one aesthetic.
+    lunge_prompts: tuple[str, ...] = (
+        "A tall thin pale figure with impossibly long limbs unfolds out of the wall ahead "
+        "and sprints at the camera on all fours, filling the frame. Drywall explodes "
+        "outward. Shot on a 1990s camcorder, harsh fluorescent light.",
+        "An enormous grinning face with glowing white eyes emerges from the darkness at "
+        "the end of the hallway and rushes the camera at speed, growing enormous. "
+        "Found footage, blown out highlights.",
+        "A mass of wet dark fur and too many limbs pours around the corner ahead and "
+        "charges straight down the hallway at the camera. Motion blur, camcorder grain.",
+        "A hunched eyeless hound bursts out of the yellow wallpaper directly ahead and "
+        "lunges at the camera, jaws open, filling the view. Harsh flat fluorescent light.",
     )
 
 
@@ -183,9 +196,12 @@ class FlyLoop:
             async def provoke():
                 """Bring a threat to the fly on a schedule, by rewriting the world."""
                 await asyncio.sleep(self.cfg.lunge_at_s)
+                n = 0
                 while not done.is_set():
-                    await reactor.send_command("set_prompt", {"prompt": self.cfg.lunge_prompt})
-                    self._log("lunge", frame_i, {"prompt": self.cfg.lunge_prompt[:48]})
+                    monster = self.cfg.lunge_prompts[n % len(self.cfg.lunge_prompts)]
+                    n += 1
+                    await reactor.send_command("set_prompt", {"prompt": monster})
+                    self._log(f"monster {n}", frame_i, {"prompt": monster[:56]})
                     await asyncio.sleep(6.0)
                     if done.is_set():
                         break
