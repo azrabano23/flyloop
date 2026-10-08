@@ -7,27 +7,29 @@
 <meta name="description" content="We walked a fly down through the Backrooms. Eighteen levels, and a pass or fail on each one.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;800&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#07080A;--surface:#0B0D11;--surface2:#0F1217;--line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.17);
- --text:#F2F3F5;--muted:#8C919A;--dim:#555B65;--accent:#3B82F6;--pass:#5FD39A;--fail:#FF3B30;--lim:#C8B560;
- --display:'Figtree',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;
- --body:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+ --text:#F2F3F5;--muted:#8C919A;--dim:#555B65;--accent:#5B9CF8;--pass:#5FD39A;--fail:#FF5A4E;--lim:#7E858F;
+ --display:'Figtree',system-ui,sans-serif;--serif:'Figtree',system-ui,sans-serif;
+ --body:'Inter',system-ui,sans-serif;--mono:'Inter',system-ui,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.62;
+ -webkit-font-smoothing:antialiased;overflow-x:hidden;font-variant-numeric:tabular-nums}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:900;opacity:.035;
  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
 .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
 @media(min-width:900px){.wrap{padding:0 48px}}
-.lab{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:16px}
+.lab{font-family:var(--body);font-size:10.5px;font-weight:500;letter-spacing:.2em;
+ text-transform:uppercase;color:var(--dim);display:block;margin-bottom:22px}
 h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:1.01}
 h1{font-size:clamp(2.7rem,7.6vw,5.6rem)}
-h2{font-size:clamp(1.7rem,3.9vw,2.9rem);margin-bottom:12px}
-p{color:var(--muted);max-width:60ch}
-.lead{font-size:clamp(1rem,1.45vw,1.2rem);color:#AEB4BD;max-width:52ch}
-section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
-.sr{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em}
+h2{font-size:clamp(1.7rem,3.9vw,2.9rem);margin-bottom:18px}
+p{color:var(--muted);max-width:68ch}
+.lead{font-size:clamp(1.02rem,1.4vw,1.18rem);color:#AEB4BD;max-width:62ch;line-height:1.6}
+section{padding:clamp(80px,9vw,136px) 0;border-top:1px solid var(--line)}
+.sr{font-weight:400;letter-spacing:-.02em;color:var(--muted)}
 #flash{position:fixed;inset:0;background:var(--fail);opacity:0;pointer-events:none;z-index:800;transition:opacity .09s}
 #flash.on{opacity:.48;transition:none}
 #flash.white{background:#fff}
@@ -39,14 +41,13 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
  60%{transform:translate(-6px,-3px)}80%{transform:translate(5px,5px)}}
 .hero:fullscreen,.hero:-webkit-full-screen{min-height:100vh;padding:0;justify-content:flex-end}
 .hero:fullscreen .wrap h1,.hero:fullscreen .wrap .lead,.hero:fullscreen .cta,
-.hero:fullscreen .tally,.hero:fullscreen .scrollcue{display:none}
-.hero:fullscreen .wrap{padding-bottom:34px}
+.hero:fullscreen .tally,.hero:fullscreen .hero:fullscreen .wrap{padding-bottom:34px}
 .fsnote{display:none;font-family:var(--mono);font-size:10px;letter-spacing:.2em;
  text-transform:uppercase;color:rgba(255,255,255,.5)}
 .hero:fullscreen .fsnote{display:block}
 
 /* hero */
-.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:104px 0 86px;position:relative;border:none;overflow:hidden}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:104px 0 104px;position:relative;border:none;overflow:hidden}
 .hero-img{position:absolute;inset:0;background:url('assets/hero2.png') center 46%/cover no-repeat;filter:saturate(.62) contrast(1.04)}
 .hero-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,8,10,.9),rgba(7,8,10,.3) 36%,rgba(7,8,10,.95) 82%,var(--bg))}
 .hero-v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.6) contrast(1.06) brightness(.82)}
@@ -85,22 +86,22 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
 .hero:fullscreen .hud-key{bottom:46px}
 .hero .wrap{position:relative;z-index:4;width:100%}
 .hero .lab{color:#D5D9DF;text-shadow:0 1px 14px rgba(0,0,0,.9)}
-.hero h1{margin-bottom:18px;max-width:15ch;text-shadow:0 2px 46px rgba(0,0,0,.75)}
-.cta{display:flex;gap:9px;flex-wrap:wrap;margin-top:28px}
+.hero h1{margin-bottom:22px;max-width:15ch;text-shadow:0 2px 46px rgba(0,0,0,.75)}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}
 .btn{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;padding:12px 18px;
  border:1px solid rgba(255,255,255,.3);color:#fff;text-decoration:none;cursor:pointer;
  background:rgba(7,8,10,.74);backdrop-filter:blur(10px);transition:.16s}
 .btn:hover{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.14)}
 .btn-p{background:var(--accent);border-color:var(--accent)}
-.tally{display:flex;gap:30px;flex-wrap:wrap;margin-top:34px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.tally{display:flex;gap:38px;flex-wrap:wrap;margin-top:40px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
 .tally{color:rgba(255,255,255,.62);text-shadow:0 1px 16px rgba(0,0,0,.9)}
 .tally b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:800;letter-spacing:-.04em;color:#fff;margin-bottom:1px;text-shadow:0 2px 24px rgba(0,0,0,.8)}
 .tally .p b{color:var(--pass)}.tally .f b{color:var(--fail)}
 
 /* story beats */
-.beat{display:grid;gap:4px;padding:22px 0;border-bottom:1px solid var(--line)}
+.beat{display:grid;gap:6px;padding:28px 0;border-bottom:1px solid var(--line)}
 @media(min-width:780px){.beat{grid-template-columns:148px 1fr;gap:30px;align-items:baseline}}
-.beat .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--lim)}
+.beat .k{font-family:var(--body);font-weight:500;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--lim)}
 .beat .v{font-size:1.04rem;color:var(--text);max-width:64ch}
 .beat .v small{display:block;color:var(--muted);font-size:.88rem;margin-top:6px;line-height:1.6}
 
@@ -115,7 +116,7 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
 .stratum{margin-top:52px}
 .stratum:first-of-type{margin-top:34px}
 .sh{display:flex;align-items:baseline;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
-.sh .rn{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--lim)}
+.sh .rn{font-family:var(--body);font-weight:500;font-size:10px;letter-spacing:.2em;color:var(--lim)}
 .sh h3{font-family:var(--display);font-size:1.22rem;font-weight:800;letter-spacing:-.02em}
 .sh .note{font-size:.84rem;color:var(--dim);margin-left:auto;font-family:var(--mono);letter-spacing:.04em}
 
@@ -190,15 +191,15 @@ tr.bad{background:rgba(255,59,48,.06)}
 .scroll{overflow-x:auto}
 .three{display:grid;gap:14px;margin-top:30px}
 @media(min-width:760px){.three{grid-template-columns:repeat(3,1fr)}}
-.card{background:var(--surface);border:1px solid var(--line);padding:22px}
-.card .n{font-family:var(--mono);font-size:10px;color:var(--lim);letter-spacing:.14em;display:block;margin-bottom:10px;text-transform:uppercase}
+.card{background:var(--surface);border:1px solid var(--line);padding:26px}
+.card .n{font-family:var(--body);font-weight:500;font-size:10px;color:var(--lim);letter-spacing:.14em;display:block;margin-bottom:10px;text-transform:uppercase}
 .card .big{font-family:var(--display);font-size:clamp(2rem,4.6vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1}
 .card p{font-size:.86rem;margin-top:7px}
 .stack{font-size:.95rem;margin-top:22px;border-top:1px solid var(--line)}
-.stack div{display:grid;gap:4px;padding:15px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.stack div{display:grid;gap:6px;padding:20px 0;border-bottom:1px solid var(--line);align-items:baseline}
 @media(min-width:780px){.stack div{grid-template-columns:minmax(0,190px) minmax(0,150px) 1fr;gap:20px}}
 .stack .m{color:var(--text);font-weight:500}
-.stack .w{color:var(--lim);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.stack .w{color:var(--dim);font-family:var(--body);font-weight:500;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
 .stack .d{color:var(--muted);line-height:1.55}
 .warn{border:1px solid rgba(255,59,48,.24);background:rgba(255,59,48,.04);padding:22px}
 .warn p{color:#B7BCC4;max-width:76ch;font-size:.89rem}
@@ -211,17 +212,16 @@ tr.bad{background:rgba(255,59,48,.06)}
 .ctrl .g b{font-weight:400}
 .ctrl .ok{color:var(--pass)}.ctrl .no{color:var(--fail)}
 .bul{display:grid;gap:0;margin-top:30px;border-top:1px solid var(--line)}
-.bul>div{display:grid;grid-template-columns:48px 1fr;gap:16px;padding:20px 0;
+.bul>div{display:grid;grid-template-columns:44px 1fr;gap:18px;padding:26px 0;
  border-bottom:1px solid var(--line);align-items:start}
 @media(min-width:780px){.bul>div{grid-template-columns:70px 1fr;gap:28px}}
-.bul .bn{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--lim);padding-top:4px}
-.bul>div>div{color:var(--muted);font-size:.96rem;line-height:1.6;max-width:68ch}
+.bul .bn{font-family:var(--body);font-weight:500;font-size:10px;letter-spacing:.14em;color:var(--lim);padding-top:4px}
+.bul>div>div{color:var(--muted);font-size:1rem;line-height:1.7;max-width:66ch}
 .bul b{color:var(--text);font-weight:500}
 .pull{font-family:var(--serif);font-size:clamp(1.4rem,2.9vw,2.1rem);line-height:1.22;color:var(--text);max-width:30ch;margin:40px 0 0}
 footer{padding:46px 0;border-top:1px solid var(--line);color:var(--dim);font-size:.84rem}
 footer a{color:var(--accent);text-decoration:none}
 .rev{opacity:0;transform:translateY(14px);transition:opacity .6s,transform .6s}.rev.in{opacity:1;transform:none}
-.scrollcue{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;margin-top:30px;display:block}
 </style>
 </head>
 <body>
@@ -279,7 +279,6 @@ footer a{color:var(--accent);text-decoration:none}
       <a class="btn" href="#next">[ The real world ]</a>
       <a class="btn" href="https://github.com/azrabano23/flyloop">[ Code ]</a>
     </div>
-    <span class="scrollcue">scroll</span>
     <span class="fsnote" id="fsnote">esc to exit</span>
   </div>
 </header>
@@ -628,7 +627,7 @@ function drawPlot(fr){
   const X=i=>p+(i/(n-1))*(W-2*p),Y=v=>H-p-(Math.min(v,yM)/yM)*(H-2*p);
   g.strokeStyle='rgba(255,255,255,.14)';g.setLineDash([3,5]);g.lineWidth=1;
   g.beginPath();g.moveTo(p,Y(1));g.lineTo(W-p,Y(1));g.stroke();g.setLineDash([]);
-  g.fillStyle='rgba(255,255,255,.22)';g.font='10px JetBrains Mono, monospace';
+  g.fillStyle='rgba(255,255,255,.22)';g.font='500 10px Inter, system-ui, sans-serif';
   g.fillText('escape threshold',W-p-104,Y(1)-6);
   g.strokeStyle='#3B82F6';g.lineWidth=2.2;g.beginPath();
   fly.forEach((v,i)=>i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v)));g.stroke();
