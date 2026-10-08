@@ -87,9 +87,68 @@ first and offline:
 Marble is the useful one for calibration: it returns Gaussian splats, a collider mesh and metric
 scale, so we know true depth and can fly a camera at an exactly known speed.
 
+## results so far
+
+All offline, on clips whose geometry is known in closed form. `python scripts/run_synthetic.py`.
+
+**The circuit behaves like the animal.** Across an 8x approach-speed sweep (0.25 to 2.0 m/s)
+the escape commits at **20.97 +/- 1.24 deg**. The published figure is ~20 deg, and fly-C
+reports 19.9 +/- 2.7 deg from the connectome.
+
+**But there is a tradeoff, and it is the most interesting thing we found.** The same
+circuit cannot be both stable and sensitive:
+
+| configuration | threshold SD over 8x speed | lead over the trig baseline on broken clips |
+| --- | --- | --- |
+| invariant (normalised) | **1.24 deg** | 1.0 frames |
+| sensitive (raw) | 4.95 deg | **5.0 frames** |
+
+Normalising the circuit for speed invariance turns its pooled drive into "what fraction of
+the field is expanding", which *is* angular size — so it converges on the analytic baseline
+and stops catching clips whose expansion profile is wrong. Back the normalisation off and
+it catches them, but its threshold slides with speed.
+
+So the honest answer to "why not three lines of trigonometry" is: **at one end of this
+curve, there is no reason — they are the same detector.** The fly only earns its keep at
+the other end, where it fires 5 frames ahead of trig on an approach that is smoothly,
+plausibly wrong.
+
+**Why that is an argument for the connectome.** A real fly is reported to have both at
+once: 19.9 +/- 2.7 deg *and* sensitivity to how fast the image is growing. That point sits
+off the frontier we measured. We had to hand-tune three parameters to get partway; the
+measured circuit does it for free. Wiring in fly-C is now the obvious next experiment
+rather than a nice story.
+
+## pipeline
+
+Both sponsors, one chain. Reactor is required; the seed image is required by Reactor.
+
+```
+Nano Banana 2.1 (ai.studio)  ->  seed image: one obstacle, dead ahead
+            |
+LingBot World 2 (Reactor)    ->  set_image, set_prompt, start,
+            |                     then set_move_longitudinal: forward
+       approach video
+            |
+          flyloop            ->  fly's-eye retina -> escape circuit
+                                 vs the trig baseline -> threshold, lead, agreement
+```
+
+MiniMax FastH3 is the secondary capture path: it is built for one long continuous take
+where the last frame seeds the next, which is what a looming event needs — it must never
+cut.
+
+## fool the fly
+
+The benchmark is also a game. Prompt LingBot World 2 and try to generate an approach the
+circuit *misses*, or catches at the wrong angle. Every win is a physics failure, found by
+a person playing, logged automatically. Red-teaming a world model by having fun with it.
+
 ## status
 
-Early. Built at the Reactor x Google DeepMind World Models Hackathon, NYC, 8 Oct 2026.
+Built at the Reactor x Google DeepMind World Models Hackathon, NYC, 8 Oct 2026. The
+synthetic ladder and both detectors run end to end. Capture from live world models is
+wired but gated on API keys.
 
 ## license
 
