@@ -1,0 +1,58 @@
+{
+ "live": true,
+ "model": "reactor/longlive-v2",
+ "frames": 0,
+ "escapes": 0,
+ "mean_escape_to_command_ms": null,
+ "events": [
+  {
+   "t": 2.969,
+   "kind": "connected",
+   "frame": 0,
+   "model": "reactor/longlive-v2"
+  },
+  {
+   "t": 3.198,
+   "kind": "schema",
+   "frame": 0,
+   "commands": 1,
+   "has_lateral": false
+  },
+  {
+   "t": 4.856,
+   "kind": "rejected:set_image",
+   "frame": 0,
+   "error": "send_command: [invalid_command] command 'set_image' failed (invalid_command): unknown comm"
+  },
+  {
+   "t": 4.93,
+   "kind": "rejected:set_prompt",
+   "frame": 0,
+   "error": "send_command: [invalid_command] command 'set_prompt' failed (invalid_command): unknown com"
+  },
+  {
+   "t": 5.153,
+   "kind": "rejected:set_move_longitudinal",
+   "frame": 0,
+   "error": "send_command: [invalid_command] command 'set_move_longitudinal' failed (invalid_command): "
+  },
+  {
+   "t": 5.153,
+   "kind": "flying",
+   "frame": 0,
+   "accepted": 2,
+   "offered": 5
+  },
+  {
+   "t": 245.344,
+   "kind": "recording unavailable",
+   "frame": 0,
+   "error": "request_recording: [INTERNAL_ERROR] recording error (INTERNAL_ERROR): no media generated y"
+  },
+  {
+   "t": 245.693,
+   "kind": "disconnected",
+   "frame": 0
+  }
+ ]
+}

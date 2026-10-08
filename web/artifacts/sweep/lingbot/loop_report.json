@@ -1,0 +1,519 @@
+{
+ "live": true,
+ "model": "reactor/lingbot",
+ "frames": 7134,
+ "escapes": 47,
+ "mean_escape_to_command_ms": null,
+ "events": [
+  {
+   "t": 3.651,
+   "kind": "connected",
+   "frame": 0,
+   "model": "reactor/lingbot"
+  },
+  {
+   "t": 3.909,
+   "kind": "schema",
+   "frame": 0,
+   "commands": 1,
+   "has_lateral": false
+  },
+  {
+   "t": 5.323,
+   "kind": "set_image",
+   "frame": 0,
+   "file": "yellow-hallway.png"
+  },
+  {
+   "t": 5.748,
+   "kind": "rejected:set_move_longitudinal",
+   "frame": 0,
+   "error": "send_command: [invalid_command] command 'set_move_longitudinal' failed (invalid_command): "
+  },
+  {
+   "t": 5.748,
+   "kind": "flying",
+   "frame": 0,
+   "accepted": 4,
+   "offered": 5
+  },
+  {
+   "t": 7.16,
+   "kind": "escape",
+   "frame": 16,
+   "wall_s": 7.136,
+   "bearing_deg": -1.3
+  },
+  {
+   "t": 16.005,
+   "kind": "monster 1",
+   "frame": 233,
+   "prompt": "The fluorescent lights fail and the hallway goes almost "
+  },
+  {
+   "t": 18.978,
+   "kind": "escape",
+   "frame": 313,
+   "wall_s": 18.946,
+   "bearing_deg": -0.5
+  },
+  {
+   "t": 20.495,
+   "kind": "escape",
+   "frame": 379,
+   "wall_s": 20.457,
+   "bearing_deg": -0.5
+  },
+  {
+   "t": 22.128,
+   "kind": "calm",
+   "frame": 446
+  },
+  {
+   "t": 34.359,
+   "kind": "monster 2",
+   "frame": 768,
+   "prompt": "An emaciated hairless quadrupedal creature sprints aroun"
+  },
+  {
+   "t": 37.253,
+   "kind": "escape",
+   "frame": 847,
+   "wall_s": 37.212,
+   "bearing_deg": 9.9
+  },
+  {
+   "t": 38.767,
+   "kind": "escape",
+   "frame": 913,
+   "wall_s": 38.738,
+   "bearing_deg": 9.9
+  },
+  {
+   "t": 40.473,
+   "kind": "calm",
+   "frame": 986
+  },
+  {
+   "t": 41.888,
+   "kind": "escape",
+   "frame": 1023,
+   "wall_s": 41.858,
+   "bearing_deg": 0.8
+  },
+  {
+   "t": 43.418,
+   "kind": "escape",
+   "frame": 1090,
+   "wall_s": 43.388,
+   "bearing_deg": 0.8
+  },
+  {
+   "t": 44.968,
+   "kind": "escape",
+   "frame": 1155,
+   "wall_s": 44.938,
+   "bearing_deg": 0.8
+  },
+  {
+   "t": 52.721,
+   "kind": "monster 3",
+   "frame": 1389,
+   "prompt": "A tall gaunt pale humanoid with wrong proportions unfold"
+  },
+  {
+   "t": 55.239,
+   "kind": "escape",
+   "frame": 1456,
+   "wall_s": 55.209,
+   "bearing_deg": -2.2
+  },
+  {
+   "t": 56.851,
+   "kind": "escape",
+   "frame": 1497,
+   "wall_s": 56.82,
+   "bearing_deg": -2.2
+  },
+  {
+   "t": 58.362,
+   "kind": "escape",
+   "frame": 1558,
+   "wall_s": 58.332,
+   "bearing_deg": -2.2
+  },
+  {
+   "t": 58.889,
+   "kind": "calm",
+   "frame": 1581
+  },
+  {
+   "t": 62.154,
+   "kind": "escape",
+   "frame": 1670,
+   "wall_s": 62.103,
+   "bearing_deg": 14.2
+  },
+  {
+   "t": 63.642,
+   "kind": "escape",
+   "frame": 1735,
+   "wall_s": 63.612,
+   "bearing_deg": 14.2
+  },
+  {
+   "t": 67.638,
+   "kind": "escape",
+   "frame": 1862,
+   "wall_s": 67.609,
+   "bearing_deg": 3.9
+  },
+  {
+   "t": 69.187,
+   "kind": "escape",
+   "frame": 1927,
+   "wall_s": 69.139,
+   "bearing_deg": 3.9
+  },
+  {
+   "t": 71.205,
+   "kind": "monster 4",
+   "frame": 2004,
+   "prompt": "A dense swarm of enormous dark moths pours down the yell"
+  },
+  {
+   "t": 77.273,
+   "kind": "escape",
+   "frame": 2165,
+   "wall_s": 77.237,
+   "bearing_deg": -3.8
+  },
+  {
+   "t": 77.392,
+   "kind": "calm",
+   "frame": 2170
+  },
+  {
+   "t": 79.62,
+   "kind": "escape",
+   "frame": 2250,
+   "wall_s": 79.59,
+   "bearing_deg": -1.9
+  },
+  {
+   "t": 81.152,
+   "kind": "escape",
+   "frame": 2317,
+   "wall_s": 81.123,
+   "bearing_deg": -1.9
+  },
+  {
+   "t": 89.712,
+   "kind": "monster 5",
+   "frame": 2567,
+   "prompt": "The fluorescent lights fail and the hallway goes almost "
+  },
+  {
+   "t": 92.913,
+   "kind": "escape",
+   "frame": 2652,
+   "wall_s": 92.884,
+   "bearing_deg": 7.6
+  },
+  {
+   "t": 94.457,
+   "kind": "escape",
+   "frame": 2719,
+   "wall_s": 94.428,
+   "bearing_deg": 7.6
+  },
+  {
+   "t": 95.948,
+   "kind": "calm",
+   "frame": 2780
+  },
+  {
+   "t": 108.256,
+   "kind": "monster 6",
+   "frame": 3109,
+   "prompt": "An emaciated hairless quadrupedal creature sprints aroun"
+  },
+  {
+   "t": 112.785,
+   "kind": "escape",
+   "frame": 3226,
+   "wall_s": 112.756,
+   "bearing_deg": -0.3
+  },
+  {
+   "t": 114.321,
+   "kind": "escape",
+   "frame": 3290,
+   "wall_s": 114.281,
+   "bearing_deg": -0.3
+  },
+  {
+   "t": 114.466,
+   "kind": "calm",
+   "frame": 3297
+  },
+  {
+   "t": 116.195,
+   "kind": "escape",
+   "frame": 3365,
+   "wall_s": 116.166,
+   "bearing_deg": -2.7
+  },
+  {
+   "t": 126.782,
+   "kind": "monster 7",
+   "frame": 3671,
+   "prompt": "A tall gaunt pale humanoid with wrong proportions unfold"
+  },
+  {
+   "t": 129.597,
+   "kind": "escape",
+   "frame": 3746,
+   "wall_s": 129.568,
+   "bearing_deg": -17.4
+  },
+  {
+   "t": 131.118,
+   "kind": "escape",
+   "frame": 3811,
+   "wall_s": 131.089,
+   "bearing_deg": -17.4
+  },
+  {
+   "t": 132.972,
+   "kind": "calm",
+   "frame": 3886
+  },
+  {
+   "t": 133.515,
+   "kind": "escape",
+   "frame": 3900,
+   "wall_s": 133.486,
+   "bearing_deg": 13.4
+  },
+  {
+   "t": 135.083,
+   "kind": "escape",
+   "frame": 3963,
+   "wall_s": 135.049,
+   "bearing_deg": 13.4
+  },
+  {
+   "t": 136.59,
+   "kind": "escape",
+   "frame": 4027,
+   "wall_s": 136.561,
+   "bearing_deg": 13.4
+  },
+  {
+   "t": 145.373,
+   "kind": "monster 8",
+   "frame": 4282,
+   "prompt": "A dense swarm of enormous dark moths pours down the yell"
+  },
+  {
+   "t": 151.591,
+   "kind": "calm",
+   "frame": 4445
+  },
+  {
+   "t": 151.681,
+   "kind": "escape",
+   "frame": 4447,
+   "wall_s": 151.65,
+   "bearing_deg": -14.5
+  },
+  {
+   "t": 153.193,
+   "kind": "escape",
+   "frame": 4504,
+   "wall_s": 153.163,
+   "bearing_deg": -14.5
+  },
+  {
+   "t": 159.131,
+   "kind": "escape",
+   "frame": 4675,
+   "wall_s": 159.102,
+   "bearing_deg": 2.2
+  },
+  {
+   "t": 160.655,
+   "kind": "escape",
+   "frame": 4739,
+   "wall_s": 160.626,
+   "bearing_deg": 2.2
+  },
+  {
+   "t": 163.925,
+   "kind": "monster 9",
+   "frame": 4849,
+   "prompt": "The fluorescent lights fail and the hallway goes almost "
+  },
+  {
+   "t": 168.04,
+   "kind": "escape",
+   "frame": 4945,
+   "wall_s": 168.011,
+   "bearing_deg": 0.1
+  },
+  {
+   "t": 169.589,
+   "kind": "escape",
+   "frame": 5007,
+   "wall_s": 169.558,
+   "bearing_deg": 0.1
+  },
+  {
+   "t": 170.112,
+   "kind": "calm",
+   "frame": 5029
+  },
+  {
+   "t": 171.146,
+   "kind": "escape",
+   "frame": 5069,
+   "wall_s": 171.116,
+   "bearing_deg": 0.1
+  },
+  {
+   "t": 182.281,
+   "kind": "monster 10",
+   "frame": 5365,
+   "prompt": "An emaciated hairless quadrupedal creature sprints aroun"
+  },
+  {
+   "t": 185.972,
+   "kind": "escape",
+   "frame": 5460,
+   "wall_s": 185.943,
+   "bearing_deg": -11.6
+  },
+  {
+   "t": 187.519,
+   "kind": "escape",
+   "frame": 5526,
+   "wall_s": 187.489,
+   "bearing_deg": -11.6
+  },
+  {
+   "t": 188.443,
+   "kind": "calm",
+   "frame": 5566
+  },
+  {
+   "t": 189.748,
+   "kind": "escape",
+   "frame": 5609,
+   "wall_s": 189.715,
+   "bearing_deg": 9.6
+  },
+  {
+   "t": 191.264,
+   "kind": "escape",
+   "frame": 5674,
+   "wall_s": 191.234,
+   "bearing_deg": 9.6
+  },
+  {
+   "t": 200.751,
+   "kind": "monster 11",
+   "frame": 5951,
+   "prompt": "A tall gaunt pale humanoid with wrong proportions unfold"
+  },
+  {
+   "t": 205.606,
+   "kind": "escape",
+   "frame": 6075,
+   "wall_s": 205.577,
+   "bearing_deg": 7.5
+  },
+  {
+   "t": 206.965,
+   "kind": "calm",
+   "frame": 6134
+  },
+  {
+   "t": 207.135,
+   "kind": "escape",
+   "frame": 6140,
+   "wall_s": 207.106,
+   "bearing_deg": 7.5
+  },
+  {
+   "t": 208.692,
+   "kind": "escape",
+   "frame": 6204,
+   "wall_s": 208.662,
+   "bearing_deg": 7.5
+  },
+  {
+   "t": 213.793,
+   "kind": "escape",
+   "frame": 6364,
+   "wall_s": 213.762,
+   "bearing_deg": 12.3
+  },
+  {
+   "t": 215.326,
+   "kind": "escape",
+   "frame": 6427,
+   "wall_s": 215.284,
+   "bearing_deg": 12.3
+  },
+  {
+   "t": 219.302,
+   "kind": "monster 12",
+   "frame": 6558,
+   "prompt": "A dense swarm of enormous dark moths pours down the yell"
+  },
+  {
+   "t": 225.499,
+   "kind": "calm",
+   "frame": 6688
+  },
+  {
+   "t": 233.506,
+   "kind": "escape",
+   "frame": 6895,
+   "wall_s": 233.471,
+   "bearing_deg": 1.1
+  },
+  {
+   "t": 235.031,
+   "kind": "escape",
+   "frame": 6958,
+   "wall_s": 235.002,
+   "bearing_deg": 1.1
+  },
+  {
+   "t": 237.805,
+   "kind": "monster 13",
+   "frame": 7058,
+   "prompt": "The fluorescent lights fail and the hallway goes almost "
+  },
+  {
+   "t": 239.053,
+   "kind": "escape",
+   "frame": 7093,
+   "wall_s": 239.024,
+   "bearing_deg": -1.2
+  },
+  {
+   "t": 240.085,
+   "kind": "recording",
+   "frame": 7134,
+   "ref": "Clip(session_id='97899ba0-b661-41ed-8a38-091d92d4e2c7', kind='recording', start_marker=0.0, end_marker=231.4666666666658"
+  },
+  {
+   "t": 240.34,
+   "kind": "disconnected",
+   "frame": 7134
+  }
+ ]
+}
