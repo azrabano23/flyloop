@@ -93,6 +93,7 @@ class FlyLoop:
         self.fps = 24.0
         self._t0 = time.time()
         self._fired_at: float | None = None
+        self.kept: list[np.ndarray] = []
 
     # ------------------------------------------------------------------ perception
 
@@ -185,6 +186,10 @@ class FlyLoop:
                 arr = getattr(frame, "data", None)
                 arr = np.asarray(arr if arr is not None else frame)
                 frame_i += 1
+                # Keep every third frame. Full rate for a minute of 48fps video is more
+                # memory than this needs to cost, and a third is plenty to watch back.
+                if frame_i % 3 == 0:
+                    self.kept.append(self.to_square_luma(arr, invert=self.cfg.invert))
 
                 now = time.time() - self._t0
                 if now > self.cfg.max_seconds:
@@ -215,7 +220,27 @@ class FlyLoop:
                 await reactor.disconnect()
                 self._log("disconnected", frame_i, {})
 
+        self.save_clip(out_dir)
         return self.report(out_dir, frame_i)
+
+    def save_clip(self, out_dir: Path) -> Path | None:
+        """Write what the circuit actually saw, so the run can be played back."""
+        if not self.kept:
+            print("  ! no frames captured, nothing to save")
+            return None
+        try:
+            import imageio.v3 as iio
+        except ImportError:
+            return None
+        path = out_dir / "reactor-live.mp4"
+        rgb = np.repeat(np.stack(self.kept)[..., None], 3, axis=-1)
+        try:
+            iio.imwrite(path, rgb, fps=16, codec="libx264")
+        except Exception as exc:  # noqa: BLE001 - a missing encoder must not lose the run
+            print(f"  ! could not encode clip ({exc})")
+            return None
+        print(f"  saved {len(self.kept)} frames -> {path}")
+        return path
 
     async def _cmd(self, reactor, direction: str, frame: int) -> None:
         """Send a movement command and record when the world acknowledged it.
