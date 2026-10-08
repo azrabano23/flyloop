@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>flyloop</title>
+<title>Fright or Fly</title>
 <meta name="description" content="We walked a fly down through the Backrooms. Eighteen levels, and a pass or fail on each one.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -194,9 +194,12 @@ tr.bad{background:rgba(255,59,48,.06)}
 .card .n{font-family:var(--mono);font-size:10px;color:var(--lim);letter-spacing:.14em;display:block;margin-bottom:10px;text-transform:uppercase}
 .card .big{font-family:var(--display);font-size:clamp(2rem,4.6vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1}
 .card p{font-size:.86rem;margin-top:7px}
-.stack{font-family:var(--mono);font-size:11.5px;margin-top:20px;border-top:1px solid var(--line)}
-.stack div{display:grid;grid-template-columns:minmax(0,158px) minmax(0,120px) 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
-.stack .m{color:var(--lim)}.stack .w{color:var(--dim)}.stack .d{color:var(--muted)}
+.stack{font-size:.95rem;margin-top:22px;border-top:1px solid var(--line)}
+.stack div{display:grid;gap:4px;padding:15px 0;border-bottom:1px solid var(--line);align-items:baseline}
+@media(min-width:780px){.stack div{grid-template-columns:minmax(0,190px) minmax(0,150px) 1fr;gap:20px}}
+.stack .m{color:var(--text);font-weight:500}
+.stack .w{color:var(--lim);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.stack .d{color:var(--muted);line-height:1.55}
 .warn{border:1px solid rgba(255,59,48,.24);background:rgba(255,59,48,.04);padding:22px}
 .warn p{color:#B7BCC4;max-width:76ch;font-size:.89rem}
 .ctrl{margin-top:44px;padding-top:22px;border-top:1px solid var(--line2)}
@@ -258,7 +261,7 @@ footer a{color:var(--accent);text-decoration:none}
     </div>
   </div>
   <div class="wrap">
-    <span class="lab">flyloop / a fly brain, inside a world model</span>
+    <span class="lab">fright or fly</span>
     <h1>You are the <span class="sr" style="font-weight:400">fly.</span></h1>
     <p class="lead">A real fruit fly's escape reflex, dropped into AI-generated Backrooms.
     You see 223 facets and nothing finer, you cannot tell what is in the room with you, and
@@ -268,7 +271,6 @@ footer a{color:var(--accent);text-decoration:none}
       <div><b id="t-n">-</b>worlds tested</div>
       <div class="p"><b id="t-p">-</b>passed</div>
       <div class="f"><b id="t-f">-</b>failed</div>
-      <div><b id="t-th">-</b>commit angle, known levels</div>
     </div>
     <div class="cta">
       <a class="btn btn-p" href="play.html">[ Play: you are the fly ]</a>
@@ -285,33 +287,21 @@ footer a{color:var(--accent);text-decoration:none}
 <section class="wrap rev" id="origin">
   <span class="lab">01 / where this came from</span>
   <h2>It started with a fly brain.</h2>
-  <div style="margin-top:24px">
-    <div class="beat"><span class="k">the research</span><span class="v">A fruit fly's whole
-      brain has been mapped, wire by wire.
-      <small>Google Research built the automated segmentation behind it: flood-filling
-      networks run over an electron-microscope volume of the <i>Drosophila</i> brain, which
-      fed the FlyWire whole-brain connectome. Somewhere in those 140,000 neurons is a circuit
-      that does one job. Two cell types, LC4 and LPLC2, watch for something expanding across
-      the eye and converge on a single giant fibre neuron. When it fires, the fly is
-      gone.</small></span></div>
-    <div class="beat"><span class="k">the realisation</span><span class="v">That circuit is a
-      physics test, and it does not care that the world is fake.
-      <small>It never identifies an object, never estimates distance, never segments anything
-      from the background. It only measures how fast an edge spreads. Which means if you put
-      it inside an AI-generated world, it will fire at exactly the right moment if the motion
-      obeys geometry, and it will sit there silently if the motion is nonsense. Nobody had to
-      train it, and nobody can game it.</small></span></div>
-    <div class="beat"><span class="k">why now</span><span class="v">Reactor streams a world
-      model you can send commands into, live.
-      <small>That is the missing half. A recorded clip can be scored after the fact, but a
-      world you can fly through can be probed: drive the camera forward, rewrite the world
-      mid-generation so something comes at you, and send the escape straight back into the
-      same session that produced the frame. The fly reacts to the world, and the world
-      reacts to the fly.</small></span></div>
-    <div class="beat"><span class="k">why it matters</span><span class="v">Because these
-      worlds are about to be where robots learn.
-      <small>And right now the only check anyone runs is to watch the video and decide it
-      looks fine. Looking fine and behaving right are different things.</small></span></div>
+  <div class="bul" style="margin-top:26px">
+    <div><span class="bn">01</span><div><b>A fly's whole brain has been mapped, wire by
+      wire.</b> Google Research built the segmentation behind it.</div></div>
+    <div><span class="bn">02</span><div><b>One circuit in there does a single job.</b> Two
+      cell types watch for something growing in the eye and fire one neuron. The fly is
+      gone.</div></div>
+    <div><span class="bn">03</span><div><b>It never figures out what the thing is.</b> It only
+      measures how fast the edge spreads. So it cannot be fooled by a world that just looks
+      right.</div></div>
+    <div><span class="bn">04</span><div><b>That makes it a physics test.</b> Put it in an
+      AI-generated world and it fires on time if the motion is real, and stays silent if it
+      is nonsense.</div></div>
+    <div><span class="bn">05</span><div><b>Reactor is the other half.</b> A world you can fly
+      through live, so we send the fly's escape back into the session that made the
+      frame.</div></div>
   </div>
 </section>
 
@@ -402,64 +392,44 @@ footer a{color:var(--accent);text-decoration:none}
 <section class="wrap rev" id="next">
   <span class="lab">05 / the real world</span>
   <h2>What this is for.</h2>
-  <p class="lead" style="margin-bottom:8px">World models are about to become the place
-  robots are trained. Nobody can currently tell you whether an update to one changed how an
-  agent behaves inside it. A fly can.</p>
+  <p class="lead" style="margin-bottom:6px">AI worlds are about to be where robots learn.
+  Nobody can tell you yet whether an update to one changed how a robot behaves inside it.</p>
   <div class="bul">
-    <div><span class="bn">01</span><div><b>Robots trained in simulation stop failing in
-      reality.</b> A policy learned inside a world whose approaches arrive too late learns to
-      brake too late. That is a crash in the real world and nothing in the generated video
-      looks wrong. This catches it before the robot ships.</div></div>
-    <div><span class="bn">02</span><div><b>A world model gets a release gate.</b> Point this
-      at two builds and the difference is a number. V1 passes sixteen of eighteen levels, V2
-      passes eleven, and the regression has a name instead of being an argument about
-      whether the footage looks better.</div></div>
-    <div><span class="bn">03</span><div><b>Self-driving sims get checked on the one thing that
-      matters.</b> Time-to-contact is the quantity an autonomous vehicle brakes on, and it is
-      exactly the quantity this circuit measures. A driving world model that renders beautiful
-      traffic with the wrong looming rate is a hazard, not an asset.</div></div>
-    <div><span class="bn">04</span><div><b>Evaluation gets cheap enough to run on every
-      commit.</b> 223 facets of numpy on a CPU, no judge model and no per-frame API bill. The
-      alternative today is a person watching clips or a large vision model grading how
-      convincing they look, which is the thing a generative model is already trained to
-      win at.</div></div>
-    <div><span class="bn">05</span><div><b>The number is an animal's, not ours.</b> A real fly
-      commits near 20&deg;. Ours commits at 20.7 &plusmn; 0.63&deg; across an eight-fold
-      speed sweep. A vendor and its customer can both check that figure against published
-      literature, which is what makes it a benchmark rather than a dashboard.</div></div>
-    <div><span class="bn">06</span><div><b>Robots can be tested by borrowed brains.</b> The
-      circuit here took no training data, no labels and no compute to train, because evolution
-      already paid that bill. A reflex that has been solving collision avoidance for 400
-      million years is a free, pre-validated test instrument, and there is a whole catalogue of
-      them in the connectome nobody has picked up yet.</div></div>
-    <div><span class="bn">07</span><div><b>And it does not stop at one sense.</b> Approach
-      geometry is one axis. A vestibular probe reads gravity, a tactile probe reads contact,
-      insect optic flow reads odometry drift. Each is small, cheap, and has a correct answer
-      that was settled long before the internet. Together they are a physics test suite for
-      generated reality.</div></div>
+    <div><span class="bn">01</span><div><b>Robots trained on fake physics fail on real
+      physics.</b> If approaches arrive late in the sim, the robot brakes late in the
+      street.</div></div>
+    <div><span class="bn">02</span><div><b>This gives a world model a pass or fail.</b> Two
+      builds, two scores, and the regression has a name.</div></div>
+    <div><span class="bn">03</span><div><b>Self-driving sims get checked on the thing that
+      matters.</b> Time to contact is what a car brakes on, and it is exactly what this
+      measures.</div></div>
+    <div><span class="bn">04</span><div><b>It is cheap enough to run on every commit.</b> No
+      judge model, no per-frame bill, just numpy on a laptop.</div></div>
+    <div><span class="bn">05</span><div><b>The number comes from an animal, not from us.</b>
+      Which is why anyone can check it.</div></div>
+    <div><span class="bn">06</span><div><b>Evolution already paid the training bill.</b> No
+      data, no labels, no compute. There are more instruments like this in the connectome
+      that nobody has picked up.</div></div>
   </div>
-  <p class="pull">We did not build a better world model. We built the part that tells you
-  when one is lying.</p>
 </section>
 
 <section class="wrap rev" id="stack">
-  <span class="lab">06 / the stack</span>
-  <h2>What each sponsor does here.</h2>
+  <span class="lab">06 / what we built it with</span>
+  <h2>Who does what.</h2>
   <div class="stack">
-    <div><span class="m">LingBot World 2</span><span class="w">Reactor</span><span class="d">The live level. We drive it forward and rewrite it mid-generation to send entities.</span></div>
-    <div><span class="m">Reactor SDK</span><span class="w">Reactor</span><span class="d">Session, action control, prompt hot-swap, and the dodge sent back into the running world.</span></div>
-    <div><span class="m">Nano Banana Pro</span><span class="w">Google AI Studio</span><span class="d">The film plates: hero frame and the entity portraits in the deepest stratum.</span></div>
-    <div><span class="m">Nano Banana 2.1</span><span class="w">Google AI Studio</span><span class="d">Draws the room each level starts from, which Veo and Reactor then animate.</span></div>
-    <div><span class="m">Veo 3.1</span><span class="w">Google DeepMind</span><span class="d">Animates the eleven generated levels and the things walking down them.</span></div>
-    <div><span class="m">Lyria 3.5</span><span class="w">Google DeepMind</span><span class="d">Ambient score. Every level has its own track, plus the fly's own spikes.</span></div>
-    <div><span class="m">MediaPipe Hands</span><span class="w">Google</span><span class="d">In the playable version you dodge with your body. Hand landmarks off the webcam decide whether you escaped.</span></div>
-    <div><span class="m">flyloop</span><span class="w">ours</span><span class="d">The eye, the escape circuit, the verdict. 223 facets of numpy, runs on a CPU.</span></div>
-    <div><span class="m">the circuit</span><span class="w">published</span><span class="d">LC4 and LPLC2 converging on the giant fibre, implemented from the Drosophila literature. The whole-brain connectome that maps this pathway was segmented with Google Research’s flood-filling networks. We took no model from anyone, only the equations.</span></div>
+    <div><span class="m">LingBot World 2</span><span class="w">Reactor</span><span class="d">The live world. We fly the camera forward and rewrite the room mid-stream to send something at you.</span></div>
+    <div><span class="m">Reactor SDK</span><span class="w">Reactor</span><span class="d">Opens the session, steers the camera, and sends the dodge back into the world that is still generating.</span></div>
+    <div><span class="m">Nano Banana Pro</span><span class="w">Google AI Studio</span><span class="d">The film stills.</span></div>
+    <div><span class="m">Nano Banana 2.1</span><span class="w">Google AI Studio</span><span class="d">Draws the room every level starts from.</span></div>
+    <div><span class="m">Veo 3.1</span><span class="w">Google DeepMind</span><span class="d">Animates the rooms, and the things walking down them.</span></div>
+    <div><span class="m">Lyria 3.5</span><span class="w">Google DeepMind</span><span class="d">The score. Four tracks that follow what the game is doing.</span></div>
+    <div><span class="m">MediaPipe Hands</span><span class="w">Google</span><span class="d">Reads your hand off the webcam, so you can dodge with your body instead of a key.</span></div>
+    <div><span class="m">Fright or Fly</span><span class="w">ours</span><span class="d">The eye, the reflex and the verdict. 223 facets of numpy, runs on a laptop CPU.</span></div>
+    <div><span class="m">The circuit</span><span class="w">published research</span><span class="d">Two fly cell types feeding one escape neuron, built from published papers. The brain map behind it was segmented by Google Research. We borrowed no model, only the equations.</span></div>
   </div>
 </section>
 
-<footer class="wrap"><p>flyloop. Reactor × Google DeepMind World Models Hackathon, NYC,
-8 October 2026. <a href="https://github.com/azrabano23/flyloop">Source</a></p></footer>
+<footer class="wrap"><p>Fright or Fly. <a href="https://github.com/azrabano23/flyloop">Source</a></p></footer>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -526,7 +496,6 @@ fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
   $('#t-n').textContent=d.clips.length;
   $('#t-p').textContent=pass+d.clips.filter(c=>V[c.id].code==='un').length;
   $('#t-f').textContent=fail;
-  $('#t-th').textContent=d.summary.threshold_mean_deg+' ± '+d.summary.threshold_sd_deg+'°';
   $('#fct').textContent=d.retina.n_facets+' facets';
 
   // the strata
