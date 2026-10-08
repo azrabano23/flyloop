@@ -46,7 +46,7 @@ The web app copies both into `web/public/` at build time.
           "trace": [0.0, 0.01, "..."]     // 0..1 normalised decision variable
         },
         "fly": {
-          "name": "emd + lplc2 (fallback)", // or "connectome (fly-C)" once wired
+          "name": "emd + lplc2 (fallback)", // or "giant fibre (LC4 + LPLC2)"
           "fired": true,
           "fire_frame": 78,
           "fire_t_s": 1.300,

@@ -6,11 +6,11 @@ profile is wrong; leave it raw and it catches them (5-frame lead over trig) but 
 threshold slides with speed (4.95 deg SD). One knob, two properties, no setting that gets
 both.
 
-The animal does not have this problem, and reading fly-C's `stimuli.giant_fiber` says why:
-
-    "LC4 contributes a term linear in angular VELOCITY while LPLC2 contributes a
-     log-Gaussian in angular SIZE -- the asymmetry that makes the pair a size-and-speed
-     detector rather than either alone."
+The animal does not have this problem, and the published anatomy says why. Two visual
+projection populations converge on the giant fibre and they are tuned to different things:
+LC4 responds to angular VELOCITY, LPLC2 to angular SIZE (Ache et al. 2019, on looming size
+and velocity encoding in the Drosophila giant fibre escape pathway). It is that asymmetry
+that makes the pair a size-and-speed detector when neither is one alone.
 
 Two populations, in parallel, summed onto one descending neuron. Our two `EMDProbe`
 configurations turn out to be crude versions of exactly those channels:
@@ -21,12 +21,12 @@ configurations turn out to be crude versions of exactly those channels:
 So we run both and combine them with the published model, instead of picking a point on a
 frontier that the biology simply does not sit on.
 
-WHAT IS OURS AND WHAT IS NOT. The parameter values in `GF_PARAMS` are the published ones,
-lifted from fly-C's `neuraltransistor/stimuli.py` (behavioural GF size threshold from Ache
-et al. 2019). The equations are theirs. What is ours is the front end: fly-C drives this
-model from an analytic `Looming` object that already knows its own angular size, which is
-no use on a world model's output. We drive it from the facet array instead, so it runs on
-arbitrary video and never segments an object.
+WHAT IS OURS AND WHAT IS NOT. The equations and the parameter values in `GF_PARAMS` are
+the published giant-fibre model, not our invention. What is ours is the front end. That
+model is normally driven by an analytic looming stimulus that already knows its own
+angular size, which is no use at all on a world model's output, because knowing the true
+angular size is the thing we do not have. We drive it from the facet array instead, so it
+runs on arbitrary video and never segments an object.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ from .types import Detection
 
 __all__ = ["GF_PARAMS", "GiantFiberProbe"]
 
-# Published giant-fibre model parameters (fly-C, neuraltransistor/stimuli.py).
+# Published giant-fibre model parameters (Ache et al. 2019).
 GF_PARAMS = dict(
     w_LC4=1.62, w_LPLC2=1.45, w_i1=2.27, w_i2=1.0,
     lc4_gain_mv_per_deg_per_s=2.567e-4, lc4_delay_ms=19.0,

@@ -25,9 +25,9 @@ from .types import Detection
 
 __all__ = ["angular_size_deg", "tau_ttc_s", "AnalyticBaseline"]
 
-# Angular size at which a fly's escape commits, from the behavioural literature and
-# reproduced by fly-C from unfitted connectome wiring at 19.9 +/- 2.7 deg. We hold the
-# baseline to the same number so the two detectors are asked the same question.
+# Angular size at which a fly's escape commits, from the behavioural literature on
+# Drosophila looming escape (threshold reported near 20 deg, Ache et al. 2019). We hold
+# the baseline to the same number so both detectors are asked the same question.
 ESCAPE_THRESHOLD_DEG = 20.0
 
 

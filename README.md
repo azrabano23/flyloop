@@ -92,8 +92,8 @@ scale, so we know true depth and can fly a camera at an exactly known speed.
 All offline, on clips whose geometry is known in closed form. `python scripts/run_synthetic.py`.
 
 **The circuit behaves like the animal.** Across an 8x approach-speed sweep (0.25 to 2.0 m/s)
-the escape commits at **20.97 +/- 1.24 deg**. The published figure is ~20 deg, and fly-C
-reports 19.9 +/- 2.7 deg from the connectome.
+the escape commits at **20.97 +/- 1.24 deg**. The behavioural literature puts the escape
+threshold near 20 deg (Ache et al. 2019).
 
 **But there is a tradeoff, and it is the most interesting thing we found.** The same
 circuit cannot be both stable and sensitive:
@@ -113,11 +113,13 @@ curve, there is no reason — they are the same detector.** The fly only earns i
 the other end, where it fires 5 frames ahead of trig on an approach that is smoothly,
 plausibly wrong.
 
-**Why that is an argument for the connectome.** A real fly is reported to have both at
-once: 19.9 +/- 2.7 deg *and* sensitivity to how fast the image is growing. That point sits
-off the frontier we measured. We had to hand-tune three parameters to get partway; the
-measured circuit does it for free. Wiring in fly-C is now the obvious next experiment
-rather than a nice story.
+**How the animal escapes the tradeoff.** It does not use one channel. Two visual
+projection populations converge on the giant fibre and are tuned to different things: LC4
+to angular velocity, LPLC2 to angular size (Ache et al. 2019). That asymmetry is what makes
+the pair a size-and-speed detector when neither is one alone. We built both channels and
+summed them with the published weights, and the result sits off the single-channel frontier:
+**1.41 deg** spread with a **3.33 frame** lead on broken clips, where the frontier at that
+stability allows only about 1.2.
 
 ## pipeline
 

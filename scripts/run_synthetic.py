@@ -7,11 +7,11 @@ correct one, then scores everything -- including the deliberately broken control
 sweep of approach speeds.
 
 The speed sweep is the load-bearing experiment. A fly's escape commits at a roughly
-constant angular size no matter how fast the thing is coming, and fly-C reproduces that
-from unfitted connectome wiring (19.9 +/- 2.7 deg across an 8x speed range). If our
-circuit holds its threshold across an 8x sweep here, the instrument behaves like the
-animal and we can point it at a world model. If it does not, nothing downstream is worth
-reporting.
+constant angular size no matter how fast the thing is coming; the behavioural literature
+puts that threshold near 20 deg and reports it holding across a wide range of approach
+speeds. If our circuit holds its threshold across an 8x sweep here, the instrument behaves
+like the animal and we can point it at a world model. If it does not, nothing downstream
+is worth reporting.
 
     python scripts/run_synthetic.py
 """
@@ -39,7 +39,7 @@ from flyloop.stimuli import looming  # noqa: E402
 # with the gain this one produces.
 CAL_SPEED_MPS = 0.5
 
-# 8x range, matching the span fly-C reports its threshold holding across.
+# 8x range, matching the span over which the behavioural threshold is reported to hold.
 SPEED_SWEEP_MPS = (0.25, 0.5, 1.0, 2.0)
 
 BROKEN = ("linear", "reversed", "jump")
@@ -52,8 +52,8 @@ BROKEN = ("linear", "reversed", "jump")
 # expansion *profile* is wrong. Backed off, it stays sensitive to the shape of the
 # expansion but its threshold slides with approach speed.
 #
-# A real fly is reported to have both at once. We cannot get both out of a hand-built
-# model, which is the sharpest reason to go get the measured circuit.
+# A real fly is reported to have both at once. We cannot get both out of a single
+# channel, which is what sent us to the two-channel model.
 PROBE_CONFIGS = {
     "invariant": dict(normalize=True, sigma=0.003, tau_adapt_s=0.200),
     "sensitive": dict(normalize=False, tau_adapt_s=0.080),

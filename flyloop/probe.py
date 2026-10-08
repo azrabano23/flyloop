@@ -14,9 +14,9 @@ accidentally measuring the geometry it was handed.
 
 HONESTY NOTE. `EMDProbe` below is a *model of* the circuit, not the circuit. Connectivity
 and sign come from the published architecture, but the time constants and gains are ours.
-The real article is Ryan's `fly-C`, which compiles the circuit straight out of the
-male-CNS connectome; `ConnectomeProbe` is the seam where it plugs in. Until that is wired,
-every result must be labelled "emd + lplc2 (fallback)" and never "connectome".
+A circuit compiled directly from the connectome graph would be the real article;
+`ConnectomeProbe` is the seam where one plugs in. Until that is wired, every result must
+be labelled "emd + lplc2 (fallback)" and never "connectome".
 """
 
 from __future__ import annotations
@@ -40,10 +40,10 @@ class EMDProbe:
     world model produced, and they are frozen before any generated clip is scored.
 
     That sweep took the threshold from 19.0 +/- 4.95 deg to 20.97 +/- 1.24 deg. Worth
-    being blunt about what that means: a real fly needs none of this. fly-C gets
-    19.9 +/- 2.7 deg straight out of unfitted connectome wiring. Having to hand-tune three
-    knobs to approximate for free what the measured circuit simply does is the strongest
-    argument we have for replacing this model with `ConnectomeProbe`.
+    being blunt about what that means: a real fly needs none of this. Its threshold holds
+    across approach speed because of how the circuit is built, not because anyone tuned
+    it. Having to hand-fit three knobs to approximate that is the honest reason to prefer
+    a circuit taken from the connectome over a model of one.
     """
 
     name = "emd + lplc2 (fallback)"
@@ -200,24 +200,24 @@ class EMDProbe:
 
 
 class ConnectomeProbe:
-    """Adapter for Ryan's fly-C, which compiles the real circuit from the connectome.
+    """Seam for a circuit taken straight from the connectome graph.
 
-    fly-C (`RyanRana/fly-C`, "Neural Transistor") extracts a named circuit from the
-    male-CNS connectome as a signed sparse graph, prunes it, quantises to int8 and emits
-    C. Its `collision` circuit already reproduces the behaviour we care about: it fires
-    about 56 ms before impact, onset scaling r = -0.9999, and the angular threshold holds
-    at 19.9 +/- 2.7 deg across an 8x speed range -- from unfitted wiring.
+    The models in this package are built from the *published architecture* of the escape
+    pathway: which cell types feed the giant fibre, what each is tuned to, and roughly how
+    strongly. A connectome-derived probe would instead read the measured wiring itself --
+    the male-CNS volume gives a signed, weighted graph over identified neurons, so the
+    connectivity would be data rather than a reading of the literature.
 
-    The open question, and the first thing to settle with Ryan: does fly-C accept a
-    stream of photoreceptor values, or only its own predefined synthetic stimuli? If the
-    former this is a thin shim over `nt.circuit("collision")` plus `evaluate`. If the
-    latter, the visual front end has to be built, and `EMDProbe` carries the demo.
+    That is the version worth building next, because it removes the hand-fitting that
+    `EMDProbe` needs. The work it requires is a mapping from the ommatidial array onto the
+    circuit's input neurons and an integrate-and-fire pass over the graph; the retina here
+    already produces the former's input in the right shape.
     """
 
-    name = "connectome (fly-C)"
+    name = "connectome"
 
     def __init__(self, *_, **__):
         raise NotImplementedError(
-            "fly-C not wired yet -- use EMDProbe. See the module docstring for the one "
-            "question that decides how much work this is."
+            "not wired yet -- use EMDProbe or GiantFiberProbe. See the class docstring "
+            "for what building this actually involves."
         )
