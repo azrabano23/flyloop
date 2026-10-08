@@ -27,10 +27,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:900;op
  text-transform:uppercase;color:var(--dim);display:block;margin-bottom:22px}
 h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:1.01}
 h1{font-size:clamp(2.7rem,7.6vw,5.6rem)}
-h2{font-size:clamp(1.7rem,3.9vw,2.9rem);margin-bottom:18px}
+h2{font-size:clamp(1.4rem,2.3vw,1.95rem);margin-bottom:16px;letter-spacing:-.03em}
 p{color:var(--muted);max-width:68ch}
 .lead{font-size:clamp(1.02rem,1.4vw,1.18rem);color:#AEB4BD;max-width:62ch;line-height:1.6}
-section{padding:clamp(92px,10vw,160px) 0;border-top:1px solid var(--line2)}
+section.wrap{padding-top:clamp(74px,7.5vw,118px);padding-bottom:clamp(74px,7.5vw,118px)}
 .sr{font-weight:400;letter-spacing:-.02em;color:var(--muted)}
 #flash{position:fixed;inset:0;background:var(--fail);opacity:0;pointer-events:none;z-index:800;transition:opacity .09s}
 #flash.on{opacity:.48;transition:none}
@@ -120,7 +120,7 @@ section{padding:clamp(92px,10vw,160px) 0;border-top:1px solid var(--line2)}
 .stratum:first-of-type{margin-top:34px}
 .sh{display:flex;align-items:baseline;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
 .sh .rn{font-family:var(--body);font-weight:500;font-size:10px;letter-spacing:.2em;color:var(--lim)}
-.sh h3{font-family:var(--display);font-size:1.22rem;font-weight:800;letter-spacing:-.02em}
+.sh h3{font-family:var(--display);font-size:1.08rem;font-weight:800;letter-spacing:-.02em}
 .sh .note{font-size:.84rem;color:var(--dim);margin-left:auto;font-family:var(--mono);letter-spacing:.04em}
 
 .lv{display:grid;gap:12px;margin-top:16px}
@@ -201,7 +201,7 @@ tr.bad{background:rgba(255,59,48,.06)}
 .warn{border:1px solid rgba(255,59,48,.24);background:rgba(255,59,48,.04);padding:22px}
 .warn p{color:#B7BCC4;max-width:76ch;font-size:.89rem}
 .ctrl{margin-top:44px;padding-top:22px;border-top:1px solid var(--line2)}
-.ctrl h3{font-family:var(--display);font-size:1.1rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.ctrl h3{font-family:var(--display);font-size:1.08rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
 .ctrl p{font-size:.9rem;max-width:72ch}
 .ctrl .g{display:grid;gap:9px;margin-top:18px;font-family:var(--mono);font-size:11px}
 @media(min-width:760px){.ctrl .g{grid-template-columns:repeat(2,1fr) }}
