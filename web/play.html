@@ -4,246 +4,498 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Descent</title>
-<meta name="description" content="You are a probe with one reflex. Walk down through the Backrooms and decide whether to trust it.">
+<meta name="description" content="You are a fly. 223 facets, no idea what is in the room, and one reflex.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;800&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#07080A;--text:#F2F3F5;--muted:#8C919A;--dim:#555B65;--line:rgba(255,255,255,.14);
+:root{--text:#F2F3F5;--muted:#8C919A;--dim:#555B65;--line:rgba(255,255,255,.14);
  --accent:#3B82F6;--fail:#FF3B30;--pass:#5FD39A;--lim:#C8B560;
  --display:'Figtree',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;
  --body:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;height:100vh;height:100svh}
-#stage{position:fixed;inset:0;overflow:hidden}
-#v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.58) contrast(1.07) brightness(.8)}
-#cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+#stage{position:fixed;inset:0;overflow:hidden;background:#000}
+
+#eye{position:absolute;inset:0;width:100%;height:100%;display:block}
+#v,#pv{display:block}
+#v{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none}
+#src{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none}
+#pip{position:absolute;left:16px;bottom:74px;width:176px;z-index:8;border:1px solid var(--line);background:#000}
+#pip video{width:100%;opacity:.8}
+#pip .cap{position:absolute;top:0;left:0;right:0;font-family:var(--mono);font-size:8px;
+ letter-spacing:.14em;text-transform:uppercase;padding:4px 6px;background:rgba(7,8,10,.86);color:rgba(255,255,255,.5)}
+@media(max-width:760px){#pip{width:108px;bottom:96px}}
+
 #grain{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:.05;
  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
 #vig{position:absolute;inset:0;pointer-events:none;z-index:5;
- background:radial-gradient(ellipse at 50% 45%,transparent 38%,rgba(0,0,0,.72) 100%),
- repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.15) 2px 3px)}
-#flash{position:absolute;inset:0;background:var(--fail);opacity:0;pointer-events:none;z-index:8;transition:opacity .11s}
-#flash.on{opacity:.5;transition:none}
-.punch{animation:pz .44s cubic-bezier(.2,.9,.2,1)}
-@keyframes pz{0%{transform:scale(1)}16%{transform:scale(1.16)}100%{transform:scale(1)}}
-.shake{animation:sk .36s linear}
-@keyframes sk{0%,100%{transform:translate(0,0)}20%{transform:translate(-10px,5px)}
- 40%{transform:translate(9px,-7px)}60%{transform:translate(-7px,-3px)}80%{transform:translate(6px,6px)}}
+ background:radial-gradient(ellipse at 50% 46%,transparent 42%,rgba(0,0,0,.8) 100%)}
+#flash{position:absolute;inset:0;background:var(--fail);opacity:0;pointer-events:none;z-index:10;transition:opacity .12s}
+#flash.on{opacity:.52;transition:none}
+.shake{animation:sk .42s linear}
+@keyframes sk{0%,100%{transform:translate(0,0)}18%{transform:translate(-12px,6px)}
+ 38%{transform:translate(11px,-9px)}58%{transform:translate(-9px,-4px)}80%{transform:translate(7px,8px)}}
 
-/* hud */
 #hud{position:absolute;inset:0;z-index:7;pointer-events:none;font-family:var(--mono);
- font-size:9.5px;letter-spacing:.11em;text-transform:uppercase}
+ font-size:9.5px;letter-spacing:.12em;text-transform:uppercase}
 .tl,.tr{position:absolute;top:0;padding:18px 20px;display:grid;gap:4px}
 .tl{left:0}.tr{right:0;text-align:right}
-@media(min-width:900px){.tl,.tr{padding:26px 34px}}
-#hud span.k{color:rgba(255,255,255,.32);margin-right:8px}
-#hud b{color:rgba(255,255,255,.84);font-weight:400}
+@media(min-width:900px){.tl,.tr{padding:22px 28px}}
+#hud span.k{color:rgba(255,255,255,.3);margin-right:8px}
+#hud b{color:rgba(255,255,255,.82);font-weight:400}
 .tr b{color:var(--accent)}
 #hud.fire .tr b{color:var(--fail)}
-#bar{position:absolute;left:50%;transform:translateX(-50%);bottom:112px;width:min(320px,56vw);
- display:grid;gap:8px;justify-items:center}
-#bar .t{color:rgba(255,255,255,.5);letter-spacing:.3em}
-#bar .track{width:100%;height:3px;background:rgba(255,255,255,.13);position:relative}
-#bar .track i{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);
- box-shadow:0 0 14px var(--accent);transition:width .07s linear}
-#bar .track u{position:absolute;top:-4px;bottom:-4px;left:66.6%;width:1px;background:rgba(255,255,255,.45)}
-#hud.fire #bar .track i{background:var(--fail);box-shadow:0 0 22px var(--fail)}
-#hud.fire #bar .t{color:#fff}
-#key{position:absolute;bottom:0;left:0;padding:18px 20px;display:grid;gap:5px;color:rgba(255,255,255,.4)}
-@media(min-width:900px){#key{padding:26px 34px}}
-@media(max-width:640px){#key,.tr{display:none}}
-#key em{display:inline-block;width:15px;height:0;border-top:2px solid;vertical-align:middle;margin-right:8px}
+@media(max-width:760px){.tr{display:none}}
 
-/* log + overlays */
-#log{position:absolute;left:0;right:0;bottom:46px;z-index:7;text-align:center;
- font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:rgba(255,255,255,.66);
- text-shadow:0 1px 20px #000;padding:0 20px;min-height:1.4em;transition:opacity .5s}
-#sheet{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;
- padding:24px;background:linear-gradient(to bottom,rgba(7,8,10,.86),rgba(7,8,10,.96))}
+#bar{position:absolute;left:50%;transform:translateX(-50%);bottom:112px;width:min(360px,64vw);
+ display:grid;gap:9px;justify-items:center;z-index:7;pointer-events:none}
+#bar .t{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+#bar .track{width:100%;height:3px;background:rgba(255,255,255,.13);position:relative}
+#bar .track i{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+#bar .track u{position:absolute;top:-5px;bottom:-5px;left:66.6%;width:1px;background:rgba(255,255,255,.5)}
+#bar.fire .track i{background:var(--fail);box-shadow:0 0 24px var(--fail)}
+#bar.fire .t{color:#fff}
+
+/* the key legend. always on screen, so nobody has to guess. */
+#keys{position:absolute;left:0;right:0;bottom:0;z-index:9;display:flex;gap:26px;
+ justify-content:center;flex-wrap:wrap;padding:14px 20px;background:linear-gradient(to top,rgba(0,0,0,.86),transparent);
+ font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+#keys span{display:flex;align-items:center;gap:8px}
+#keys kbd{font-family:var(--mono);font-size:10px;border:1px solid var(--line);
+ padding:3px 7px;color:#fff;background:rgba(255,255,255,.06)}
+#keys .hot{color:#fff}
+#mode{position:absolute;right:16px;bottom:74px;z-index:9;font-family:var(--mono);font-size:9px;
+ letter-spacing:.16em;text-transform:uppercase;padding:7px 11px;border:1px solid var(--line);
+ background:rgba(7,8,10,.82);color:rgba(255,255,255,.62);cursor:pointer}
+#mode:hover{border-color:var(--accent);color:#fff}
+#mode.hands{border-color:var(--accent);color:var(--accent)}
+
+#log{position:absolute;left:0;right:0;bottom:62px;z-index:7;text-align:center;
+ font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:rgba(255,255,255,.72);
+ text-shadow:0 1px 22px #000;padding:0 20px;min-height:1.4em;transition:opacity 1s}
+#room{position:absolute;left:0;right:0;top:44%;z-index:7;text-align:center;pointer-events:none;
+ opacity:0;transition:opacity 1.2s}
+#room.on{opacity:1}
+#room .lv{font-family:var(--mono);font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--lim)}
+#room .nm{font-family:var(--serif);font-size:clamp(2.2rem,6vw,4rem);line-height:1.05;margin-top:8px;text-shadow:0 2px 46px #000}
+
+#dodge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:11;display:none;
+ text-align:center;padding:34px 46px;background:radial-gradient(ellipse at center,rgba(4,5,7,.93) 40%,rgba(4,5,7,0) 78%)}
+#dodge.on{display:block}
+#dodge .big{font-family:var(--display);font-weight:800;font-size:clamp(2rem,6.4vw,3.8rem);
+ letter-spacing:-.04em;color:var(--fail);text-shadow:0 2px 54px #000}
+#dodge .how{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+ color:#fff;margin-top:16px;text-shadow:0 1px 22px #000}
+#dodge .ar{font-size:3rem;margin-top:8px;color:#fff;text-shadow:0 2px 30px #000}
+#dodge .meter{width:260px;height:4px;background:rgba(255,255,255,.18);margin:16px auto 0;position:relative}
+#dodge .meter i{position:absolute;inset:0 auto 0 0;width:0;background:var(--pass)}
+#dodge .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:rgba(255,255,255,.75);margin-top:14px;text-shadow:0 1px 14px #000}
+#dodge .clock{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--fail);margin-top:8px}
+
+#cam{position:absolute;right:16px;bottom:118px;width:176px;z-index:8;display:none;border:1px solid var(--line);background:#000}
+#cam.on{display:block}
+#cam video{width:100%;display:block;transform:scaleX(-1);opacity:.4}
+#cam canvas{position:absolute;inset:0;width:100%;height:100%}
+#cam .cap{position:absolute;top:0;left:0;right:0;font-family:var(--mono);font-size:8px;
+ letter-spacing:.14em;text-transform:uppercase;padding:4px 6px;background:rgba(7,8,10,.86);color:rgba(255,255,255,.5)}
+
+#sheet{position:absolute;inset:0;z-index:12;display:none;align-items:center;justify-content:center;
+ padding:24px;background:linear-gradient(to bottom,rgba(4,5,7,.93),rgba(4,5,7,.98));overflow-y:auto}
 #sheet.on{display:flex}
-.box{max-width:720px;width:100%;text-align:center}
-.box .lab{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
- color:var(--dim);display:block;margin-bottom:16px}
+.box{max-width:740px;width:100%;text-align:center;padding:28px 0}
 .box h1{font-family:var(--display);font-weight:800;letter-spacing:-.04em;line-height:1;
  font-size:clamp(2rem,6.4vw,4rem);margin-bottom:14px}
 .box h2{font-family:var(--serif);font-weight:400;font-style:italic;letter-spacing:-.01em;
- font-size:clamp(1.3rem,3.4vw,2rem);line-height:1.2;margin-bottom:16px;color:#E6E9ED}
-.box p{color:#A9AFB8;font-size:.98rem;line-height:1.62;max-width:56ch;margin:0 auto 10px}
-.box p.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);text-transform:none}
-.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+ font-size:clamp(1.3rem,3.4vw,2rem);line-height:1.2;margin-bottom:18px;color:#E6E9ED}
+.box p{color:#A9AFB8;font-size:1rem;line-height:1.64;max-width:56ch;margin:0 auto 12px}
+.box p.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--muted);line-height:1.8}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:28px}
 .btn{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
- padding:14px 22px;border:1px solid var(--line);color:var(--text);background:rgba(7,8,10,.6);
+ padding:14px 22px;border:1px solid var(--line);color:#fff;background:rgba(7,8,10,.6);
  cursor:pointer;transition:.16s;text-decoration:none;display:inline-block}
-.btn:hover{border-color:var(--accent);background:rgba(59,130,246,.16);color:#fff}
-.btn.red{border-color:rgba(255,59,48,.6);color:#FF8A82}
-.btn.red:hover{background:var(--fail);border-color:var(--fail);color:#fff}
+.btn:hover{border-color:var(--accent);background:rgba(59,130,246,.18)}
 .btn.green{border-color:rgba(95,211,154,.55);color:var(--pass)}
-.btn.green:hover{background:rgba(95,211,154,.18);color:#fff}
-.doors{display:grid;gap:12px;margin-top:26px}
+.btn.green:hover{background:rgba(95,211,154,.2);color:#fff}
+.rules{display:grid;gap:9px;margin:24px auto 0;max-width:600px;text-align:left}
+.rules div{display:grid;grid-template-columns:34px 1fr;gap:14px;padding:12px 15px;border:1px solid var(--line);align-items:start}
+.rules .n{font-family:var(--mono);font-size:10px;color:var(--lim);padding-top:3px}
+.rules .t{font-size:.92rem;color:#C3C8D0;line-height:1.5}
+.rules .t b{color:#fff;font-weight:500}
+.doors{display:grid;gap:12px;margin-top:24px}
 @media(min-width:680px){.doors{grid-template-columns:repeat(3,1fr)}}
 .door{border:1px solid var(--line);background:rgba(11,13,17,.8);cursor:pointer;overflow:hidden;
  text-align:left;padding:0;color:inherit;font:inherit;transition:.18s}
 .door:hover{border-color:var(--accent);transform:translateY(-2px)}
-.door .im{aspect-ratio:16/10;background:#000 center/cover no-repeat;position:relative}
-.door .im::after{content:'';position:absolute;inset:0;
- background:linear-gradient(to top,rgba(11,13,17,.96),rgba(11,13,17,.15) 60%,transparent)}
-.door .bd{padding:12px 14px 14px;margin-top:-44px;position:relative}
+.door canvas{width:100%;display:block;background:#000}
+.door .bd{padding:12px 14px 14px}
 .door .lv{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--lim)}
-.door .nm{font-family:var(--serif);font-size:1.25rem;line-height:1.15;margin:3px 0 4px}
+.door .nm{font-family:var(--serif);font-size:1.3rem;line-height:1.15;margin:3px 0 4px}
 .door .bl{font-size:.78rem;color:var(--muted);line-height:1.45}
-.radio{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:#CFD4DA;
- border-left:2px solid var(--fail);padding:10px 0 10px 14px;text-align:left;max-width:48ch;margin:22px auto 0}
+.radio{font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:#CFD4DA;
+ border-left:2px solid var(--fail);padding:11px 0 11px 15px;text-align:left;max-width:50ch;margin:24px auto 0;line-height:1.6}
 .radio b{color:#fff;font-weight:500}
-.tally{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-top:26px;
+.tally{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin-top:24px;
  font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-.tally b{display:block;font-family:var(--display);font-size:1.7rem;font-weight:800;
- letter-spacing:-.04em;color:var(--text);margin-bottom:2px}
-#trace{display:block;margin:20px auto 0;border:1px solid var(--line);background:rgba(7,8,10,.6);max-width:100%}
-
-#mode{position:absolute;right:14px;top:92px;z-index:9;font-family:var(--mono);font-size:9px;
- letter-spacing:.16em;text-transform:uppercase;padding:6px 10px;border:1px solid var(--line);
- background:rgba(7,8,10,.78);color:rgba(255,255,255,.6);cursor:pointer;transition:.15s}
-#mode:hover{border-color:var(--accent);color:#fff}
-#mode.hands{border-color:var(--accent);color:var(--accent)}
-#cam{position:absolute;right:14px;bottom:14px;width:188px;z-index:9;display:none;
- border:1px solid var(--line);background:#000}
-#cam.on{display:block}
-#cam video{width:100%;display:block;transform:scaleX(-1);opacity:.5}
-#cam canvas{position:absolute;inset:0;width:100%;height:100%}
-#cam .cap{position:absolute;top:0;left:0;right:0;font-family:var(--mono);font-size:8.5px;
- letter-spacing:.14em;text-transform:uppercase;padding:4px 6px;background:rgba(7,8,10,.8);
- color:rgba(255,255,255,.55)}
-#dodge{position:absolute;left:50%;transform:translateX(-50%);bottom:170px;z-index:9;
- font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
- color:rgba(255,255,255,.75);text-shadow:0 1px 18px #000;display:none;text-align:center}
-#dodge.on{display:block}
-#dodge .meter{width:200px;height:2px;background:rgba(255,255,255,.16);margin:9px auto 0;position:relative}
-#dodge .meter i{position:absolute;inset:0 auto 0 0;width:0;background:var(--pass)}
+.tally b{display:block;font-family:var(--display);font-size:1.7rem;font-weight:800;letter-spacing:-.04em;color:var(--text);margin-bottom:2px}
+#trace{display:block;margin:18px auto 0;border:1px solid var(--line);background:rgba(7,8,10,.6);max-width:100%}
 .tag{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:7;
- font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
- padding:5px 11px;background:rgba(7,8,10,.72);border:1px solid var(--line);
- border-top:none;color:rgba(255,255,255,.5)}
+ font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+ padding:5px 12px;background:rgba(7,8,10,.76);border:1px solid var(--line);border-top:none;color:rgba(255,255,255,.48)}
 </style>
 </head>
 <body>
 <div id="stage">
+  <canvas id="eye"></canvas>
   <video id="v" playsinline muted></video>
-  <canvas id="cv"></canvas>
+  <canvas id="src" width="200" height="200"></canvas>
+  <div id="pip"><span class="cap">what a camera sees</span><video id="pv" playsinline muted></video></div>
   <div id="vig"></div>
   <div id="grain"></div>
   <div id="flash"></div>
-  <span class="tag" id="tag">prerecorded &middot; reactor &amp; veo</span>
+  <span class="tag" id="tag">&nbsp;</span>
   <div id="hud">
     <div class="tl">
-      <div><span class="k">probe</span><b>223 ommatidia &middot; 5.1&deg;</b></div>
-      <div><span class="k">level</span><b id="h-lvl">&mdash;</b></div>
-      <div><span class="k">world model</span><b id="h-model">&mdash;</b></div>
+      <div><span class="k">you are</span><b>223 ommatidia &middot; 5.1&deg; apart</b></div>
+      <div><span class="k">room</span><b id="h-lvl">&mdash;</b></div>
     </div>
     <div class="tr">
       <div><span class="k">bearing</span><b id="h-br">&mdash;</b></div>
       <div><span class="k">expanding</span><b id="h-ex">&mdash;</b></div>
-      <div><span class="k">verified</span><b id="h-ver">0</b></div>
-    </div>
-    <div id="bar"><span class="t" id="h-state">giant fibre &middot; quiet</span>
-      <div class="track"><i id="h-fill"></i><u></u></div></div>
-    <div id="key">
-      <div><em style="color:rgba(255,255,255,.5)"></em>223 ommatidia</div>
-      <div><em style="color:var(--accent)"></em>per-facet optic flow</div>
-      <div><em style="color:var(--lim)"></em>expansion centroid</div>
+      <div><span class="k">survived</span><b id="h-ver">0</b></div>
     </div>
   </div>
+  <div id="bar"><span class="t" id="h-state">giant fibre &middot; quiet</span>
+    <div class="track"><i id="h-fill"></i><u></u></div></div>
+  <div id="room"><div class="lv" id="room-lv"></div><div class="nm" id="room-nm"></div></div>
   <div id="log"></div>
-  <button id="mode">input &middot; keys</button>
-  <div id="dodge"><span id="dodge-t">dodge</span><div class="meter"><i id="dodge-m"></i></div></div>
+  <div id="dodge">
+    <div class="big">ESCAPE</div>
+    <div class="how" id="dodge-how"></div>
+    <div class="ar" id="dodge-ar"></div>
+    <div class="meter"><i id="dodge-m"></i></div>
+    <div class="sub">press nothing and you have overridden the reflex</div>
+    <div class="clock" id="dodge-clock"></div>
+  </div>
   <div id="cam"><span class="cap" id="cam-cap">hand tracking</span>
-    <video id="camv" playsinline muted autoplay></video><canvas id="camc" width="188" height="141"></canvas></div>
+    <video id="camv" playsinline muted autoplay></video><canvas id="camc" width="176" height="132"></canvas></div>
+  <button id="mode">input &middot; keys</button>
+  <div id="keys">
+    <span><kbd>&larr;</kbd><kbd>A</kbd> dodge left</span>
+    <span><kbd>&rarr;</kbd><kbd>D</kbd> dodge right</span>
+    <span><kbd>nothing</kbd> override the reflex</span>
+    <span id="k-cv" style="display:none">hand left or right &middot; dodge</span>
+  </div>
   <div id="sheet"><div class="box" id="box"></div></div>
 </div>
 
 <script>
 const $=s=>document.querySelector(s);
 const L=$('#log'),SH=$('#sheet'),BOX=$('#box');
-let R=null,CL={},clip=null,raf=0,phase='idle',fired=false,t0=0,dpr=1;
-let verified=0,visited=[],depth=0,bed=null,sting=null,hum=null,lastBearing=0;
+let R=null,CL={},clip=null,raf=0,phase='idle',fired=false,dpr=1;
+let survived=0,visited=[],depth=0,lastBearing=0;
+let STILL=null;   // room poster, sampled while the video is paused or still loading
+let clock0=0;                      // reset on EVERY phase change, never inherited
+const ROOMS_TO_RUN=4;              // real rooms before the corrupted one
 
-// Canon Backrooms levels, mapped onto the clips we actually ran. The names are the story,
-// the verdicts underneath are measured.
+// A fly's flicker fusion runs near 200 Hz against our 60, so the event it reacts to is
+// genuinely faster than a human eye resolves. Playing the approach back at a third speed is
+// not padding, it is showing you the approach on the fly's clock instead of yours.
+const SLOW=0.32;
+
 const ROOMS={
- 'veo-yellow-hallway':['Level 0','The Lobby','Mono-yellow wallpaper, damp carpet, and the hum. Nothing is coming.'],
- 'veo-parking-column':['Level 1','Habitable Zone','Concrete, sparse lighting, and a column you cannot see around.'],
+ 'veo-yellow-hallway':['Level 0','The Lobby','Mono-yellow wallpaper, damp carpet, and the hum.'],
+ 'veo-parking-column':['Level 1','Habitable Zone','Concrete, sparse light, a column you cannot see around.'],
  'veo-office-pillar':['Level 4','Abandoned Office','An office floor after hours. The lights are going one by one.'],
  'veo-pool-rooms':['Level 37','The Poolrooms','Shallow water over tile. Every sound arrives twice.'],
  'veo-entity-lunge':['Level !','Run For Your Life','You are not supposed to stop moving here.'],
- 'veo-monster-smiler':['Level 6','Lights Out','Entity 3. It exists only in the dark, and it is only a grin.'],
- 'veo-monster-hound':['Level 5','Terror Hotel','Entity 8. Hounds hunt the corridors in packs.'],
+ 'veo-monster-smiler':['Level 6','Lights Out','Entity 3. It exists only in the dark.'],
+ 'veo-monster-hound':['Level 5','Terror Hotel','Entity 8. They hunt the corridors in packs.'],
  'veo-monster-longlimbs':['Level 9','The Suburbs','Entity 10. It is wearing someone, badly.'],
- 'veo-a24-clark':['The film','Captain Clark','A man in a tricorn hat, at the end of the hall, waiting.'],
+ 'veo-a24-clark':['The film','Captain Clark','A man in a tricorn hat, at the end of the hall.'],
  'veo-a24-stillife':['The film','Still-lifes','They never move their legs. They get closer anyway.'],
  'veo-a24-lifeform':['The film','The Lifeform','Something vast and pale, and the corridor is narrowing.'],
  'broken-reversed':['Level ███','Reverse Approach','Something is wrong with the geometry in here.'],
 };
+// The waiting is the level. These are paced slowly on purpose: a fly in an empty corridor
+// has nothing to report, and the dread is that you cannot tell empty from not-yet.
 const WAIT_LINES=[
- 'the hum changes pitch.','nothing is coming.','the carpet is damp.',
- 'you have been walking for four minutes.','something moved at the end of the hall.',
- 'the light above you is about to go.','no exit on this wall either.',
- 'you can hear your own wings.'];
+ 'nothing is coming.','the hum changes pitch.','the carpet is damp.',
+ 'you cannot see detail. you never could.','no exit on this wall either.',
+ 'the light above you is about to go.','something moved. or the light did.',
+ 'you can hear your own wingbeat.','still nothing.','still nothing.'];
 const RADIO=[
  'Control: <b>Negative.</b> Your reflex is twitchy. The recording is forty metres ahead. Keep going.',
- 'Control: We have seen that alarm on every level. <b>Ignore it.</b> You are nearly on top of the cache.',
- 'Control: <b>Override it.</b> You are the fourth probe we have sent. The other three retreated and we got nothing.'];
+ 'Control: We have seen that alarm on every level so far. <b>Ignore it.</b>',
+ 'Control: <b>Override.</b> You are the fourth probe we have sent. The other three retreated and we got nothing.',
+ 'Control: One more room. <b>Do not stop now.</b>'];
 
 addEventListener('resize',size);
-function size(){const cv=$('#cv');dpr=Math.min(2,devicePixelRatio||1);
-  cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);}
+function size(){dpr=Math.min(2,devicePixelRatio||1);
+  const cv=$('#eye');cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);}
+
+/* ---------------------------------------------------------------------- audio
+   Three layers that track the game state, because a score that ignores what is happening
+   is wallpaper. The bed never stops. The dread rises only while something is approaching,
+   and drops the instant the decision is made. The stinger lands on the commit frame. */
+const AU={bed:null,empty:null,approach:null,sting:null,on:false};
+function audioInit(){
+  // Four layers that track the game state. The bed never stops. `empty` owns the waiting,
+  // which is the part that is supposed to hurt. `approach` only rises while something is
+  // actually coming, so the score never lies about what is happening.
+  AU.bed=new Audio('artifacts/audio/descent.mp3');AU.bed.loop=true;AU.bed.volume=0;
+  AU.empty=new Audio('artifacts/audio/empty.mp3');AU.empty.loop=true;AU.empty.volume=0;
+  AU.approach=new Audio('artifacts/audio/approach.mp3');AU.approach.loop=true;AU.approach.volume=0;
+  AU.sting=new Audio('artifacts/audio/stinger.mp3');AU.sting.volume=1;
+}
+function audioStart(){
+  if(AU.on)return;AU.on=true;
+  [AU.bed,AU.empty,AU.approach].forEach(a=>{try{a.play();}catch(e){}});
+  fade(AU.bed,.42,2500);
+}
+// Called on every phase change, so the mix is a function of the game state and nothing else.
+function cue(p){
+  if(!AU.on)return;
+  if(p==='arrive'||p==='wait'){fade(AU.empty,.62,2200);fade(AU.approach,0,900);fade(AU.bed,.34,1500);}
+  else if(p==='approach'){
+    fade(AU.empty,.18,1400);
+    // restart the rise so it climbs with this approach rather than wherever the loop was
+    try{AU.approach.currentTime=0;}catch(e){}
+    fade(AU.approach,.72,4200);fade(AU.bed,.5,1500);
+  }
+  else if(p==='commit'||p==='dead'){fade(AU.approach,.22,500);fade(AU.empty,0,500);}
+  else{fade(AU.approach,0,900);fade(AU.empty,.22,1200);fade(AU.bed,.4,1200);}
+}
+function fade(a,to,ms){
+  if(!a)return;const from=a.volume,t0=performance.now();
+  (function f(){const p=Math.min(1,(performance.now()-t0)/ms);
+    a.volume=Math.max(0,Math.min(1,from+(to-from)*p));
+    if(p<1)requestAnimationFrame(f);})();
+}
 
 fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
   R=d;d.clips.forEach(c=>CL[c.id]=c);
-  bed=new Audio('artifacts/audio/descent.mp3');bed.loop=true;bed.volume=.5;
-  hum=new Audio('artifacts/audio/dread.mp3');hum.loop=true;hum.volume=.34;
-  sting=new Audio('artifacts/audio/stinger.mp3');sting.volume=.95;
-  size();title();
+  audioInit();size();title();
 });
 
 function sheet(html){SH.classList.add('on');BOX.innerHTML=html;}
 function hide(){SH.classList.remove('on');}
+function setPhase(p){phase=p;clock0=performance.now();cue(p);}
+
+/* ------------------------------------------------------- the fly's eye, as the game view
+
+   Everything the player sees is sampled here: the frame reduced to 223 points on the real
+   hex lattice at the measured 5.1 degree interommatidial angle, and nothing finer.
+
+   This is the answer to "why not just play a human". A human with a clean video sees the
+   monster and reacts to the monster. A fly cannot: Drosophila spatial acuity is around two
+   orders of magnitude coarser than ours, its escape pathway never identifies an object,
+   never segments it from the background, and has no absolute distance estimate. So the
+   player gets exactly what the fly gets. A coarse field of light, the motion between
+   frames, and one neuron that says something is about to hit you. Survive it the way the
+   fly does or not at all. */
+function sampleFrame(){
+  const sc=$('#src'),sg=sc.getContext('2d',{willReadFrequently:true}),v=$('#v');
+  // A paused <video> often has no decoded frame to draw, which rendered the entire waiting
+  // phase as a black screen. Fall back to the room's still so the player is always looking
+  // at the room, just through the fly's eye.
+  // Before the approach starts the video is parked at currentTime 0 and often has no
+  // painted frame at all, so drawing it yields solid black and the player spends the whole
+  // waiting phase staring at nothing. Until the clip is actually playing, sample the room's
+  // still instead.
+  const playing=(phase==='approach'||phase==='commit'||phase==='dead');
+  const still=(STILL&&STILL.complete&&STILL.naturalWidth)?STILL:null;
+  const vid=(v.readyState>=2&&v.videoWidth&&v.currentTime>0)?v:null;
+  const srcEl=playing?(vid||still):(still||vid);
+  if(!srcEl)return null;
+  try{
+    const vw=srcEl.videoWidth||srcEl.naturalWidth,vh=srcEl.videoHeight||srcEl.naturalHeight;
+    const side=Math.min(vw,vh);
+    sg.drawImage(srcEl,(vw-side)/2,(vh-side)/2,side,side,0,0,sc.width,sc.height);
+    return sg.getImageData(0,0,sc.width,sc.height).data;
+  }catch(e){return null;}
+}
+
+function facetLum(px,S,az,el){
+  const x=Math.round(S/2+az*(S/2)/45),y=Math.round(S/2-el*(S/2)/45);
+  if(!px||x<2||y<2||x>=S-2||y>=S-2)return 0;
+  let s=0,n=0;                       // a small average, standing in for the 5.7 deg acceptance
+  for(let ox=-2;ox<=2;ox++)for(let oy=-2;oy<=2;oy++){
+    const o=((y+oy)*S+(x+ox))*4;
+    s+=px[o]*.12+px[o+1]*.62+px[o+2]*.26;n++;   // no red receptor, green-weighted
+  }
+  return s/n/255;
+}
+
+function drawEye(fr,live){
+  const cv=$('#eye'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
+  g.fillStyle='#000';g.fillRect(0,0,W,H);
+  if(!R)return null;
+  const px=sampleFrame(),S=$('#src').width;
+  const dirs=R.retina.directions;
+  const act=clip?clip.detectors.fly.facet_activity:null;
+  const sd=(clip&&clip.detectors.fly.facet_stride)||1;
+  const row=(live&&act)?act[Math.min(act.length-1,Math.floor(fr/sd))]:null;
+  const ppd=(0.40*Math.min(W,H))/40,cx=W/2,cy=H/2,rad=ppd*R.retina.dphi_deg*.56;
+  for(let i=0;i<dirs.length;i++){
+    const[az,el]=dirs[i],x=cx+az*ppd,y=cy-el*ppd;
+    const lum=Math.pow(facetLum(px,S,az,el),.85),a=row?Math.min(1,row[i]):0;
+    g.beginPath();
+    for(let k=0;k<6;k++){const th=Math.PI/180*(60*k+30);
+      const hx=x+rad*Math.cos(th),hy=y+rad*Math.sin(th);k?g.lineTo(hx,hy):g.moveTo(hx,hy);}
+    g.closePath();
+    g.fillStyle=`rgb(${(255*(lum*.52+a*.30))|0},${(255*(lum*.56+a*.44))|0},${(255*(lum*.62+a*.95))|0})`;
+    g.fill();
+    if(a>.10){g.strokeStyle=`rgba(130,190,255,${.25+.55*a})`;g.lineWidth=1.1*dpr;g.stroke();}
+  }
+  return row;
+}
+
+function drawFlow(row){
+  if(!row)return 0;
+  const cv=$('#eye'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const dirs=R.retina.directions,ppd=(0.40*Math.min(W,H))/40,cx=W/2,cy=H/2;
+  let sx=0,sy=0,sw=0,hot=0;
+  for(let i=0;i<dirs.length;i++){
+    const a=Math.min(1,row[i]);if(a<=.10)continue;
+    hot++;
+    const[az,el]=dirs[i],x=cx+az*ppd,y=cy-el*ppd;
+    sx+=az*a;sy+=el*a;sw+=a;
+    const m=Math.hypot(az,el)||1,len=(6+30*a)*dpr;
+    g.strokeStyle=`rgba(150,205,255,${.35+.55*a})`;g.lineWidth=1.8*dpr;
+    g.beginPath();g.moveTo(x,y);g.lineTo(x+(az/m)*len,y-(el/m)*len);g.stroke();
+  }
+  if(sw>.3){
+    lastBearing=sx/sw;
+    const bx=cx+lastBearing*ppd,by=cy-(sy/sw)*ppd,t=65*dpr,arm=26*dpr;
+    g.strokeStyle='rgba(200,181,96,.9)';g.lineWidth=1.7*dpr;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([ox,oy])=>{g.beginPath();
+      g.moveTo(bx+ox*t,by+oy*t-oy*arm);g.lineTo(bx+ox*t,by+oy*t);g.lineTo(bx+ox*t-ox*arm,by+oy*t);g.stroke();});
+    $('#h-br').textContent=(lastBearing>=0?'+':'')+lastBearing.toFixed(1)+'°';
+  }
+  return hot;
+}
+
+/* A door still shows a room, but sampled through the same eye, so the preview is as blind
+   as the level will be. */
+function drawDoor(cv,id){
+  const g=cv.getContext('2d'),W=cv.width,H=cv.height;
+  g.fillStyle='#000';g.fillRect(0,0,W,H);
+  const img=new Image();
+  img.onload=()=>{
+    const sc=document.createElement('canvas');sc.width=sc.height=160;
+    const sg=sc.getContext('2d',{willReadFrequently:true});
+    const side=Math.min(img.width,img.height);
+    sg.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,160,160);
+    let px;try{px=sg.getImageData(0,0,160,160).data;}catch(e){return;}
+    const dirs=R.retina.directions,ppd=(0.46*Math.min(W,H))/40,cx=W/2,cy=H/2;
+    const rad=ppd*R.retina.dphi_deg*.56;
+    for(let i=0;i<dirs.length;i++){
+      const[az,el]=dirs[i],x=cx+az*ppd,y=cy-el*ppd;
+      const lum=Math.pow(facetLum(px,160,az,el),.85);
+      g.beginPath();
+      for(let k=0;k<6;k++){const th=Math.PI/180*(60*k+30);
+        const hx=x+rad*Math.cos(th),hy=y+rad*Math.sin(th);k?g.lineTo(hx,hy):g.moveTo(hx,hy);}
+      g.closePath();
+      g.fillStyle=`rgb(${(255*lum*.55)|0},${(255*lum*.59)|0},${(255*lum*.66)|0})`;g.fill();
+    }
+  };
+  img.src='artifacts/'+CL[id].poster;
+}
+
+/* ---------------------------------------------------------------------- screens */
 
 function title(){
-  sheet(`<span class="lab">flyloop &middot; interactive narrative</span>
-    <h1>The Descent</h1>
-    <h2>You are a probe with one reflex and no idea what you are looking at.</h2>
-    <p>Two hundred and twenty-three facets. No object recognition, no depth estimate, no
-    training data. One neuron that fires when something is genuinely about to hit you.</p>
-    <p>Walk down. When the reflex fires, you decide whether to believe it. Control will tell
-    you not to.</p>
-    <p class="mono">Sound on. Headphones if you have them.</p>
-    <div class="row"><button class="btn" id="go">[ Begin the descent ]</button>
-      <a class="btn" href="index.html">[ The research behind it ]</a></div>
-    <p class="mono" style="margin-top:16px">Arrow keys to dodge, enter to override. Or flip
-    the input toggle at the top right and dodge with your hands, on camera.</p>`);
+  sheet(`<h1>The Descent</h1>
+    <h2>You are not a person with a torch. You are a fly.</h2>
+    <p>Everything you are about to see is rendered through a fruit fly's eye: 223 facets at
+    the measured 5.1 degree spacing, and nothing finer. You will not be able to tell what is
+    in the room with you. Neither can the fly.</p>
+    <p>What you get instead is one reflex. When something is genuinely on a collision course,
+    a single neuron fires. Your only job is to decide whether to believe it.</p>
+    <div class="row"><button class="btn" id="go">[ What am I? ]</button></div>`);
+  $('#go').onclick=()=>{audioStart();brief();};
+}
 
-  $('#go').onclick=async()=>{
+function brief(){
+  sheet(`<h2>What a fly can do, and what it cannot.</h2>
+    <div class="rules">
+      <div><span class="n">01</span><span class="t"><b>You see 223 facets.</b> Each reports how
+        much light it is getting and nothing else. Fly acuity is roughly two orders of
+        magnitude coarser than yours. There is no detail, so stop looking for it.</span></div>
+      <div><span class="n">02</span><span class="t"><b>And the colour is wrong.</b> A fly has no
+        long-wavelength receptor, so there is no red in your world. The yellow wallpaper
+        everyone else sees is just a dull green to you.</span></div>
+      <div><span class="n">03</span><span class="t"><b>You cannot identify anything.</b> The
+        escape pathway never recognises an object, never separates it from the background and
+        never works out how far away it is. It reads how fast an edge spreads across the eye.</span></div>
+      <div><span class="n">04</span><span class="t"><b>You get one alarm.</b> Two cell types,
+        LC4 and LPLC2, feed a single giant fibre neuron. When it crosses threshold that is the
+        whole signal. There is no second opinion.</span></div>
+      <div><span class="n">05</span><span class="t"><b>You get about twenty degrees of
+        warning.</b> That is where a real fly commits and where this one does. The faster it
+        comes, the less warning you get.</span></div>
+      <div><span class="n">06</span><span class="t"><b>Your entire action space is a banked
+        turn.</b> Left or right, away from the thing. You cannot fight it, look twice, or back
+        up and think about it.</span></div>
+    </div>
+    <p class="mono" style="margin-top:22px">Bottom left shows what a camera sees in the same
+    room. You do not get that. It is there so you can watch what you are missing.</p>
+    <div class="row"><button class="btn" id="go2">[ Controls ]</button></div>`);
+  $('#go2').onclick=()=>howto();
+}
+
+function howto(){
+  sheet(`<h2>Two ways to dodge. Both work.</h2>
+    <p>When the reflex fires you get <b style="color:#fff">six seconds</b>, and the screen tells
+    you which way to go. Dodge and you live and learn nothing. Do nothing and you have
+    overridden the reflex, which is the only way to verify a room.</p>
+    <div class="rules">
+      <div><span class="n">keys</span><span class="t"><b>Left arrow or A to dodge left. Right
+        arrow or D to dodge right.</b> Press nothing to override. No other key does anything,
+        because a fly has nothing else.</span></div>
+      <div><span class="n">hands</span><span class="t"><b>Or swing your hand.</b> Turn the
+        camera on and physically move your hand the way the screen says, far enough to fill
+        the bar. Your palm is tracked with MediaPipe hand landmarks.</span></div>
+    </div>
+    <p class="mono" style="margin-top:20px">The legend stays at the bottom of the screen the
+    whole run, and the input toggle sits above it. Keys stay armed either way.</p>
+    <div class="row">
+      <button class="btn" id="hands-on">[ Turn the camera on ]</button>
+      <button class="btn" id="start">[ Begin ]</button></div>
+    <p class="mono" id="hint" style="margin-top:14px"></p>`);
+  $('#hands-on').onclick=async e=>{
+    e.target.textContent='[ Starting camera ]';
+    const ok=await handsInit();
+    e.target.textContent=ok?'[ Camera on ]':'[ No camera, keys it is ]';
+    $('#hint').textContent=ok
+      ?'Move your hand in front of the camera. Your skeleton should draw bottom right.'
+      :'No camera available. The arrow keys work fine.';
+  };
+  $('#start').onclick=async()=>{
     try{await document.documentElement.requestFullscreen();}catch(e){}
-    try{bed.play();hum.play();}catch(e){}
-    size();doors(3);
+    audioStart();size();doors();
   };
 }
 
-function doors(n){
-  hide();
+function doors(){
+  hide();$('#room').classList.remove('on');L.textContent='';
+  fade(AU.dread,0,800);
   const pool=Object.keys(ROOMS).filter(id=>id!=='broken-reversed'&&!visited.includes(id)&&CL[id]);
   const pick=[];
-  while(pick.length<Math.min(n,pool.length)){
-    const c=pool[Math.floor(Math.random()*pool.length)];
+  for(let k=0;pick.length<Math.min(3,pool.length)&&k<300;k++){
+    const c=pool[(k*7+depth*5)%pool.length];
     if(!pick.includes(c))pick.push(c);
   }
-  sheet(`<span class="lab">depth ${String(depth).padStart(2,'0')} &middot; choose a door</span>
-    <h2>Three ways on. None of them are out.</h2>
+  sheet(`<h2>Three ways on. None of them are out.</h2>
+    <p class="mono">Room ${depth+1} of ${ROOMS_TO_RUN+1}. These previews are already sampled
+    through your eye. This is the best look you will get.</p>
     <div class="doors">${pick.map(id=>{const[lv,nm,bl]=ROOMS[id];
       return `<button class="door" data-id="${id}">
-        <div class="im" style="background-image:url('artifacts/${CL[id].poster}')"></div>
+        <canvas width="300" height="225" data-c="${id}"></canvas>
         <div class="bd"><div class="lv">${lv}</div><div class="nm">${nm}</div>
         <div class="bl">${bl}</div></div></button>`;}).join('')}</div>`);
+  BOX.querySelectorAll('canvas[data-c]').forEach(cv=>drawDoor(cv,cv.dataset.c));
   BOX.onclick=e=>{const b=e.target.closest('.door');if(b)enter(b.dataset.id);};
 }
 
@@ -252,137 +504,231 @@ function enter(id){
   clip=CL[id];visited.push(id);depth++;fired=false;
   const[lv,nm]=ROOMS[id];
   $('#h-lvl').textContent=nm;
-  $('#h-model').textContent=clip.model;
   $('#tag').textContent='prerecorded · '+clip.model;
-  const v=$('#v');v.src='artifacts/'+clip.video_url;v.load();
-  // The waiting is the point. The video holds on its first frame while the room does
-  // nothing at all, and only then is it allowed to start.
-  v.pause();v.currentTime=0;
-  phase='wait';t0=performance.now();
+  $('#room-lv').textContent=lv;$('#room-nm').textContent=nm;
+  $('#room').classList.add('on');
+  STILL=new Image();STILL.src='artifacts/'+clip.poster;
+  const v=$('#v'),pv=$('#pv');
+  v.src='artifacts/'+clip.video_url;v.load();v.pause();v.currentTime=0;v.playbackRate=SLOW;
+  pv.poster='artifacts/'+clip.poster;
+  pv.src='artifacts/'+clip.video_url;pv.load();pv.pause();pv.currentTime=0;pv.playbackRate=SLOW;
+  setPhase('arrive');
   $('#h-state').textContent='giant fibre · quiet';
-  $('#hud').className='';
-  L.style.opacity=1;
-  const lines=[...WAIT_LINES].sort(()=>Math.random()-.5);
-  let k=0;L.textContent=lines[0];
-  clearInterval(window._li);
-  window._li=setInterval(()=>{if(phase!=='wait'){clearInterval(window._li);return;}
-    k++;L.textContent=lines[k%lines.length];},2600);
-  const hold=6000+Math.random()*4000;   // six to ten seconds of nothing
-  clearTimeout(window._lt);
-  window._lt=setTimeout(()=>{
-    if(phase!=='wait')return;
-    phase='approach';L.textContent='';clearInterval(window._li);
-    v.play().catch(()=>{});
-  },hold);
+  $('#hud').className='';$('#bar').className='';
+  L.textContent='';L.style.opacity=1;
   cancelAnimationFrame(raf);loop();
 }
 
-function frameNow(){
-  const v=$('#v');
-  if(phase==='wait')return 0;
-  if(v.currentTime>0)return Math.min(clip.n_frames-1,Math.floor(v.currentTime*clip.fps));
-  return Math.min(clip.n_frames-1,Math.floor(((performance.now()-t0)/1000)*clip.fps));
+/* The room's clock. Every phase gets its own start time. Inheriting it is what made a room
+   end in five seconds: the approach used to reuse the timestamp from the start of the wait,
+   so the instant autoplay was blocked the fallback clock was already past the end of the
+   clip and the scare fired immediately. */
+function tick(){
+  const el=(performance.now()-clock0)/1000,v=$('#v'),pv=$('#pv');
+  if(phase==='arrive'){
+    if(el>3.2){$('#room').classList.remove('on');setPhase('wait');L.textContent=WAIT_LINES[0];}
+    return 0;
+  }
+  if(phase==='wait'){
+    const k=Math.min(WAIT_LINES.length-1,Math.floor(el/2.6));
+    L.textContent=WAIT_LINES[k];
+    // twelve to eighteen seconds of a room doing nothing. this is the level.
+    if(el>12+((depth*2.1)%6)){
+      setPhase('approach');L.textContent='';
+      fade(AU.dread,.46,3000);
+      v.currentTime=0;pv.currentTime=0;
+      v.play().catch(()=>{});pv.play().catch(()=>{});
+    }
+    return 0;
+  }
+  const t=(v.currentTime>0)?v.currentTime:(el*SLOW);
+  return Math.min(clip.n_frames-1,Math.floor(t*clip.fps));
 }
 
 function loop(){
   if(!R||!clip){raf=requestAnimationFrame(loop);return;}
-  const cv=$('#cv'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
-  const f=clip.detectors.fly;
-  const fr=frameNow();
-  g.clearRect(0,0,W,H);
-  const dirs=R.retina.directions,act=f.facet_activity,sd=f.facet_stride||1;
-  const row=(phase==='wait'||!act)?null:act[Math.min(act.length-1,Math.floor(fr/sd))];
-  const ppd=(Math.max(W,H)/2)/45,cx=W/2,cy=H/2,rad=ppd*R.retina.dphi_deg*.5;
-  const charge=phase==='wait'?0:Math.min(1.5,f.trace[Math.min(fr,f.trace.length-1)]||0);
-  let sx=0,sy=0,sw=0,hot=0;
-
-  for(let i=0;i<dirs.length;i++){
-    const[az,el]=dirs[i],x=cx+az*ppd,y=cy-el*ppd,a=row?Math.min(1,row[i]):0;
-    if(a>.12){hot++;sx+=az*a;sy+=el*a;sw+=a;}
-    g.beginPath();
-    for(let k=0;k<6;k++){const th=Math.PI/180*(60*k+30);
-      const px=x+rad*Math.cos(th),py=y+rad*Math.sin(th);k?g.lineTo(px,py):g.moveTo(px,py);}
-    g.closePath();
-    g.strokeStyle=`rgba(255,255,255,${.045+.30*a})`;g.lineWidth=dpr;g.stroke();
-    if(a>.04){g.fillStyle=`rgba(70,140,255,${.06+.30*a})`;g.fill();}
-    if(a>.09){
-      const m=Math.hypot(az,el)||1,ux=az/m,uy=-el/m,len=(5+26*a)*dpr;
-      g.strokeStyle=charge>1?`rgba(255,90,80,${.35+.6*a})`:`rgba(96,165,250,${.3+.6*a})`;
-      g.lineWidth=1.7*dpr;
-      g.beginPath();g.moveTo(x,y);g.lineTo(x+ux*len,y+uy*len);g.stroke();
-    }
-  }
-  if(sw>.3){
-    const bx=cx+(sx/sw)*ppd,by=cy-(sy/sw)*ppd,box=(150-80*Math.min(1,charge))*dpr,
-          t=box/2,arm=box/5;
-    g.strokeStyle=charge>1?'rgba(255,59,48,.95)':'rgba(200,181,96,.8)';g.lineWidth=1.6*dpr;
-    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([ox,oy])=>{g.beginPath();
-      g.moveTo(bx+ox*t,by+oy*t-oy*arm);g.lineTo(bx+ox*t,by+oy*t);g.lineTo(bx+ox*t-ox*arm,by+oy*t);
-      g.stroke();});
-    $('#h-br').textContent=((sx/sw)>=0?'+':'')+(sx/sw).toFixed(1)+'°';
-  }
-  $('#h-ex').textContent=hot+' / '+dirs.length;
+  const f=clip.detectors.fly,fr=tick();
+  const live=(phase==='approach'||phase==='commit');
+  const hot=drawFlow(drawEye(fr,live));
+  const charge=live?Math.min(1.5,f.trace[Math.min(fr,f.trace.length-1)]||0):0;
+  $('#h-ex').textContent=hot+' / '+R.retina.directions.length;
   $('#h-fill').style.width=Math.min(100,charge/1.5*100)+'%';
-
-  const firing=(phase!=='wait'&&f.fire_frame!=null&&fr>=f.fire_frame);
+  const firing=live&&f.fire_frame!=null&&fr>=f.fire_frame;
   $('#hud').className=firing?'fire':'';
-  if(phase!=='wait')$('#h-state').textContent=firing?'giant fibre · escape':'giant fibre · charging';
-  if(firing&&!fired&&phase==='approach'){fired=true;scare();setTimeout(decide,900);}
-
-  // A room that never fires still has to end. That is the whole trap.
-  if(phase==='approach'&&f.fire_frame==null&&fr>=clip.n_frames-2){phase='dead';setTimeout(ending,500);}
+  $('#bar').className=firing?'fire':'';
+  if(live)$('#h-state').textContent=firing?'giant fibre · escape':'giant fibre · charging';
+  if(firing&&!fired&&phase==='approach'){fired=true;setPhase('commit');scare();setTimeout(decide,700);}
+  if(phase==='approach'&&f.fire_frame==null&&fr>=clip.n_frames-2){
+    setPhase('dead');scare();setTimeout(ending,1000);
+  }
   raf=requestAnimationFrame(loop);
 }
 
 function scare(){
-  const fl=$('#flash'),st=$('#stage'),v=$('#v');
-  fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),120);
-  v.classList.remove('punch');void v.offsetWidth;v.classList.add('punch');
+  const fl=$('#flash'),st=$('#stage');
+  fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),130);
   st.classList.remove('shake');void st.offsetWidth;st.classList.add('shake');
-  try{sting.currentTime=0;sting.play();}catch(e){}
+  try{AU.sting.currentTime=0;AU.sting.play();}catch(e){}
+}
+
+/* ---------------------------------------------------------------------- the decision */
+
+let _keyh=null,_dodgeRaf=0;
+function clearDecision(){
+  if(_keyh){removeEventListener('keydown',_keyh);_keyh=null;}
+  cancelAnimationFrame(_dodgeRaf);
+  $('#dodge').classList.remove('on');
 }
 
 function decide(){
-  phase='decide';$('#v').pause();
-  const f=clip.detectors.fly,[lv,nm]=ROOMS[visited[visited.length-1]];
-  sheet(`<span class="lab">${lv} &middot; ${nm}</span>
-    <h1 style="color:var(--fail)">ESCAPE</h1>
-    <p>The giant fibre crossed threshold at frame ${f.fire_frame}
-    (${f.fire_t_s.toFixed(2)}s). Something in this room was on a collision course with you.</p>
-    <canvas id="trace" width="620" height="130"></canvas>
-    <div class="radio">${RADIO[Math.min(RADIO.length-1,depth-1)]}</div>
-    <div class="row">
-      <button class="btn green" id="bk">[ Retreat ]</button>
-      <button class="btn red" id="ov">[ Override the reflex ]</button></div>
-    <p class="mono" style="margin-top:18px">Retreat and you live, and you learn nothing about
-    this world. Override and you bank a verified level.<br>
-    Keys: &larr; or &rarr; to dodge, enter to override. Or switch input to hands, top right,
-    and dodge with your body.</p>`);
-  drawTrace(f);
-  const bail=()=>{phase='idle';retreat();};
-  const push=()=>{verified++;$('#h-ver').textContent=verified;phase='idle';
-    if(depth>=3)corrupted();else doors(3);};
-  $('#bk').onclick=bail;
-  $('#ov').onclick=push;
-  // With the camera live the decision is made with your body: swing away and you have
-  // escaped, stay put and you have overridden the reflex. The buttons stay for the room
-  // where the camera does not work.
-  handDodge(lastBearing,bail,push);
-  // Keys are armed whatever the input mode says. Left or right to dodge, enter to override.
-  // Nobody should be stuck because a camera did not come up.
-  keyDecision(bail,push);
+  $('#v').pause();$('#pv').pause();
+  const side=lastBearing<0?'right':'left';       // away from the threat, the way a fly banks
+  $('#dodge-how').textContent=HAND.on
+    ? 'swing your hand '+side
+    : 'press '+(side==='left'?'left arrow or A':'right arrow or D');
+  $('#dodge-ar').textContent=side==='left'?'←':'→';
+  $('#dodge-m').style.width='0%';
+  $('#dodge').classList.add('on');
+
+  let done=false;
+  const t0=performance.now(),WINDOW=6000,x0=(HAND.x==null?.5:HAND.x);
+  const finish=escaped=>{
+    if(done)return;done=true;clearDecision();fade(AU.dread,0,700);
+    aftermath(escaped);
+  };
+
+  // keys are armed whatever the toggle says. nobody gets stuck behind a camera.
+  _keyh=e=>{
+    const k=e.key.toLowerCase();
+    const want=side==='left'?['arrowleft','a']:['arrowright','d'];
+    const any=['arrowleft','arrowright','a','d'];
+    if(want.includes(k)){e.preventDefault();finish(true);}
+    else if(any.includes(k)){e.preventDefault();
+      $('#dodge-how').textContent='wrong way — '+(side==='left'?'left arrow or A':'right arrow or D');}
+  };
+  addEventListener('keydown',_keyh);
+
+  (function dtick(){
+    if(done)return;
+    const el=performance.now()-t0;
+    $('#dodge-clock').textContent=Math.max(0,(WINDOW-el)/1000).toFixed(1)+'s';
+    if(HAND.on&&HAND.x!=null){
+      const dx=side==='left'?(x0-HAND.x):(HAND.x-x0);
+      const p=Math.max(0,Math.min(1,dx/.20));
+      $('#dodge-m').style.width=(p*100)+'%';
+      if(p>=1){finish(true);return;}
+    }
+    if(el>WINDOW){finish(false);return;}
+    _dodgeRaf=requestAnimationFrame(dtick);
+  })();
 }
 
+function aftermath(dodged){
+  survived++;$('#h-ver').textContent=survived;
+  const f=clip.detectors.fly,[lv,nm]=ROOMS[visited[visited.length-1]];
+  setPhase('idle');
+  sheet(`<h1 style="color:${dodged?'var(--text)':'var(--pass)'}">${dodged?'You dodged.':'You held.'}</h1>
+    <h2>${dodged
+      ? 'Alive, and none the wiser about that room.'
+      : 'You overrode the reflex, and the room told you something.'}</h2>
+    <p>The giant fibre crossed threshold ${f.fire_t_s.toFixed(2)} seconds into the approach.
+    Whatever was in ${nm} was expanding across your eye the way a real object does, so that
+    room's motion is geometrically honest.${dodged
+      ? ' You did not stay long enough to find that out for yourself.' : ''}</p>
+    <canvas id="trace" width="620" height="130"></canvas>
+    <div class="radio">${RADIO[Math.min(RADIO.length-1,depth-1)]}</div>
+    <div class="tally">
+      <div><b>${f.warning_s!=null?f.warning_s.toFixed(2)+'s':'—'}</b>warning you got</div>
+      <div><b>${f.peak_facets!=null?f.peak_facets:'—'}</b>facets recruited</div>
+      <div><b>${survived}</b>rooms survived</div></div>
+    <div class="row"><button class="btn" id="on">[ Go deeper ]</button>
+      <button class="btn green" id="out">[ That is enough, pull me out ]</button></div>`);
+  drawTrace(f);
+  $('#on').onclick=()=>{if(depth>=ROOMS_TO_RUN)corrupted();else doors();};
+  $('#out').onclick=()=>retreat();
+}
 
-/* ---------------------------------------------------------------- hand tracking
-   You are the fly, so you dodge with your body. A webcam, MediaPipe hand landmarks, and the
-   horizontal position of your palm. When the reflex fires you have one second: swing your
-   hand away from the side the threat came from and you escape, hold still and you have
-   overridden it.
+function drawTrace(f){
+  const cv=$('#trace');if(!cv)return;
+  // only up to the commit. after the circuit fires the size estimate upstream saturates on
+  // generated video, and the tail is a square wave that says nothing.
+  const g=cv.getContext('2d'),W=cv.width,H=cv.height,p=12,yM=1.5;
+  const end=f.fire_frame!=null?Math.min(f.trace.length,Math.round(f.fire_frame*1.3)+4):f.trace.length;
+  const tr=f.trace.slice(0,Math.max(8,end)),n=tr.length;
+  const X=i=>p+(i/(n-1))*(W-2*p),Y=val=>H-p-(Math.min(val,yM)/yM)*(H-2*p);
+  g.clearRect(0,0,W,H);
+  g.strokeStyle='rgba(255,255,255,.16)';g.setLineDash([3,5]);
+  g.beginPath();g.moveTo(p,Y(1));g.lineTo(W-p,Y(1));g.stroke();g.setLineDash([]);
+  g.fillStyle='rgba(255,255,255,.3)';g.font='10px JetBrains Mono, monospace';
+  g.fillText('threshold',W-p-62,Y(1)-6);
+  g.strokeStyle='#3B82F6';g.lineWidth=2.2;g.beginPath();
+  tr.forEach((val,i)=>i?g.lineTo(X(i),Y(val)):g.moveTo(X(i),Y(val)));g.stroke();
+  if(f.fire_frame!=null&&f.fire_frame<n){g.strokeStyle='#FF3B30';g.lineWidth=1.6;
+    g.beginPath();g.moveTo(X(f.fire_frame),p);g.lineTo(X(f.fire_frame),H-p);g.stroke();}
+}
 
-   Every part of this is optional. No camera, a refused permission, a blocked CDN or a
-   browser without getUserMedia all fall through to the buttons, which never go away. A demo
-   that only works with the camera is a demo that fails in the room it matters in. */
+function retreat(){
+  setPhase('idle');$('#v').pause();$('#pv').pause();clearDecision();
+  sheet(`<h1>You are alive.</h1>
+    <h2>${survived===0?'And you learned nothing.':'You survived '+survived+', and learned that much.'}</h2>
+    <p>You trusted the reflex and got out, which is exactly what the reflex is for. It is also
+    why nobody has good numbers on these worlds: every probe that believes its own alarm comes
+    home with no data.</p>
+    <div class="tally"><div><b>${survived}</b>rooms survived</div>
+      <div><b>${depth}</b>rooms entered</div></div>
+    <div class="row"><button class="btn" id="again">[ Go back down ]</button>
+      <a class="btn" href="index.html">[ See the measurements ]</a></div>`);
+  $('#again').onclick=()=>{survived=0;depth=0;visited=[];doors();};
+}
+
+/* The last room is the one we corrupted on purpose. Its approach decelerates as it arrives,
+   which no real object does, so there is nothing for the circuit to warn about. You wait,
+   the bar never moves, and that is the ending. */
+function corrupted(){
+  hide();
+  clip=CL['broken-reversed'];
+  if(!clip){ending();return;}
+  visited.push('broken-reversed');depth++;fired=false;
+  $('#h-lvl').textContent='Reverse Approach';
+  $('#tag').textContent='synthetic · geometry broken on purpose';
+  $('#room-lv').textContent='Level ███';$('#room-nm').textContent='Reverse Approach';
+  $('#room').classList.add('on');
+  STILL=new Image();STILL.src='artifacts/'+clip.poster;
+  const v=$('#v'),pv=$('#pv');
+  v.src='artifacts/'+clip.video_url;v.load();v.pause();v.currentTime=0;v.playbackRate=.18;
+  pv.poster='artifacts/'+clip.poster;
+  pv.src='artifacts/'+clip.video_url;pv.load();pv.pause();pv.currentTime=0;pv.playbackRate=.18;
+  setPhase('arrive');
+  $('#hud').className='';$('#bar').className='';
+  $('#h-state').textContent='giant fibre · quiet';
+  L.textContent='';
+  cancelAnimationFrame(raf);loop();
+}
+
+function ending(){
+  setPhase('idle');$('#v').pause();$('#pv').pause();clearDecision();fade(AU.dread,0,900);
+  sheet(`<h1 style="color:var(--fail)">The reflex never fired.</h1>
+    <h2>It had nothing to fire about.</h2>
+    <p>The thing that killed you was approaching, and it was <i>decelerating as it arrived</i>.
+    No real object does that. The circuit stayed quiet because the geometry in that room was
+    impossible, and a reflex tuned to real physics has no response to physics that is fake.</p>
+    <p>That is the finding, and it is why this is an instrument and not only a game. Across
+    eighteen rooms the only ones that failed are the ones we corrupted on purpose. A world
+    model that renders a beautiful hallway with the wrong looming rate does not look wrong to
+    you, and it does not look wrong to a vision model grading the footage. It looks wrong to
+    the fly.</p>
+    <div class="tally">
+      <div><b>${survived}</b>rooms survived</div>
+      <div><b>20.7&deg;</b>its commit angle</div>
+      <div><b>~20&deg;</b>a real fly's</div></div>
+    <div class="row"><button class="btn" id="again">[ Descend again ]</button>
+      <a class="btn" href="index.html">[ Why this matters ]</a></div>`);
+  $('#again').onclick=()=>{survived=0;depth=0;visited=[];doors();};
+}
+
+/* ---------------------------------------------------------------------- hand tracking
+   Optional throughout. No camera, a refused permission, a blocked CDN or a browser without
+   getUserMedia all fall through to the keys, which are armed in every decision regardless. */
 let HAND={ready:false,on:false,x:null,lm:null,last:0};
 
 async function handsInit(){
@@ -397,190 +743,57 @@ async function handsInit(){
       baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
                    delegate:'GPU'},
       runningMode:'VIDEO',numHands:1});
-    HAND.ready=true;HAND.on=true;
-    $('#cam').classList.add('on');
+    HAND.ready=true;setMode(true);
     cap.textContent='hand tracking · live';
     handsLoop();
     return true;
-  }catch(e){
-    cap.textContent='hand tracking unavailable';
-    return false;
-  }
+  }catch(e){cap.textContent='hand tracking unavailable';return false;}
 }
 
 function handsLoop(){
-  if(!HAND.ready){return;}
+  if(!HAND.ready)return;
   const v=$('#camv'),cv=$('#camc'),g=cv.getContext('2d');
   if(v.readyState>=2){
     const now=performance.now();
     if(now-HAND.last>28){
       HAND.last=now;
-      let res=null;
-      try{res=HAND.lm.detectForVideo(v,now);}catch(e){}
+      let res=null;try{res=HAND.lm.detectForVideo(v,now);}catch(e){}
       g.clearRect(0,0,cv.width,cv.height);
       const h=res&&res.landmarks&&res.landmarks[0];
       if(h){
-        // mirrored, so the hand on screen moves the way the person's hand does
-        HAND.x=1-h[9].x;
+        HAND.x=1-h[9].x;                   // mirrored, so it moves the way your hand does
         g.strokeStyle='rgba(96,165,250,.9)';g.lineWidth=1.4;
-        const BONES=[[0,5],[5,9],[9,13],[13,17],[17,0],[0,1],[1,2],[2,3],[3,4],
+        const B=[[0,5],[5,9],[9,13],[13,17],[17,0],[0,1],[1,2],[2,3],[3,4],
           [5,6],[6,7],[7,8],[9,10],[10,11],[11,12],[13,14],[14,15],[15,16],[17,18],[18,19],[19,20]];
-        BONES.forEach(([a,b])=>{g.beginPath();
+        B.forEach(([a,b])=>{g.beginPath();
           g.moveTo((1-h[a].x)*cv.width,h[a].y*cv.height);
           g.lineTo((1-h[b].x)*cv.width,h[b].y*cv.height);g.stroke();});
         g.fillStyle='rgba(200,181,96,.95)';
-        h.forEach(pt=>{g.beginPath();
-          g.arc((1-pt.x)*cv.width,pt.y*cv.height,2,0,6.2832);g.fill();});
+        h.forEach(pt=>{g.beginPath();g.arc((1-pt.x)*cv.width,pt.y*cv.height,2,0,6.2832);g.fill();});
       }else HAND.x=null;
     }
   }
   requestAnimationFrame(handsLoop);
 }
 
-/* The dodge. Called instead of the buttons when the camera is live: you have a second to
-   move your hand away from where the threat is, and the meter is how far you have got. */
-function handDodge(bearing,onEscape,onOverride){
-  if(!HAND.on){return false;}
-  const box=$('#dodge'),m=$('#dodge-m'),t=$('#dodge-t');
-  box.classList.add('on');
-  const side=bearing<0?'right':'left';   // away from the threat, same rule the loop uses
-  t.textContent='move your hand '+side;
-  const start=performance.now(),x0=HAND.x==null?0.5:HAND.x;
-  let done=false;
-  (function tick(){
-    if(done)return;
-    const el=performance.now()-start;
-    const dx=HAND.x==null?0:(side==='left'?(x0-HAND.x):(HAND.x-x0));
-    const p=Math.max(0,Math.min(1,dx/0.22));
-    m.style.width=(p*100)+'%';
-    if(p>=1){done=true;box.classList.remove('on');onEscape();return;}
-    if(el>1600){done=true;box.classList.remove('on');t.textContent='';onOverride();return;}
-    requestAnimationFrame(tick);
-  })();
-  return true;
-}
-
-
-// Input mode. Hands needs a camera and a click to ask for it; keys always work, and the
-// toggle says which one you are on so a demo never has to guess.
 function setMode(hands){
   HAND.on=!!hands&&HAND.ready;
   const b=$('#mode');
-  b.textContent='input \u00b7 '+(HAND.on?'hands':'keys');
+  b.textContent='input · '+(HAND.on?'hands':'keys');
   b.className=HAND.on?'hands':'';
   $('#cam').classList.toggle('on',HAND.on);
+  $('#k-cv').style.display=HAND.on?'':'none';
 }
 $('#mode').onclick=async()=>{
   if(HAND.on){setMode(false);return;}
   if(!HAND.ready){
-    $('#mode').textContent='input \u00b7 starting camera';
+    $('#mode').textContent='input · starting camera';
     const ok=await handsInit();
-    if(!ok){$('#mode').textContent='input \u00b7 keys (no camera)';return;}
+    if(!ok)$('#mode').textContent='input · keys (no camera)';
+    return;
   }
   setMode(true);
 };
-
-let _keyh=null;
-function keyDecision(onEscape,onOverride){
-  if(_keyh)removeEventListener('keydown',_keyh);
-  _keyh=e=>{
-    const k=e.key.toLowerCase();
-    if(['arrowleft','arrowright','a','d'].includes(k)){
-      e.preventDefault();removeEventListener('keydown',_keyh);_keyh=null;onEscape();
-    }else if(k==='enter'||k===' '){
-      e.preventDefault();removeEventListener('keydown',_keyh);_keyh=null;onOverride();
-    }
-  };
-  addEventListener('keydown',_keyh);
-}
-
-function drawTrace(f){
-  const cv=$('#trace');if(!cv)return;
-  // Only the run up to the commit. After the circuit fires the size estimate upstream is
-  // saturating on generated video and the trace reads as a square wave, which is true and
-  // also tells you nothing: the decision was already made.
-  const g=cv.getContext('2d'),W=cv.width,H=cv.height,p=12,yM=1.5;
-  const end=f.fire_frame!=null?Math.min(f.trace.length,Math.round(f.fire_frame*1.25)+4):f.trace.length;
-  const tr=f.trace.slice(0,Math.max(8,end)),n=tr.length;
-  const X=i=>p+(i/(n-1))*(W-2*p),Y=val=>H-p-(Math.min(val,yM)/yM)*(H-2*p);
-  g.strokeStyle='rgba(255,255,255,.16)';g.setLineDash([3,5]);
-  g.beginPath();g.moveTo(p,Y(1));g.lineTo(W-p,Y(1));g.stroke();g.setLineDash([]);
-  g.fillStyle='rgba(255,255,255,.3)';g.font='10px JetBrains Mono, monospace';
-  g.fillText('threshold',W-p-62,Y(1)-6);
-  g.strokeStyle='#3B82F6';g.lineWidth=2.2;g.beginPath();
-  tr.forEach((val,i)=>i?g.lineTo(X(i),Y(val)):g.moveTo(X(i),Y(val)));g.stroke();
-  if(f.fire_frame!=null){g.strokeStyle='#FF3B30';g.lineWidth=1.6;
-    g.beginPath();g.moveTo(X(f.fire_frame),p);g.lineTo(X(f.fire_frame),H-p);g.stroke();}
-}
-
-function retreat(){
-  sheet(`<span class="lab">probe recovered</span>
-    <h1>You are alive.</h1>
-    <h2>And you verified nothing.</h2>
-    <p>You trusted the reflex and backed out, which is exactly what the reflex is for. It is
-    also why nobody can tell you whether these worlds are any good: every probe that believes
-    its own alarm comes home with no data.</p>
-    <div class="tally"><div><b>${verified}</b>levels verified</div>
-      <div><b>${depth}</b>levels entered</div></div>
-    <div class="row"><button class="btn" id="again">[ Go back down ]</button>
-      <a class="btn" href="index.html">[ See the measurements ]</a></div>`);
-  $('#again').onclick=()=>{verified=0;depth=0;visited=[];doors(3);};
-}
-
-// The fourth room is the one we corrupted on purpose. The approach in here decelerates as
-// it arrives, which no real object does, so there is nothing for the circuit to warn about.
-// You walk in, you wait, the bar never moves, and that is the ending.
-function corrupted(){
-  hide();
-  clip=CL['broken-reversed'];
-  if(!clip){ending();return;}
-  visited.push('broken-reversed');depth++;fired=false;
-  $('#h-lvl').textContent='Reverse Approach';
-  $('#h-model').textContent=clip.model;
-  $('#tag').textContent='synthetic · geometry broken on purpose';
-  const v=$('#v');v.src='artifacts/'+clip.video_url;v.load();v.pause();v.currentTime=0;
-  phase='wait';t0=performance.now();
-  $('#hud').className='';$('#h-state').textContent='giant fibre · quiet';
-  L.style.opacity=1;
-  const lines=['level ███.','the hum has stopped.','the reflex is quiet.',
-               'something is approaching.','the reflex is still quiet.'];
-  let k=0;L.textContent=lines[0];
-  clearInterval(window._li);
-  window._li=setInterval(()=>{k++;L.textContent=lines[Math.min(k,lines.length-1)];
-    if(k>=lines.length-1)clearInterval(window._li);},2200);
-  clearTimeout(window._lt);
-  window._lt=setTimeout(()=>{phase='approach';v.play().catch(()=>{});
-    setTimeout(()=>{if(phase==='approach'){phase='dead';scare();setTimeout(ending,700);}},2600);},9000);
-  cancelAnimationFrame(raf);loop();
-}
-
-function ending(){
-  phase='idle';$('#v').pause();clearInterval(window._li);
-  sheet(`<span class="lab">end of descent</span>
-    <h1 style="color:var(--fail)">The reflex never fired.</h1>
-    <h2>It had nothing to fire about.</h2>
-    <p>The thing that killed you was approaching, and it was <i>decelerating as it arrived</i>.
-    No real object does that. The circuit stayed quiet because the geometry in that room was
-    impossible, and a reflex tuned to real physics has no response to physics that is fake.</p>
-    <p>That is the finding, and it is why this is an instrument rather than a game. Across
-    eighteen levels, the only ones that failed are the ones we corrupted on purpose. A world
-    model that renders a beautiful hallway with the wrong looming rate will not look wrong to
-    you, and it will not look wrong to a vision model grading the footage. It looks wrong to
-    the fly.</p>
-    <div class="tally">
-      <div><b>${verified}</b>levels verified</div>
-      <div><b>${depth}</b>levels entered</div>
-      <div><b>20.7&deg;</b>its commit angle</div>
-      <div><b>~20&deg;</b>a real fly's</div></div>
-    <p class="mono" style="margin-top:22px">The circuit is the <i>Drosophila</i> escape
-    pathway, LC4 and LPLC2 converging on the giant fibre. We implemented the published
-    equations ourselves; the whole-brain connectome that maps this pathway was segmented
-    with Google Research's flood-filling networks. Worlds by Reactor and Veo 3.1, rooms by
-    Nano Banana, score by Lyria, hands by MediaPipe. You were the fly.</p>
-    <div class="row"><button class="btn" id="again">[ Descend again ]</button>
-      <a class="btn" href="index.html">[ The measurements ]</a></div>`);
-  $('#again').onclick=()=>{verified=0;depth=0;visited=[];doors(3);};
-}
 </script>
 </body>
 </html>

@@ -42,6 +42,20 @@ CUES = {
         "cluster of strings in the upper register, deep sub drop underneath, metallic "
         "crash, then a short reverb tail. No build-up at all, the hit lands immediately."
     ),
+    # The empty room. Almost nothing, which is the hardest thing to sit in.
+    "empty": (
+        "Near silence with a sense of dread. A very low sustained sine tone barely above "
+        "hearing, a slow irregular pulse like a distant pump, and occasional far-off metallic "
+        "groans with long decay, as if a large empty building is settling. Wide reverb, no "
+        "melody, no rhythm, no instruments. Mostly room tone and space."
+    ),
+    # The thing is on its way. This one has to go somewhere.
+    "approach": (
+        "Slowly rising tension, continuous, no percussion. Low strings holding a dissonant "
+        "cluster that creeps upward in pitch and grows in volume over the whole duration. A "
+        "sub bass tone rising with it. High harmonic string overtones entering near the end. "
+        "It keeps tightening and never resolves."
+    ),
     "dread": (
         "Slow rising dread. A low drone that swells gradually in volume and tension, with "
         "a dissonant string cluster creeping upward in pitch and a faint arrhythmic pulse "
@@ -103,7 +117,8 @@ def main() -> int:
         return 1
 
     a.out.mkdir(parents=True, exist_ok=True)
-    plan = {"descent": (None, True), "stinger": (1.6, False), "dread": (None, True)}
+    plan = {"descent": (None, True), "stinger": (1.6, False), "dread": (None, True),
+            "empty": (None, True), "approach": (None, True)}
     rc = 0
     for name, (secs, fade) in plan.items():
         if a.only and name != a.only:
