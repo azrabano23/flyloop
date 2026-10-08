@@ -689,8 +689,11 @@ let INSTRUMENT_VISIBLE=false;
 function heroStart(d){
   // The entity levels first. They are the ones worth looking at, and the ones where the
   // overlay has something to show.
-  H.list=['veo-monster-smiler','veo-a24-lifeform','veo-monster-hound','veo-a24-clark',
-          'veo-entity-lunge','veo-monster-longlimbs','veo-a24-stillife','veo-pool-rooms']
+  // Corridors only. The entity clips end on extreme close-ups of a face filling the frame,
+  // which is fine inside the game and unusable as a page background behind a headline.
+  // Clark stays because he reads as a figure at the end of a hall, not as a face.
+  H.list=['veo-yellow-hallway','veo-a24-clark','veo-pool-rooms','veo-parking-column',
+          'veo-office-pillar']
          .map(id=>d.clips.find(c=>c.id===id)).filter(Boolean);
   if(!H.list.length)return;
   H.bed=new Audio('artifacts/audio/descent.mp3');H.bed.loop=true;H.bed.volume=.55;
@@ -780,11 +783,13 @@ function heroLoop(){
   const firing=(f.fire_frame!=null&&fr>=f.fire_frame&&fr<f.fire_frame+Math.round(c.fps*1.2));
   $('#hud').className='hud'+(firing?' fire':'');
   $('#h-state').textContent=firing?'giant fibre · escape':'giant fibre · watching';
-  if(firing&&!H.fired){H.fired=true;scare();}
+  // no flash in the hero: it fires behind body copy and reads as a glitch
+  if(firing&&!H.fired){H.fired=true;}
   if(fr<3)H.fired=false;
 
-  // Hold each level a beat past its commit, then descend to the next one.
-  if(fr>=c.n_frames-2&&(performance.now()-H.t0)>1200)heroPick(H.i+1);
+  // Cut away well before the end. The last second of every clip is whatever arrived at the
+  // camera, and that is never a good still to park a headline on.
+  if((performance.now()-H.t0)>7000||fr>=Math.floor(c.n_frames*0.55))heroPick(H.i+1);
   requestAnimationFrame(heroLoop);
 }
 
