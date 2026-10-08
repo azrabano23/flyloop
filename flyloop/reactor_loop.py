@@ -71,6 +71,20 @@ class LoopConfig:
     max_seconds: float = 60.0
     fov_deg: float = 90.0
     invert: bool = False
+    # LingBot World 2 generates *infinite* worlds. Drive forward down a hallway and it
+    # simply makes more hallway, so nothing ever closes on the camera and a correctly
+    # working escape circuit sits quiet for the whole session. That is not a detector
+    # failure, it is the model doing exactly what it advertises.
+    #
+    # To get an approach we hot-swap the prompt mid-generation and bring something to us.
+    # set_prompt is valid during generation and lands on the next chunk boundary, so the
+    # world turns threatening without restarting the session.
+    lunge_at_s: float = 12.0
+    lunge_every_s: float = 18.0
+    lunge_prompt: str = (
+        "A huge dark shape bursts through the wall directly ahead and rushes straight at "
+        "the camera, filling the view. Debris in the air."
+    )
 
 
 class FlyLoop:
@@ -166,6 +180,19 @@ class FlyLoop:
             await reactor.send_command("set_move_longitudinal", {"move_longitudinal": "forward"})
             self._log("flying", 0, {})
 
+            async def provoke():
+                """Bring a threat to the fly on a schedule, by rewriting the world."""
+                await asyncio.sleep(self.cfg.lunge_at_s)
+                while not done.is_set():
+                    await reactor.send_command("set_prompt", {"prompt": self.cfg.lunge_prompt})
+                    self._log("lunge", frame_i, {"prompt": self.cfg.lunge_prompt[:48]})
+                    await asyncio.sleep(6.0)
+                    if done.is_set():
+                        break
+                    await reactor.send_command("set_prompt", {"prompt": self.cfg.prompt})
+                    self._log("calm", frame_i, {})
+                    await asyncio.sleep(max(1.0, self.cfg.lunge_every_s - 6.0))
+
             output = reactor.tracks.with_direction("recvonly").with_kind("video").one()
             done = asyncio.Event()
 
@@ -210,11 +237,13 @@ class FlyLoop:
                     self._log("escape", frame_i, {"wall_s": round(now, 3)})
                     dispatch(self._cmd(reactor, "back", frame_i))
 
+            provoker = asyncio.create_task(provoke())
             try:
                 await asyncio.wait_for(done.wait(), timeout=self.cfg.max_seconds)
             except asyncio.TimeoutError:
                 pass
             finally:
+                provoker.cancel()
                 # Non-recoverable on purpose: a recoverable disconnect keeps the GPU, and
                 # the meter, reserved for a reconnection that is not coming.
                 await reactor.disconnect()

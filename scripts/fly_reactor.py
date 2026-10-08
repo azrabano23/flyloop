@@ -77,12 +77,18 @@ def main() -> int:
     ap.add_argument("--invert", action="store_true",
                     help="treat bright regions as the object (dark scenes)")
     ap.add_argument("--out", type=Path, default=Path("artifacts/loop"))
+    ap.add_argument("--lunge-at", type=float, default=12.0,
+                    help="seconds before the first prompt hot-swap brings a threat in")
+    ap.add_argument("--no-lunge", action="store_true",
+                    help="leave the world calm; the circuit will likely stay quiet, which "
+                         "is itself the finding about infinite worlds")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     cfg = LoopConfig(model=args.model, prompt=args.prompt, seed=args.seed,
                      seed_image=args.seed_image, max_seconds=args.max_seconds,
-                     invert=args.invert)
+                     invert=args.invert,
+                     lunge_at_s=(1e9 if args.no_lunge else args.lunge_at))
 
     if args.dry_run:
         return dry_run(cfg, args.out)
