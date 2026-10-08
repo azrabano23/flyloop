@@ -85,6 +85,34 @@ tr.sw{background:rgba(255,59,48,.07)}tr.sw td{color:var(--text)}
 footer{padding:48px 0;border-top:1px solid var(--line);color:var(--dim);font-size:.85rem}
 footer a{color:var(--accent);text-decoration:none}
 .rev{opacity:0;transform:translateY(14px);transition:opacity .6s,transform .6s}.rev.in{opacity:1;transform:none}
+
+.cards{display:grid;gap:14px;margin-top:30px}
+@media(min-width:640px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.cards{grid-template-columns:repeat(3,1fr)}}
+.card2{position:relative;border:1px solid var(--line);background:var(--surface);cursor:pointer;
+ overflow:hidden;transition:.18s;text-align:left;padding:0;color:inherit;font:inherit}
+.card2:hover{border-color:var(--line2);transform:translateY(-2px)}
+.card2[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card2 .img{aspect-ratio:16/10;background:#000 center/cover no-repeat;position:relative}
+.card2 .img::after{content:'';position:absolute;inset:0;
+ background:linear-gradient(to top,rgba(12,14,18,.96),rgba(12,14,18,.25) 55%,transparent)}
+.card2 .body{padding:14px 16px 16px;position:relative;margin-top:-52px}
+.card2 h3{font-family:var(--display);font-size:1.08rem;font-weight:800;letter-spacing:-.02em;margin-bottom:5px}
+.card2 p{font-size:.84rem;color:var(--muted);max-width:none;line-height:1.45}
+.card2 .tag{position:absolute;top:10px;left:10px;z-index:2;font-family:var(--mono);font-size:9.5px;
+ letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;background:rgba(7,8,10,.82);
+ border:1px solid var(--line2);backdrop-filter:blur(6px)}
+.card2 .verdict{position:absolute;top:10px;right:10px;z-index:2;font-family:var(--mono);font-size:9.5px;
+ letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;background:rgba(7,8,10,.82);border:1px solid var(--line2)}
+.card2 .verdict.hit{background:var(--alarm);border-color:var(--alarm);color:#fff}
+.scrollcue{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--dim);
+ text-transform:uppercase;margin-top:34px;display:block}
+.beat{display:grid;gap:4px;padding:20px 0;border-bottom:1px solid var(--line)}
+@media(min-width:760px){.beat{grid-template-columns:130px 1fr;gap:28px;align-items:baseline}}
+.beat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--lim)}
+.beat .v{font-size:1.05rem;color:var(--text);max-width:62ch}
+.beat .v small{display:block;color:var(--muted);font-size:.88rem;margin-top:5px}
+
 video.demo{width:100%;border:1px solid var(--line);display:block;margin-top:20px;background:#000}
 </style>
 </head>
@@ -95,37 +123,53 @@ video.demo{width:100%;border:1px solid var(--line);display:block;margin-top:20px
   <div class="hero-img"></div>
   <div class="wrap">
     <span class="lab">flyloop / can you swat the fly?</span>
-    <h1>Fifteen worlds. <span class="lm">One hit.</span></h1>
+    <h1>Eighteen worlds. <span class="lm">One hit.</span></h1>
     <p class="lead">We put a real fly's escape reflex inside AI-generated worlds and sent
-    monsters at it. It dodged fourteen. The only world that killed it was the one where we
-    broke the physics on purpose.</p>
+    Backrooms entities at it. It escaped seventeen. The only world that killed it was the
+    one where we broke the physics on purpose.</p>
     <div class="cta">
       <a class="btn btn-p" href="#demo">[ Watch it dodge ]</a>
       <a class="btn" href="#stack">[ How it works ]</a>
       <a class="btn" href="https://github.com/azrabano23/flyloop">[ Code ]</a>
     </div>
+    <span class="scrollcue">scroll</span>
   </div>
 </header>
 
 <section class="wrap rev">
-  <span class="lab">01 / the problem</span>
-  <h2>Pretty is not the same as real.</h2>
-  <div class="three">
-    <div class="card"><span class="n">01</span><h3>Worlds are generated now</h3>
-      <p>And companies are starting to test robots inside them.</p></div>
-    <div class="card"><span class="n">02</span><h3>Nobody can check them</h3>
-      <p>The only test today is a person watching the video and deciding it seems fine.</p></div>
-    <div class="card"><span class="n">03</span><h3>So we asked a fly</h3>
-      <p>It cannot be fooled by looking good. It only reacts to something actually coming at it.</p></div>
+  <span class="lab">01 / the story</span>
+  <h2>Why a fly.</h2>
+  <div style="margin-top:26px">
+    <div class="beat"><span class="k">the problem</span><span class="v">AI can generate a
+      world you walk through, and companies are starting to test robots inside them.
+      <small>But the only way anyone checks a generated world today is to watch the video and
+      decide it looks fine. Looking fine and behaving right are different things.</small></span></div>
+    <div class="beat"><span class="k">the idea</span><span class="v">A fly cannot be fooled
+      by a world that merely looks good.
+      <small>It has no idea what it is seeing. It never identifies an object or guesses a
+      distance. It watches light move across 750 facets, and when something is genuinely
+      about to hit it, one neuron fires and it is gone.</small></span></div>
+    <div class="beat"><span class="k">the experiment</span><span class="v">Put that circuit
+      inside generated worlds and send things at it.
+      <small>Eighteen worlds: four where we know the exact geometry, three we deliberately
+      broke, and eleven generated by Veo and Reactor with Backrooms entities walking at the
+      camera.</small></span></div>
+    <div class="beat"><span class="k">the result</span><span class="v">It escaped seventeen.
+      The one that killed it was the world where we broke the physics.
+      <small>Not the monsters. Not the dark. The only world the fly failed to escape is the
+      one whose motion was geometrically impossible, an approach that decelerates as it
+      arrives. That is the whole thesis: it reacts to real motion and ignores everything
+      else.</small></span></div>
   </div>
 </section>
 
 <section class="wrap rev" id="demo">
   <span class="lab">02 / the game</span>
-  <h2>Send a monster. See if it gets away.</h2>
+  <h2>Pick a world. Send something at it.</h2>
   <p>World on the left. The fly's eye in the middle, 223 facets. Its escape command on the
   right. Red means it committed and ran.</p>
-  <div class="picker" id="picker"></div>
+  <div class="cards" id="cards"></div>
+  <div class="picker" id="picker" style="display:none"></div>
   <div class="panels">
     <div class="panel">
       <div class="ph"><span class="lab">world</span><span class="chip" id="src">-</span></div>
@@ -214,7 +258,11 @@ $('#snd').onclick=()=>{soundOn=!soundOn;const a=$('#aud');
   $('#snd').textContent=soundOn?'[ Sound off ]':'[ Sound on ]';
   soundOn?a.play().catch(()=>{}):a.pause();};
 
-const isMonster=c=>/monster|entity|wall/i.test(c.note||'')||/monster|entity-lunge/.test(c.id);
+const rank=c=>/^veo-a24/.test(c.id)?0
+  :/monster|entity-lunge/.test(c.id)?1
+  :c.source!=='synthetic'?2
+  :/^broken/.test(c.id)?3:4;
+const isMonster=c=>rank(c)<=1;
 
 fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
   R=d;
@@ -223,24 +271,30 @@ fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
   $('#g-n').textContent=d.clips.length;
   $('#g-d').textContent=dodged.length;
   $('#g-s').textContent=hit.length;
-  $('#g-w').textContent=hit.length?hit.map(c=>c.note||c.id).join(', ')+'.':'nobody yet.';
+  $('#g-w').textContent=hit.length?hit.map(c=>c.title||c.id).join(', ')+'.':'nobody yet.';
   $('#fct').textContent=d.retina.n_facets+' facets';
 
   $('#board tbody').innerHTML=d.clips.map(c=>{
     const f=c.detectors.fly;
-    return `<tr class="${f.fired?'':'sw'}"><td>${c.note||c.label}</td><td>${c.model}</td>`+
+    return `<tr class="${f.fired?'':'sw'}"><td>${c.title||c.note||c.label}</td><td>${c.model}</td>`+
       `<td class="v" style="color:${f.fired?'var(--muted)':'var(--alarm)'}">`+
       `${f.fired?'escaped':'WE HIT IT'}</td></tr>`;}).join('');
 
   // Monsters first. They are the thing worth looking at, and they are the reason the
   // scoreboard means anything.
-  const order=[...d.clips].sort((a,b)=>(isMonster(b)?1:0)-(isMonster(a)?1:0));
-  $('#picker').innerHTML=order.map((c,i)=>
-    `<button class="pick${isMonster(c)?' mon':''}" data-id="${c.id}" aria-selected="${i===0}">`+
-    `${c.note||c.label}<span class="t">${c.source}</span></button>`).join('');
-  $('#picker').onclick=e=>{const b=e.target.closest('.pick');if(!b)return;
-    document.querySelectorAll('.pick').forEach(x=>x.setAttribute('aria-selected',x===b));
-    select(d.clips.find(c=>c.id===b.dataset.id));};
+  const order=[...d.clips].sort((a,b)=>rank(a)-rank(b));
+  $('#cards').innerHTML=order.map((c,i)=>{
+    const f=c.detectors.fly;
+    return `<button class="card2" data-id="${c.id}" aria-selected="${i===0}">
+      <span class="tag">${c.source}</span>
+      <span class="verdict${f.fired?'':' hit'}">${f.fired?'escaped':'we hit it'}</span>
+      <div class="img" style="background-image:url('artifacts/${c.poster}')"></div>
+      <div class="body"><h3>${c.title||c.label}</h3><p>${c.blurb||c.note||''}</p></div>
+    </button>`;}).join('');
+  $('#cards').onclick=e=>{const b=e.target.closest('.card2');if(!b)return;
+    document.querySelectorAll('.card2').forEach(x=>x.setAttribute('aria-selected',x===b));
+    select(d.clips.find(c=>c.id===b.dataset.id));
+    document.querySelector('#demo .panels').scrollIntoView({behavior:'smooth',block:'center'});};
   select(order[0]);
 });
 
