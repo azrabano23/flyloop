@@ -122,12 +122,17 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
 .lv{display:grid;gap:12px;margin-top:16px}
 @media(min-width:680px){.lv{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:1060px){.lv{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1340px){.lv{grid-template-columns:repeat(4,1fr)}}
 .L{position:relative;border:1px solid var(--line);background:var(--surface);cursor:pointer;overflow:hidden;
  transition:.18s;text-align:left;padding:0;color:inherit;font:inherit;display:flex;flex-direction:column}
 .L:hover{border-color:var(--line2);transform:translateY(-2px)}
 .L[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.L .img{aspect-ratio:16/10;background:#000 center/cover no-repeat;position:relative}
-.L .img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(11,13,17,.97),rgba(11,13,17,.2) 58%,rgba(0,0,0,.28))}
+.L .img{aspect-ratio:3/4;background:#000 center/cover no-repeat;position:relative;
+ transition:transform .5s ease}
+.L:hover .img{transform:scale(1.045)}
+.L{overflow:hidden}
+.L .img::after{content:'';position:absolute;inset:0;
+ background:linear-gradient(to top,rgba(8,9,12,.98) 2%,rgba(8,9,12,.55) 34%,rgba(0,0,0,.2) 70%,rgba(0,0,0,.42))}
 .L .no{position:absolute;top:0;left:0;z-index:2;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
  padding:5px 8px;background:rgba(7,8,10,.86);border-right:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--dim)}
 .L .stamp{position:absolute;top:9px;right:9px;z-index:2;font-family:var(--mono);font-size:9.5px;font-weight:500;
@@ -135,9 +140,9 @@ section{padding:clamp(66px,8vw,110px) 0;border-top:1px solid var(--line)}
 .L .stamp.pass{color:var(--pass);border-color:rgba(95,211,154,.5);background:rgba(95,211,154,.11)}
 .L .stamp.fail{color:#fff;border-color:var(--fail);background:var(--fail)}
 .L .stamp.un{color:var(--muted);border-color:var(--line2);background:rgba(7,8,10,.8)}
-.L .body{padding:13px 15px 15px;position:relative;margin-top:-54px;flex:1;display:flex;flex-direction:column}
+.L .body{padding:0 17px 17px;position:relative;margin-top:-132px;flex:1;display:flex;flex-direction:column}
 .L .lvl{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--lim);margin-bottom:4px}
-.L h4{font-family:var(--serif);font-size:1.5rem;font-weight:400;letter-spacing:-.01em;line-height:1.1;margin-bottom:6px}
+.L h4{font-family:var(--serif);font-size:1.9rem;font-weight:400;letter-spacing:-.01em;line-height:1.05;margin-bottom:7px}
 .L p{font-size:.83rem;color:var(--muted);max-width:none;line-height:1.5}
 .L .ent{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:9px}
 .L .vr{margin-top:auto;padding-top:11px;border-top:1px solid var(--line);display:flex;gap:7px;flex-wrap:wrap;
@@ -194,6 +199,14 @@ tr.bad{background:rgba(255,59,48,.06)}
 .stack .m{color:var(--lim)}.stack .w{color:var(--dim)}.stack .d{color:var(--muted)}
 .warn{border:1px solid rgba(255,59,48,.24);background:rgba(255,59,48,.04);padding:22px}
 .warn p{color:#B7BCC4;max-width:76ch;font-size:.89rem}
+.ctrl{margin-top:44px;padding-top:22px;border-top:1px solid var(--line2)}
+.ctrl h3{font-family:var(--display);font-size:1.1rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.ctrl p{font-size:.9rem;max-width:72ch}
+.ctrl .g{display:grid;gap:9px;margin-top:18px;font-family:var(--mono);font-size:11px}
+@media(min-width:760px){.ctrl .g{grid-template-columns:repeat(2,1fr) }}
+.ctrl .g div{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;border:1px solid var(--line)}
+.ctrl .g b{font-weight:400}
+.ctrl .ok{color:var(--pass)}.ctrl .no{color:var(--fail)}
 .bul{display:grid;gap:0;margin-top:30px;border-top:1px solid var(--line)}
 .bul>div{display:grid;grid-template-columns:48px 1fr;gap:16px;padding:20px 0;
  border-bottom:1px solid var(--line);align-items:start}
@@ -311,6 +324,7 @@ footer a{color:var(--accent);text-decoration:none}
       <th>frames judged</th><th>session</th></tr></thead><tbody></tbody></table></div>
   </div>
   <div id="strata"></div>
+  <div id="ctrl" class="ctrl"></div>
 </section>
 
 <section class="wrap rev" id="instrument">
@@ -362,7 +376,9 @@ footer a{color:var(--accent);text-decoration:none}
     <div><span class="m">Nano Banana 2.1</span><span class="w">Google AI Studio</span><span class="d">Draws the room each level starts from, which Veo and Reactor then animate.</span></div>
     <div><span class="m">Veo 3.1</span><span class="w">Google DeepMind</span><span class="d">Animates the eleven generated levels and the things walking down them.</span></div>
     <div><span class="m">Lyria 3.5</span><span class="w">Google DeepMind</span><span class="d">Ambient score. Every level has its own track, plus the fly's own spikes.</span></div>
+    <div><span class="m">MediaPipe Hands</span><span class="w">Google</span><span class="d">In the playable version you dodge with your body. Hand landmarks off the webcam decide whether you escaped.</span></div>
     <div><span class="m">flyloop</span><span class="w">ours</span><span class="d">The eye, the escape circuit, the verdict. 223 facets of numpy, runs on a CPU.</span></div>
+    <div><span class="m">the circuit</span><span class="w">published</span><span class="d">LC4 and LPLC2 converging on the giant fibre, implemented from the Drosophila literature. The whole-brain connectome that maps this pathway was segmented with Google Research’s flood-filling networks. We took no model from anyone, only the equations.</span></div>
   </div>
 </section>
 
@@ -415,31 +431,26 @@ let t0=performance.now(),lastVt=-1,useClock=false;
 // The descent. Backrooms levels in canon order of depth, mapped onto the clips we actually
 // ran. The level names are the story; the verdicts underneath them are measured.
 const STRATA=[
- {rn:'stratum i',name:'Calibration',note:'known geometry · the only levels we can grade',ids:[
-   ['looming-0_25mps','Level 0','The Lobby, quarter speed','a sphere, 0.25 m/s'],
-   ['looming-0_5mps','Level 0','The Lobby, standard','a sphere, 0.5 m/s'],
-   ['looming-1_0mps','Level 0','The Lobby, double','a sphere, 1.0 m/s'],
-   ['looming-2_0mps','Level 0','The Lobby, eight times','a sphere, 2.0 m/s']]},
- {rn:'stratum ii',name:'The Descent',note:'generated levels · no reference to grade against',ids:[
+ {rn:'stratum i',name:'The Descent',note:'generated levels, nothing hunting you yet',ids:[
    ['veo-yellow-hallway','Level 0','The Lobby','nothing. nothing ever comes'],
    ['veo-parking-column','Level 1','Habitable Zone','a concrete column'],
    ['veo-office-pillar','Level 4','Abandoned Office','a pillar, lights failing'],
    ['veo-pool-rooms','Level 37','The Poolrooms','a tiled dead end'],
    ['veo-entity-lunge','Level !','Run For Your Life','something through the wall']]},
- {rn:'stratum iii',name:'The Entities',note:'things that come at you on purpose',ids:[
-   ['veo-monster-smiler','Level 6','Lights Out','Entity 3 · Smiler'],
-   ['veo-monster-hound','Level 5','Terror Hotel','Entity 8 · Hound'],
-   ['veo-monster-longlimbs','Level 9','The Suburbs','Entity 10 · Skin-Stealer'],
+ {rn:'stratum ii',name:'The Entities',note:'things that come down the hall at you',ids:[
+   ['veo-monster-smiler','Level 6','Lights Out','Entity 3 \u00b7 Smiler'],
+   ['veo-monster-hound','Level 5','Terror Hotel','Entity 8 \u00b7 Hound'],
+   ['veo-monster-longlimbs','Level 9','The Suburbs','Entity 10 \u00b7 Skin-Stealer'],
    ['veo-a24-clark','The film','Captain Clark','the man in the tricorn hat'],
    ['veo-a24-stillife','The film','Still-lifes','figures that never move their legs'],
-   ['veo-a24-lifeform','The film','The Lifeform','something vast and pale']]},
- {rn:'stratum iv',name:'The Corrupted Levels',note:'physics broken on purpose · we know the answer',ids:[
-   ['broken-linear','Level ███','Constant Expansion','an approach that never accelerates'],
-   ['broken-jump','Level ███','Teleport','a sphere that skips forward in space'],
-   ['broken-reversed','Level ███','Reverse Approach','an approach that slows as it lands']]}];
+   ['veo-a24-lifeform','The film','The Lifeform','something vast and pale']]}];
 
-// Nano Banana Pro plates are sharper and better directed than a frame grab, so the film
-// stratum uses them as its stills.
+// The control levels never get a card. Four where we know the exact geometry and three we
+// corrupted on purpose, all of them a grey sphere on a white field. They are what makes the
+// rest of this a measurement, so they get the numbers and not the pictures.
+const CONTROLS=['looming-0_25mps','looming-0_5mps','looming-1_0mps','looming-2_0mps',
+                'broken-linear','broken-jump','broken-reversed'];
+
 const PLATE={'veo-a24-clark':'assets/card-clark.png','veo-a24-lifeform':'assets/card-lifeform.png',
              'veo-a24-stillife':'assets/card-stillife.png'};
 
@@ -510,6 +521,28 @@ fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
     document.querySelectorAll('.L').forEach(x=>x.setAttribute('aria-selected',x===b));
     select(by[b.dataset.id]);
     $('#instrument').scrollIntoView({behavior:'smooth',block:'start'});};
+
+
+  // the control levels, as numbers
+  const CN=CONTROLS.map(id=>by[id]).filter(Boolean);
+  const cv2=CN.map(c=>[c,verdict(c)]);
+  const caught=cv2.filter(([c,v])=>/^broken/.test(c.id)&&v.code==='fail').length;
+  const nbroken=cv2.filter(([c])=>/^broken/.test(c.id)).length;
+  const falsealarm=cv2.filter(([c,v])=>!/^broken/.test(c.id)&&v.code==='fail').length;
+  $('#ctrl').innerHTML=`<h3>The control levels</h3>
+    <p>Seven levels with no scenery at all: a sphere on a white field, four of them obeying
+    real geometry at four different speeds and three with the physics broken on purpose.
+    They are what turns the rooms above into a measurement, so they get the numbers rather
+    than the pictures.</p>
+    <div class="g">${cv2.map(([c,v])=>{
+      const f=c.detectors.fly,nm=(c.title||c.id).replace('Calibration \u00b7','').replace('Broken \u00b7','broken,');
+      return `<div><span>${nm}</span><b class="${v.code==='fail'?'no':'ok'}">${
+        f.fired?f.theta_at_fire_deg.toFixed(1)+'\u00b0 \u00b7 '+v.stamp.toUpperCase()
+              :'never fired \u00b7 FAIL'}</b></div>`;}).join('')}</div>
+    <p class="tn" style="margin-top:16px">Commit angle across the four correct levels:
+    ${d.summary.threshold_mean_deg} \u00b1 ${d.summary.threshold_sd_deg}\u00b0, against a
+    published figure near 20\u00b0 for a real fly. It flagged ${caught} of the ${nbroken}
+    corrupted levels and raised ${falsealarm} false alarms on the four it should pass.</p>`;
 
   heroStart(d);
   const first=by[ORDER[9]]||d.clips[0];   // open on the Smiler: the descent's best frame

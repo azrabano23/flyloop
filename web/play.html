@@ -100,6 +100,26 @@ body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;h
 .tally b{display:block;font-family:var(--display);font-size:1.7rem;font-weight:800;
  letter-spacing:-.04em;color:var(--text);margin-bottom:2px}
 #trace{display:block;margin:20px auto 0;border:1px solid var(--line);background:rgba(7,8,10,.6);max-width:100%}
+
+#mode{position:absolute;right:14px;top:92px;z-index:9;font-family:var(--mono);font-size:9px;
+ letter-spacing:.16em;text-transform:uppercase;padding:6px 10px;border:1px solid var(--line);
+ background:rgba(7,8,10,.78);color:rgba(255,255,255,.6);cursor:pointer;transition:.15s}
+#mode:hover{border-color:var(--accent);color:#fff}
+#mode.hands{border-color:var(--accent);color:var(--accent)}
+#cam{position:absolute;right:14px;bottom:14px;width:188px;z-index:9;display:none;
+ border:1px solid var(--line);background:#000}
+#cam.on{display:block}
+#cam video{width:100%;display:block;transform:scaleX(-1);opacity:.5}
+#cam canvas{position:absolute;inset:0;width:100%;height:100%}
+#cam .cap{position:absolute;top:0;left:0;right:0;font-family:var(--mono);font-size:8.5px;
+ letter-spacing:.14em;text-transform:uppercase;padding:4px 6px;background:rgba(7,8,10,.8);
+ color:rgba(255,255,255,.55)}
+#dodge{position:absolute;left:50%;transform:translateX(-50%);bottom:170px;z-index:9;
+ font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+ color:rgba(255,255,255,.75);text-shadow:0 1px 18px #000;display:none;text-align:center}
+#dodge.on{display:block}
+#dodge .meter{width:200px;height:2px;background:rgba(255,255,255,.16);margin:9px auto 0;position:relative}
+#dodge .meter i{position:absolute;inset:0 auto 0 0;width:0;background:var(--pass)}
 .tag{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:7;
  font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
  padding:5px 11px;background:rgba(7,8,10,.72);border:1px solid var(--line);
@@ -134,6 +154,10 @@ body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;h
     </div>
   </div>
   <div id="log"></div>
+  <button id="mode">input &middot; keys</button>
+  <div id="dodge"><span id="dodge-t">dodge</span><div class="meter"><i id="dodge-m"></i></div></div>
+  <div id="cam"><span class="cap" id="cam-cap">hand tracking</span>
+    <video id="camv" playsinline muted autoplay></video><canvas id="camc" width="188" height="141"></canvas></div>
   <div id="sheet"><div class="box" id="box"></div></div>
 </div>
 
@@ -141,7 +165,7 @@ body{background:#000;color:var(--text);font-family:var(--body);overflow:hidden;h
 const $=s=>document.querySelector(s);
 const L=$('#log'),SH=$('#sheet'),BOX=$('#box');
 let R=null,CL={},clip=null,raf=0,phase='idle',fired=false,t0=0,dpr=1;
-let verified=0,visited=[],depth=0,bed=null,sting=null,hum=null;
+let verified=0,visited=[],depth=0,bed=null,sting=null,hum=null,lastBearing=0;
 
 // Canon Backrooms levels, mapped onto the clips we actually ran. The names are the story,
 // the verdicts underneath are measured.
@@ -194,7 +218,10 @@ function title(){
     you not to.</p>
     <p class="mono">Sound on. Headphones if you have them.</p>
     <div class="row"><button class="btn" id="go">[ Begin the descent ]</button>
-      <a class="btn" href="index.html">[ The research behind it ]</a></div>`);
+      <a class="btn" href="index.html">[ The research behind it ]</a></div>
+    <p class="mono" style="margin-top:16px">Arrow keys to dodge, enter to override. Or flip
+    the input toggle at the top right and dodge with your hands, on camera.</p>`);
+
   $('#go').onclick=async()=>{
     try{await document.documentElement.requestFullscreen();}catch(e){}
     try{bed.play();hum.play();}catch(e){}
@@ -328,12 +355,143 @@ function decide(){
       <button class="btn green" id="bk">[ Retreat ]</button>
       <button class="btn red" id="ov">[ Override the reflex ]</button></div>
     <p class="mono" style="margin-top:18px">Retreat and you live, and you learn nothing about
-    this world. Override and you bank a verified level.</p>`);
+    this world. Override and you bank a verified level.<br>
+    Keys: &larr; or &rarr; to dodge, enter to override. Or switch input to hands, top right,
+    and dodge with your body.</p>`);
   drawTrace(f);
-  $('#bk').onclick=()=>{phase='idle';retreat();};
-  $('#ov').onclick=()=>{verified++;$('#h-ver').textContent=verified;
-    phase='idle';
+  const bail=()=>{phase='idle';retreat();};
+  const push=()=>{verified++;$('#h-ver').textContent=verified;phase='idle';
     if(depth>=3)corrupted();else doors(3);};
+  $('#bk').onclick=bail;
+  $('#ov').onclick=push;
+  // With the camera live the decision is made with your body: swing away and you have
+  // escaped, stay put and you have overridden the reflex. The buttons stay for the room
+  // where the camera does not work.
+  handDodge(lastBearing,bail,push);
+  // Keys are armed whatever the input mode says. Left or right to dodge, enter to override.
+  // Nobody should be stuck because a camera did not come up.
+  keyDecision(bail,push);
+}
+
+
+/* ---------------------------------------------------------------- hand tracking
+   You are the fly, so you dodge with your body. A webcam, MediaPipe hand landmarks, and the
+   horizontal position of your palm. When the reflex fires you have one second: swing your
+   hand away from the side the threat came from and you escape, hold still and you have
+   overridden it.
+
+   Every part of this is optional. No camera, a refused permission, a blocked CDN or a
+   browser without getUserMedia all fall through to the buttons, which never go away. A demo
+   that only works with the camera is a demo that fails in the room it matters in. */
+let HAND={ready:false,on:false,x:null,lm:null,last:0};
+
+async function handsInit(){
+  const cap=$('#cam-cap');
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240}});
+    $('#camv').srcObject=stream;
+    const V=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14');
+    const files=await V.FilesetResolver.forVisionTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    HAND.lm=await V.HandLandmarker.createFromOptions(files,{
+      baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+                   delegate:'GPU'},
+      runningMode:'VIDEO',numHands:1});
+    HAND.ready=true;HAND.on=true;
+    $('#cam').classList.add('on');
+    cap.textContent='hand tracking · live';
+    handsLoop();
+    return true;
+  }catch(e){
+    cap.textContent='hand tracking unavailable';
+    return false;
+  }
+}
+
+function handsLoop(){
+  if(!HAND.ready){return;}
+  const v=$('#camv'),cv=$('#camc'),g=cv.getContext('2d');
+  if(v.readyState>=2){
+    const now=performance.now();
+    if(now-HAND.last>28){
+      HAND.last=now;
+      let res=null;
+      try{res=HAND.lm.detectForVideo(v,now);}catch(e){}
+      g.clearRect(0,0,cv.width,cv.height);
+      const h=res&&res.landmarks&&res.landmarks[0];
+      if(h){
+        // mirrored, so the hand on screen moves the way the person's hand does
+        HAND.x=1-h[9].x;
+        g.strokeStyle='rgba(96,165,250,.9)';g.lineWidth=1.4;
+        const BONES=[[0,5],[5,9],[9,13],[13,17],[17,0],[0,1],[1,2],[2,3],[3,4],
+          [5,6],[6,7],[7,8],[9,10],[10,11],[11,12],[13,14],[14,15],[15,16],[17,18],[18,19],[19,20]];
+        BONES.forEach(([a,b])=>{g.beginPath();
+          g.moveTo((1-h[a].x)*cv.width,h[a].y*cv.height);
+          g.lineTo((1-h[b].x)*cv.width,h[b].y*cv.height);g.stroke();});
+        g.fillStyle='rgba(200,181,96,.95)';
+        h.forEach(pt=>{g.beginPath();
+          g.arc((1-pt.x)*cv.width,pt.y*cv.height,2,0,6.2832);g.fill();});
+      }else HAND.x=null;
+    }
+  }
+  requestAnimationFrame(handsLoop);
+}
+
+/* The dodge. Called instead of the buttons when the camera is live: you have a second to
+   move your hand away from where the threat is, and the meter is how far you have got. */
+function handDodge(bearing,onEscape,onOverride){
+  if(!HAND.on){return false;}
+  const box=$('#dodge'),m=$('#dodge-m'),t=$('#dodge-t');
+  box.classList.add('on');
+  const side=bearing<0?'right':'left';   // away from the threat, same rule the loop uses
+  t.textContent='move your hand '+side;
+  const start=performance.now(),x0=HAND.x==null?0.5:HAND.x;
+  let done=false;
+  (function tick(){
+    if(done)return;
+    const el=performance.now()-start;
+    const dx=HAND.x==null?0:(side==='left'?(x0-HAND.x):(HAND.x-x0));
+    const p=Math.max(0,Math.min(1,dx/0.22));
+    m.style.width=(p*100)+'%';
+    if(p>=1){done=true;box.classList.remove('on');onEscape();return;}
+    if(el>1600){done=true;box.classList.remove('on');t.textContent='';onOverride();return;}
+    requestAnimationFrame(tick);
+  })();
+  return true;
+}
+
+
+// Input mode. Hands needs a camera and a click to ask for it; keys always work, and the
+// toggle says which one you are on so a demo never has to guess.
+function setMode(hands){
+  HAND.on=!!hands&&HAND.ready;
+  const b=$('#mode');
+  b.textContent='input \u00b7 '+(HAND.on?'hands':'keys');
+  b.className=HAND.on?'hands':'';
+  $('#cam').classList.toggle('on',HAND.on);
+}
+$('#mode').onclick=async()=>{
+  if(HAND.on){setMode(false);return;}
+  if(!HAND.ready){
+    $('#mode').textContent='input \u00b7 starting camera';
+    const ok=await handsInit();
+    if(!ok){$('#mode').textContent='input \u00b7 keys (no camera)';return;}
+  }
+  setMode(true);
+};
+
+let _keyh=null;
+function keyDecision(onEscape,onOverride){
+  if(_keyh)removeEventListener('keydown',_keyh);
+  _keyh=e=>{
+    const k=e.key.toLowerCase();
+    if(['arrowleft','arrowright','a','d'].includes(k)){
+      e.preventDefault();removeEventListener('keydown',_keyh);_keyh=null;onEscape();
+    }else if(k==='enter'||k===' '){
+      e.preventDefault();removeEventListener('keydown',_keyh);_keyh=null;onOverride();
+    }
+  };
+  addEventListener('keydown',_keyh);
 }
 
 function drawTrace(f){
@@ -414,10 +572,11 @@ function ending(){
       <div><b>${depth}</b>levels entered</div>
       <div><b>20.7&deg;</b>its commit angle</div>
       <div><b>~20&deg;</b>a real fly's</div></div>
-    <p class="mono" style="margin-top:22px">The wiring we model, LC4 and LPLC2 converging on
-    the giant fibre, is read off the <i>Drosophila</i> connectome, segmented with Google
-    Research's flood-filling networks. The worlds are Reactor and Veo 3.1. The rooms are
-    Nano Banana. You were the fly.</p>
+    <p class="mono" style="margin-top:22px">The circuit is the <i>Drosophila</i> escape
+    pathway, LC4 and LPLC2 converging on the giant fibre. We implemented the published
+    equations ourselves; the whole-brain connectome that maps this pathway was segmented
+    with Google Research's flood-filling networks. Worlds by Reactor and Veo 3.1, rooms by
+    Nano Banana, score by Lyria, hands by MediaPipe. You were the fly.</p>
     <div class="row"><button class="btn" id="again">[ Descend again ]</button>
       <a class="btn" href="index.html">[ The measurements ]</a></div>`);
   $('#again').onclick=()=>{verified=0;depth=0;visited=[];doors(3);};
