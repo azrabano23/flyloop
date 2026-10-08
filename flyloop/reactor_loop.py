@@ -262,13 +262,14 @@ class FlyLoop:
         self.events.append(Event(round(time.time() - self._t0, 3), kind, frame, detail))
         print(f"  [{self.events[-1].t:6.2f}s] {kind:<16s} frame {frame}")
 
-    def report(self, out_dir: Path, n_frames: int) -> dict:
+    def report(self, out_dir: Path, n_frames: int, live: bool = True) -> dict:
         escapes = [e for e in self.events if e.kind == "escape"]
         cmds = [e for e in self.events if e.kind.startswith("cmd:")]
         lat = [c.detail["since_escape_ms"] for c in cmds
                if c.detail.get("since_escape_ms") is not None]
 
         rep = {
+            "live": live,
             "model": MODELS.get(self.cfg.model, self.cfg.model),
             "frames": n_frames,
             "escapes": len(escapes),

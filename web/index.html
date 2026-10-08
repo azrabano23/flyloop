@@ -175,8 +175,40 @@ footer a{color:var(--accent);text-decoration:none}
   does not fall for the ones that are real, and it dies in the one that is not.</p>
 </section>
 
+
+<section class="wrap reveal" id="live" style="display:none">
+  <span class="label">02 / the closed loop</span>
+  <h2>The world is generated in response to the fly.</h2>
+  <p>Everything above scores recorded clips. This one runs live: a session on Reactor's
+  LingBot World 2, seeded with a Nano Banana plate, camera driven forward, the escape circuit
+  reading frames as they arrive. When it commits we send <code>set_move_longitudinal: back</code>
+  into the same session. The fly dodges inside a world that is still being generated.</p>
+  <div class="grid g3" style="margin-top:30px">
+    <div class="card"><span class="n">escapes</span><div class="big" id="l-esc">-</div>
+      <p>committed on live generated frames</p></div>
+    <div class="card"><span class="n">frames</span><div class="big" id="l-frames">-</div>
+      <p id="l-model">-</p></div>
+    <div class="card"><span class="n">escape to command</span><div class="big" id="l-lat">-</div>
+      <p>floor is Reactor's chunk boundary, not the circuit</p></div>
+  </div>
+  <div class="panels" style="grid-template-columns:1fr 1.1fr">
+    <div class="panel">
+      <div class="panel-h"><span class="label">what the circuit saw</span>
+        <span class="chip">live session</span></div>
+      <video id="l-vid" playsinline muted loop autoplay></video>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><span class="label">session log</span><span class="chip" id="l-dur">-</span></div>
+      <div id="l-log" style="font-family:var(--mono);font-size:11px;line-height:1.9;
+        color:var(--muted);overflow-y:auto;max-height:300px"></div>
+    </div>
+  </div>
+  <p class="note">Commands apply at the next chunk boundary, so the dodge is not millisecond
+  accurate and we do not claim it is. The number above is measured, not asserted.</p>
+</section>
+
 <section class="wrap reveal">
-  <span class="label">02 / the problem</span>
+  <span class="label">03 / the problem</span>
   <h2>A world model ships an update.<br>Does your agent still behave?</h2>
   <div class="grid g3" style="margin-top:38px">
     <div class="card"><span class="n">01</span><h3>The video looks better</h3>
@@ -196,7 +228,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal">
-  <span class="label">03 / the probe</span>
+  <span class="label">04 / the probe</span>
   <div class="grid g2" style="align-items:center;gap:40px">
     <div>
       <h2>Borrow a reflex with 400 million years of QA.</h2>
@@ -221,7 +253,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal" id="demo">
-  <span class="label">04 / the instrument</span>
+  <span class="label">05 / the instrument</span>
   <h2>Fly it. Watch the eye. Watch it commit.</h2>
   <p>Left is the world. Middle is what the eye receives, 223 facets with Gaussian acceptance.
   Right is the escape command charging toward threshold.</p>
@@ -263,7 +295,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal" id="results">
-  <span class="label">05 / results</span>
+  <span class="label">06 / results</span>
   <h2>What the second channel buys.</h2>
   <p>Measured only on clips whose geometry is known in closed form, so there is a right answer
   to check against. Both detectors are held to the same settling window. The first time we
@@ -285,7 +317,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal">
-  <span class="label">06 / the stack</span>
+  <span class="label">07 / the stack</span>
   <h2>What we used, and for what.</h2>
   <div class="stack">
     <div><span>Nano Banana 2.1</span><span>Google AI Studio. Seed plate: one obstacle, dead ahead.</span></div>
@@ -300,7 +332,7 @@ footer a{color:var(--accent);text-decoration:none}
 </section>
 
 <section class="wrap reveal">
-  <span class="label">07 / honest limits</span>
+  <span class="label">08 / honest limits</span>
   <div class="warn">
     <h3>Read this before believing any number above</h3>
     <p>This measures geometric consistency of apparent motion. It does not measure gravity,
@@ -476,6 +508,33 @@ function loop(){
   c.className='chip'+(firing?' fire':'');
   raf=requestAnimationFrame(loop);
 }
+
+// Live Reactor session, if one has been run. Absent file means the section stays hidden
+// rather than showing zeros for a session that never happened.
+fetch('artifacts/loop/loop_report.json').then(r=>r.ok?r.json():null).then(L=>{
+  // Only a session that actually reached Reactor belongs in this section.
+  if(!L || L.live === false) return;
+  $('#live').style.display='';
+  $('#l-esc').textContent=L.escapes;
+  $('#l-frames').textContent=L.frames;
+  $('#l-model').textContent=L.model;
+  $('#l-lat').textContent=L.mean_escape_to_command_ms!=null
+    ? L.mean_escape_to_command_ms+' ms' : 'n/a';
+  const ev=L.events||[];
+  const last=ev.length?ev[ev.length-1].t:0;
+  $('#l-dur').textContent=last.toFixed(1)+'s session';
+  $('#l-log').innerHTML=ev.map(e=>{
+    const col=e.kind==='escape'?'var(--alarm)':e.kind.startsWith('cmd')?'var(--accent)':'var(--dim)';
+    return `<div><span style="color:var(--dim)">[${e.t.toFixed(2)}s]</span> `+
+      `<span style="color:${col}">${e.kind}</span> `+
+      `<span style="color:var(--dim)">frame ${e.frame}</span></div>`;
+  }).join('');
+  const v=$('#l-vid');
+  fetch('artifacts/loop/reactor-live.mp4',{method:'HEAD'}).then(r=>{
+    if(r.ok){ v.src='artifacts/loop/reactor-live.mp4'; v.play().catch(()=>{}); }
+    else v.closest('.panel').style.display='none';
+  }).catch(()=>{});
+}).catch(()=>{});
 
 const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.06});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));

@@ -60,7 +60,7 @@ def dry_run(cfg: LoopConfig, out: Path) -> int:
             loop._log("cmd:back", i, {"sent_s": round(now, 3),
                                       "since_escape_ms": 0.0})
 
-    rep = loop.report(out, len(script))
+    rep = loop.report(out, len(script), live=False)
     print(f"\nescapes: {rep['escapes']}  (expected 2, one per approach)")
     print(f"wrote {out / 'loop_report.json'}")
     return 0 if rep["escapes"] >= 1 else 1
