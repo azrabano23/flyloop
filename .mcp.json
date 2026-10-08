@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "reactor-docs": {
+      "type": "http",
+      "url": "https://docs.reactor.inc/mcp"
+    }
+  }
+}
