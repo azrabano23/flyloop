@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flyloop</title>
+<meta name="description" content="Behavioural regression testing for AI-generated worlds, probed with a fly-inspired escape reflex.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;800&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080A; --surface:#0C0E12; --surface-2:#121419;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.18);
+  --text:#F2F3F5; --muted:#8C919A; --dim:#565C66;
+  --accent:#3B82F6; --alarm:#FF3B30; --liminal:#C8B560;
+  --display:'Figtree',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+@media(min-width:840px){.wrap{padding:0 44px}}
+
+.label{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--dim);display:block;margin-bottom:16px}
+h1,h2,h3{font-family:var(--display);font-weight:800;line-height:1.02;letter-spacing:-.035em}
+h1{font-size:clamp(2.9rem,8.5vw,6.4rem)}
+h2{font-size:clamp(1.9rem,4.4vw,3.4rem);margin-bottom:18px}
+h3{font-size:1.05rem;font-weight:500;letter-spacing:-.01em}
+p{color:var(--muted);max-width:60ch}
+.lead{font-size:clamp(1.02rem,1.5vw,1.22rem);color:#AFB5BE;max-width:54ch}
+.lim{color:var(--liminal)} .acc{color:var(--accent)}
+section{padding:clamp(70px,9vw,120px) 0;border-top:1px solid var(--line);position:relative}
+
+/* hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:120px 0 72px;position:relative;border:none;overflow:hidden}
+.hero-img{position:absolute;inset:0;z-index:0;
+  background:url('assets/hero.png') center 42%/cover no-repeat;
+  filter:saturate(.72) contrast(1.06)}
+.hero-img::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(7,8,10,.86) 0%,rgba(7,8,10,.45) 38%,rgba(7,8,10,.93) 82%,var(--bg) 100%)}
+.hero .wrap{position:relative;z-index:1;width:100%}
+.hero .label{color:#D8DCE2;text-shadow:0 1px 14px rgba(0,0,0,.9)}
+.hero h1{margin-bottom:24px;max-width:13ch;text-shadow:0 2px 40px rgba(0,0,0,.6)}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}
+.btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+  padding:13px 20px;border:1px solid var(--line-2);color:var(--text);text-decoration:none;
+  transition:.16s;cursor:pointer;background:rgba(7,8,10,.5);backdrop-filter:blur(8px)}
+.btn:hover{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.12)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-p:hover{background:#2f6fe0}
+.ticker{position:absolute;bottom:0;left:0;right:0;z-index:2;border-top:1px solid var(--line);
+  background:rgba(7,8,10,.72);backdrop-filter:blur(10px);overflow:hidden;height:34px}
+.ticker div{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--dim);
+  white-space:nowrap;line-height:34px;animation:slide 48s linear infinite}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+.grid{display:grid;gap:18px}
+@media(min-width:780px){.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1.05fr .95fr}}
+.card{background:var(--surface);border:1px solid var(--line);padding:26px;transition:.2s}
+.card:hover{border-color:var(--line-2)}
+.card .n{font-family:var(--mono);font-size:10.5px;color:var(--liminal);
+  letter-spacing:.14em;display:block;margin-bottom:12px}
+.card h3{margin-bottom:8px}.card p{font-size:.9rem}
+.big{font-family:var(--display);font-size:clamp(2rem,4vw,2.9rem);font-weight:800;
+  letter-spacing:-.03em;line-height:1;margin-bottom:8px}
+.quote{border-left:2px solid var(--liminal);padding:6px 0 6px 22px;margin:34px 0;max-width:58ch}
+.quote p{color:#C8CDD4;font-size:1.04rem;font-style:italic}
+.quote cite{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--dim);
+  font-style:normal;display:block;margin-top:12px;text-transform:uppercase}
+.figure{border:1px solid var(--line);overflow:hidden;background:#000}
+.figure img{width:100%;display:block;filter:saturate(.85)}
+.figure figcaption{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--dim);
+  padding:12px 14px;border-top:1px solid var(--line);text-transform:uppercase}
+
+/* demo */
+.panels{display:grid;gap:12px;margin-top:20px}
+@media(min-width:1060px){.panels{grid-template-columns:1.2fr .85fr 1.15fr;align-items:stretch}}
+.panel{background:var(--surface);border:1px solid var(--line);padding:13px;
+  display:flex;flex-direction:column}
+.panel-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.panel-h .label{margin:0}
+.panel video{width:100%;aspect-ratio:1/1;object-fit:cover;background:#000;display:block}
+.panel canvas{width:100%;display:block}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  padding:5px 10px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
+.chip.fire{background:var(--alarm);border-color:var(--alarm);color:#fff;
+  animation:pulse .45s ease-in-out infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.5}}
+.picker{display:flex;gap:6px;flex-wrap:wrap;margin:22px 0 4px}
+.pick{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:8px 12px;
+  border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;transition:.14s}
+.pick:hover{border-color:var(--line-2);color:var(--text)}
+.pick[aria-selected="true"]{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.14)}
+.pick .tag{color:var(--dim);margin-left:7px}
+.readout{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:grid;gap:0;margin-top:11px}
+.readout div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.05)}
+.readout div:last-child{border:none}
+.readout b{color:var(--text);font-weight:500}
+.legend{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--dim);
+  display:flex;gap:14px;margin-top:9px;flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px}
+
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:16px}
+th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);font-weight:400}
+td{color:var(--muted)} td.v{font-family:var(--mono);color:var(--text)}
+tr.best{background:rgba(59,130,246,.06)} tr.best td{color:var(--text)} tr.best td.v{color:var(--accent)}
+.scroll{overflow-x:auto}
+.note{font-size:.85rem;color:var(--dim);margin-top:16px;max-width:68ch}
+.warn{border:1px solid rgba(255,59,48,.26);background:rgba(255,59,48,.045);padding:28px;margin-top:8px}
+.warn h3{color:#FF8A82;margin-bottom:12px;font-size:1rem}
+.warn p{color:#B9BEC6;max-width:72ch}
+.stack{font-family:var(--mono);font-size:11.5px;display:grid;gap:0;margin-top:22px;
+  border-top:1px solid var(--line)}
+.stack div{display:grid;grid-template-columns:minmax(0,190px) 1fr;gap:16px;
+  padding:13px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.stack span:first-child{color:var(--liminal)}
+.stack span:last-child{color:var(--muted)}
+footer{padding:54px 0;border-top:1px solid var(--line);color:var(--dim);font-size:.85rem}
+footer a{color:var(--accent);text-decoration:none}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-img"></div>
+  <div class="wrap">
+    <span class="label">flyloop / behavioural regression testing for generated worlds</span>
+    <h1>When the walls lie, <span class="lim">the fly knows first.</span></h1>
+    <p class="lead">Generated worlds are becoming places we test robots and train agents.
+    Nobody can tell you whether a new model version <em>behaves</em> differently, only whether
+    it looks better. We put a fly's escape reflex inside the world and measure what it does.</p>
+    <div class="cta">
+      <a class="btn btn-p" href="#demo">[ See it run ]</a>
+      <a class="btn" href="#results">[ The numbers ]</a>
+      <a class="btn" href="https://github.com/azrabano23/flyloop">[ Source ]</a>
+    </div>
+  </div>
+  <div class="ticker"><div id="tick"></div></div>
+</header>
+
+<section class="wrap reveal">
+  <span class="label">01 / the problem</span>
+  <h2>A world model ships an update.<br>Does your agent still behave?</h2>
+  <div class="grid g3" style="margin-top:38px">
+    <div class="card"><span class="n">01</span><h3>The video looks better</h3>
+      <p>Sharper, more coherent, nicer light. Every quality metric anyone tracks went up.</p></div>
+    <div class="card"><span class="n">02</span><h3>The agent does not</h3>
+      <p>It brakes in empty corridors. It misses an obstacle it used to catch. No video score
+      predicted that.</p></div>
+    <div class="card"><span class="n">03</span><h3>And you cannot tell why</h3>
+      <p>The world model, your controller, or the scene? That attribution problem is what
+      makes release testing hard.</p></div>
+  </div>
+  <div class="quote">
+    <p>"It's literally just look at it and human judgment. That's what it is today. And this
+    is including, by the way, DeepMind. Nobody has solved this problem yet."</p>
+    <cite>Ahmed Ahres, Reactor, on evaluating real-time world models</cite>
+  </div>
+</section>
+
+<section class="wrap reveal">
+  <span class="label">02 / the probe</span>
+  <div class="grid g2" style="align-items:center;gap:40px">
+    <div>
+      <h2>Borrow a reflex with 400 million years of QA.</h2>
+      <p>A fly never segments an object or estimates depth. It reads raw optic flow across a
+      hex array of roughly 750 ommatidia, and when something is going to hit it, one neuron
+      fires and the animal is gone. Small, fast, interpretable, and completely ignorant of
+      what it is looking at. That ignorance is the feature: it cannot be fooled by anything
+      that only looks right.</p>
+      <div class="grid" style="margin-top:26px;gap:14px">
+        <div class="card"><h3>Two channels, not one</h3>
+          <p>The published anatomy puts two populations on the giant fibre: LC4 keyed to
+          angular velocity, LPLC2 to angular size. We built one channel first and hit a wall,
+          stable threshold or sensitive to broken motion, never both. Two gets both.</p></div>
+        <div class="card"><h3>No segmentation anywhere</h3>
+          <p>The trigonometry baseline must find an object before it can measure one. Point it
+          at a real generated hallway and it fires in frame zero on carpet shadows.</p></div>
+      </div>
+    </div>
+    <figure class="figure"><img src="assets/eye.png" alt="Macro photograph of a fly compound eye">
+      <figcaption>750 ommatidia per eye. 5.1° apart, 5.7° acceptance.</figcaption></figure>
+  </div>
+</section>
+
+<section class="wrap reveal" id="demo">
+  <span class="label">03 / the instrument</span>
+  <h2>Fly it. Watch the eye. Watch it commit.</h2>
+  <p>Left is the world. Middle is what the eye receives, 223 facets with Gaussian acceptance.
+  Right is the escape command charging toward threshold.</p>
+  <div class="picker" id="picker" role="tablist"></div>
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-h"><span class="label">world</span><span class="chip" id="src">-</span></div>
+      <video id="vid" playsinline muted loop autoplay></video>
+      <div class="readout">
+        <div><span>generator</span><b id="m-model">-</b></div>
+        <div><span>frames</span><b id="m-frames">-</b></div>
+        <div><span>ground truth</span><b id="m-gt">-</b></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><span class="label">fly's eye</span><span class="chip" id="m-facets">-</span></div>
+      <canvas id="eye" width="440" height="440" style="aspect-ratio:1/1"></canvas>
+      <p class="note" style="margin-top:9px;font-size:.78rem">Each cell is one ommatidium.
+      Brightness is local outward motion after the background flow is subtracted.</p>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><span class="label">escape command</span>
+        <span class="chip" id="state">MONITORING</span></div>
+      <canvas id="plot" width="560" height="240" style="aspect-ratio:560/240"></canvas>
+      <div class="legend">
+        <span><i style="background:#3B82F6"></i>fly circuit</span>
+        <span><i style="background:#8C919A"></i>trig baseline</span>
+        <span><i style="background:#FF3B30"></i>commits</span>
+      </div>
+      <div class="readout">
+        <div><span>fly commits</span><b id="m-fire">-</b></div>
+        <div><span>angular size then</span><b id="m-theta">-</b></div>
+        <div><span>trig baseline</span><b id="m-base">-</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap reveal" id="results">
+  <span class="label">04 / results</span>
+  <h2>What the second channel buys.</h2>
+  <p>Measured only on clips whose geometry is known in closed form, so there is a right answer
+  to check against. Both detectors are held to the same settling window. The first time we
+  measured this they were not, and the gap that produced was an artefact, so we threw it out.</p>
+  <div class="scroll"><table id="tradeoff"><thead><tr>
+    <th>detector</th><th>channels</th><th>threshold spread over 8× speed</th>
+    <th>lead over trig on broken clips</th></tr></thead><tbody></tbody></table></div>
+  <p class="note">Two channels give the most stable threshold by a wide margin, which is what
+  makes it usable as a ruler. The raw rate channel reacts earlier to broken motion and pays
+  with a threshold that slides with approach speed.</p>
+  <div class="grid g3" style="margin-top:40px">
+    <div class="card"><span class="n">escape threshold</span><div class="big" id="s-th">-</div>
+      <p>across a 0.25 to 2.0 m/s sweep. Published behavioural figure sits near 20°.</p></div>
+    <div class="card"><span class="n">clips scored</span><div class="big" id="s-n">-</div>
+      <p>synthetic with exact ground truth, plus generated worlds with none.</p></div>
+    <div class="card"><span class="n">cost to run</span><div class="big">CPU</div>
+      <p>223 facets of numpy. Checking a clip is a rounding error against generating it.</p></div>
+  </div>
+</section>
+
+<section class="wrap reveal">
+  <span class="label">05 / the stack</span>
+  <h2>What we used, and for what.</h2>
+  <div class="stack">
+    <div><span>Nano Banana 2.1</span><span>Google AI Studio. Seed plate: one obstacle, dead ahead.</span></div>
+    <div><span>Veo 3.1</span><span>Google DeepMind. Animates the approach from that plate.</span></div>
+    <div><span>LingBot World 2</span><span>Reactor. Live world, driven by set_move_longitudinal.</span></div>
+    <div><span>MiniMax FastH3</span><span>Reactor. One long continuous take, no cuts.</span></div>
+    <div><span>Lyria 3.5</span><span>Google DeepMind. Ambient score.</span></div>
+    <div><span>flyloop</span><span>Hex retina, two-channel giant fibre, verdict.</span></div>
+  </div>
+  <p class="note">Reactor SDK surface: live session, action control, frame metadata for true
+  closed-loop latency, the recordings API, one probe across several catalog models.</p>
+</section>
+
+<section class="wrap reveal">
+  <span class="label">06 / honest limits</span>
+  <div class="warn">
+    <h3>Read this before believing any number above</h3>
+    <p>This measures geometric consistency of apparent motion. It does not measure gravity,
+    mass, friction or collision response. The detector is a biologically inspired model with
+    three hand-calibrated parameters, not a circuit compiled from a connectome; that adapter
+    is a stub. On generated footage the circuit fires on every approach clip we have, because
+    every one of them really is an approach, so firing time there is descriptive rather than
+    a correctness score. Separating a broken detector from a broken world is the open problem,
+    and it is the next thing we would build.</p>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p>flyloop. Built at the Reactor × Google DeepMind World Models Hackathon, New York,
+  8 October 2026. <a href="https://github.com/azrabano23/flyloop">Source</a></p>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+let R=null, clip=null, raf=0;
+const fmt = (v,s) => (v===null||v===undefined) ? 'unknown' : v+(s||'');
+
+fetch('artifacts/results.json').then(r=>r.json()).then(d=>{
+  R=d;
+  $('#s-th').textContent = d.summary.threshold_mean_deg+' ± '+d.summary.threshold_sd_deg+'°';
+  $('#s-n').textContent = d.summary.n_clips;
+  $('#m-facets').textContent = d.retina.n_facets+' facets';
+
+  const rows = Object.entries(d.tradeoff);
+  const best = rows.reduce((a,b)=>(b[1].threshold_sd_deg??99)<(a[1].threshold_sd_deg??99)?b:a);
+  $('#tradeoff tbody').innerHTML = rows.map(([k,v])=>
+    `<tr class="${k===best[0]?'best':''}"><td>${k}</td><td class="v">${v.channels??1}</td>`+
+    `<td class="v">${fmt(v.threshold_sd_deg,'°')}</td>`+
+    `<td class="v">${fmt(v.mean_abs_lead_on_broken_frames,' frames')}</td></tr>`).join('');
+
+  // Open on a clip with exact ground truth: that is where the trace is a real measurement
+  // rather than a description, so it is what the instrument should be judged on.
+  const order = [...d.clips].sort((a,b)=>{
+    const rank = c => c.id==='looming-0_5mps' ? 0 : c.source==='synthetic' ? 1 : 2;
+    return rank(a)-rank(b);
+  });
+  $('#picker').innerHTML = order.map((c,i)=>
+    `<button class="pick" role="tab" data-id="${c.id}" aria-selected="${i===0}">`+
+    `${c.note||c.label}<span class="tag">${c.source}</span></button>`).join('');
+  $('#picker').onclick = e => {
+    const b = e.target.closest('.pick'); if(!b) return;
+    document.querySelectorAll('.pick').forEach(x=>x.setAttribute('aria-selected',x===b));
+    select(d.clips.find(c=>c.id===b.dataset.id));
+  };
+
+  // Real telemetry in the ticker, not decorative log text.
+  const line = d.clips.map(c=>{
+    const f=c.detectors.fly;
+    return `${c.id} · ${f.fired?'ESCAPE f'+f.fire_frame:'no fire'} · ${c.ground_truth?'gt known':'gt none'}`;
+  }).join('   ///   ');
+  $('#tick').textContent = line+'   ///   '+line;
+
+  select(order[0]);
+});
+
+function select(c){
+  clip=c;
+  const v=$('#vid');
+  if(c.video_url){ v.src='artifacts/'+c.video_url; v.load(); v.play().catch(()=>{}); }
+  $('#src').textContent=c.source;
+  $('#m-model').textContent=c.model;
+  $('#m-frames').textContent=c.n_frames+' @ '+Math.round(c.fps)+'fps';
+  $('#m-gt').textContent=c.ground_truth?'known exactly':'none, generated';
+  const f=c.detectors.fly, b=c.detectors.baseline;
+  $('#m-fire').textContent=f.fired?`frame ${f.fire_frame} (${f.fire_t_s.toFixed(2)}s)`:'did not fire';
+  $('#m-theta').textContent=f.theta_at_fire_deg===null?'unknown'
+    :f.theta_at_fire_deg+'°'+(c.ground_truth?'':' (estimated)');
+  $('#m-base').textContent=b.fired?`frame ${b.fire_frame}`:'did not fire';
+  t0=performance.now(); lastVt=-1;
+  cancelAnimationFrame(raf); loop();
+}
+
+let t0=performance.now(), lastVt=-1, useClock=false;
+function frameNow(){
+  if(!clip) return 0;
+  const v=$('#vid'), vt=v.currentTime||0;
+  if(vt!==lastVt){ lastVt=vt; useClock=false; }
+  else if(vt===0) useClock=true;          // video never started
+  if(!useClock && vt>0) return Math.min(clip.n_frames-1, Math.floor(vt*clip.fps));
+  const dur=clip.n_frames/clip.fps;
+  return Math.floor((((performance.now()-t0)/1000)%dur)*clip.fps);
+}
+
+function drawEye(fr){
+  const cv=$('#eye'), g=cv.getContext('2d'), W=cv.width, H=cv.height;
+  g.clearRect(0,0,W,H);
+  const dirs=R.retina.directions, act=clip.detectors.fly.facet_activity;
+  const stride=clip.detectors.fly.facet_stride||1;
+  const row=act?act[Math.min(act.length-1,Math.floor(fr/stride))]:null;
+  const s=(W/2)/44, cx=W/2, cy=H/2, rad=s*R.retina.dphi_deg*0.57;
+  for(let i=0;i<dirs.length;i++){
+    const [az,el]=dirs[i], x=cx+az*s, y=cy-el*s;
+    const a=row?Math.min(1,row[i]):0;
+    g.beginPath();
+    for(let k=0;k<6;k++){
+      const t=Math.PI/180*(60*k+30);
+      const px=x+rad*Math.cos(t), py=y+rad*Math.sin(t);
+      k?g.lineTo(px,py):g.moveTo(px,py);
+    }
+    g.closePath();
+    if(a<.03){ g.fillStyle='rgba(255,255,255,.07)'; g.fill(); }
+    else{
+      g.shadowBlur=a*16; g.shadowColor='rgba(59,130,246,'+(a*.8)+')';
+      g.fillStyle=`rgba(${70+a*150|0},${140+a*70|0},255,${.25+a*.75})`;
+      g.fill(); g.shadowBlur=0;
+    }
+  }
+}
+
+function drawPlot(fr){
+  const cv=$('#plot'), g=cv.getContext('2d'), W=cv.width, H=cv.height, pad=10;
+  g.clearRect(0,0,W,H);
+  const fly=clip.detectors.fly.trace, base=clip.detectors.baseline.trace;
+  const n=Math.max(fly.length,base.length), yMax=1.5;
+  const X=i=>pad+(i/(n-1))*(W-2*pad), Y=v=>H-pad-(Math.min(v,yMax)/yMax)*(H-2*pad);
+  g.strokeStyle='rgba(255,255,255,.14)'; g.setLineDash([3,5]); g.lineWidth=1;
+  g.beginPath(); g.moveTo(pad,Y(1)); g.lineTo(W-pad,Y(1)); g.stroke(); g.setLineDash([]);
+  g.fillStyle='rgba(255,255,255,.2)'; g.font='10px JetBrains Mono, monospace';
+  g.fillText('threshold', W-pad-62, Y(1)-6);
+  const line=(a,c,w)=>{g.strokeStyle=c;g.lineWidth=w;g.beginPath();
+    a.forEach((v,i)=>i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v)));g.stroke();};
+  line(base,'rgba(140,145,154,.5)',1.3);
+  line(fly,'#3B82F6',2.2);
+  const ff=clip.detectors.fly.fire_frame;
+  if(ff!=null){ g.strokeStyle='#FF3B30'; g.lineWidth=1.5;
+    g.beginPath(); g.moveTo(X(ff),pad); g.lineTo(X(ff),H-pad); g.stroke(); }
+  g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=1;
+  g.beginPath(); g.moveTo(X(fr),pad); g.lineTo(X(fr),H-pad); g.stroke();
+}
+
+function loop(){
+  if(!R||!clip) return;
+  const fr=frameNow();
+  drawEye(fr); drawPlot(fr);
+  const ff=clip.detectors.fly.fire_frame;
+  const firing=(ff!=null&&fr>=ff);
+  const c=$('#state');
+  c.textContent=firing?'ESCAPE':'MONITORING';
+  c.className='chip'+(firing?' fire':'');
+  raf=requestAnimationFrame(loop);
+}
+
+const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('in')),{threshold:.06});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

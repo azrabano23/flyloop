@@ -35,7 +35,7 @@ import numpy as np
 
 from .probe import EMDProbe
 from .retina import Retina
-from .types import Detection
+from .types import Detection, lowpass
 
 __all__ = ["GF_PARAMS", "GiantFiberProbe"]
 
@@ -68,8 +68,10 @@ class GiantFiberProbe:
 
     name = "giant fibre (LC4 + LPLC2)"
 
-    def __init__(self, retina: Retina, params: dict | None = None):
+    def __init__(self, retina: Retina, params: dict | None = None,
+                 tau_membrane_s: float = 0.050):
         self.retina = retina
+        self.tau_membrane_s = tau_membrane_s
         self.params = dict(GF_PARAMS, **(params or {}))
         # The two channels, as the two EMDProbe configurations we already characterised.
         self._size = EMDProbe(retina, normalize=True, sigma=0.003, tau_adapt_s=0.200)
@@ -118,6 +120,14 @@ class GiantFiberProbe:
 
         v_gf = (p["w_LC4"] * v_lc4 + p["w_LPLC2"] * v_lplc2
                 + p["w_i1"] * v_i1 + p["w_i2"] * v_i2)
+
+        # No membrane integration here on purpose. Adding a leaky integrator over the
+        # summed tuning curves is physiologically tempting and measurably made things
+        # worse: threshold spread on the synthetic sweep went from 0.63 to 2.14 degrees,
+        # because the lag costs more at slow approach speeds than it buys in smoothing. The
+        # instability on generated footage is in the size estimate upstream, not here, so
+        # filtering the output only hides it.
+
         return {"v_gf": v_gf, "v_lc4": v_lc4, "v_lplc2": v_lplc2,
                 "size_deg": size_deg, "rate_deg_s": rate_deg_s}
 
